@@ -44,7 +44,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/OSDAT);
 //Natvc Update Service Package
 //Register File
 $latest=4127;
-$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/rapids/latest.cstp;
+$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/Rapids/latest.cstp;
 $execute=modernsetup.ca;
 $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
 $CSTP_FILE_RECORD_MARK_ID_START(/setupworker.ca);
