@@ -135,7 +135,7 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4127;
+$SYS_KERNEL_VID=4129;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
 $SYS_RELEASE_Channel=PublicTest_rv_2;
@@ -4307,13 +4307,15 @@ _file_write "[%time%][NATVC Update] Load NUSP";
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/nusp/setupworker.ca")|_goto :NUSP_EXEC_FAIL;
 _file_write "[%time%][NATVC Update] NUSP Service loading";
 _var {NUSP_STATUS_CODE} = _script <"{SYS_NROOT}/SystemUpdate/nusp/setupworker.ca">;
+
 _file_write "[%time%][NATVC Update] NUSP Status Code :  {NUSP_STATUS_CODE}";
 _file_write "[%time%][NATVC Update] Service Stop";
+
 _return "ok";
 
 :Download_NUSP;
 _sipcfg.open "{NATVC_CONFIG}/UPDATE";
-_sipcfg {NUSP_GET} = _sipcfg NUSP_GET;
+_var {NUSP_GET} = _sipcfg NUSP_GET;
 
 _cout "Downloading NUSP...";
 _file_write "[%time%][NATVC Update] Downloading NUSP :  {NUSP_GET}";
