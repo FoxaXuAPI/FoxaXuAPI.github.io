@@ -48,7 +48,7 @@ _return "user_restart";
 :UpdateRE;
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp")|_goto :BackREOFF;
 _dir_remove "script/vdisk/Recovery";
-_file_uncstp ("{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp","script/vdisk/Recovery");
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp","script/vdisk/Recovery/Recovery");
 _script <"{SYS_ROOT}/refix.ca"> "script/vdisk/Recovery";
 _goto :BackREOFF;
 $CSTP_FILE_RECORD_MARK_ID_END(/modernsetup.ca);
