@@ -28,7 +28,7 @@ _cout "";
 _cout "";
 _cout "      Please wait";
 _cout "      Update Service is installing latest version of Natvc";
-_cout "";
+_cout "      After install your Natvc will update to {SYSNAME}.{PackageLatest}";
 _cout "";
 _cout "";
 _cout "";
@@ -36,16 +36,30 @@ _cout "                Do not turn off your device";
 
 _var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/installer/";
 _var {XCOPY_B} = "{NATVC_DISK}";
+
+_if(_dir_exist "script/vdisk/Recovery")|_goto :UpdateRE;
+:BackREOFF;
+
 _script <"{SYS_NROOT}/SystemUpdate/nusp/xcopy.ca">;
 _script <"{SYS_ROOT}/autobl.ca"> "{NATVC_DISK}";
 _return "user_restart";
+
+
+:UpdateRE;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp")|_goto :BackREOFF;
+_dir_remove "script/vdisk/Recovery";
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp","script/vdisk/Recovery");
+_script <"{SYS_ROOT}/refix.ca"> "script/vdisk/Recovery";
+_goto :BackREOFF;
 $CSTP_FILE_RECORD_MARK_ID_END(/modernsetup.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/OSDAT);
 //Natvc Update Service Package
 //Register File
-$latest=4129;
-$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/Rapids/latest.cstp;
-$execute=modernsetup.ca;
+$latest=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/latest.txt;
+$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/natvc.cstp;
+$REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/ntvre_pkg.cstp;
+
+//All
 $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
 $CSTP_FILE_RECORD_MARK_ID_START(/setupworker.ca);
 _$directmode;
@@ -62,16 +76,27 @@ _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_goto :WaitRestart;
 
 _sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
-_var {PackageLatest} = _sipcfg latest;
+_var {Get_Latest} = _sipcfg latest;
 _var {PkgDownloadURL} = _sipcfg package;
-_var {PkgExecute} = _sipcfg execute;
+_var {PkgREDownload} = _sipcfg REpackage;
+
+_if(_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.txt")|_file_del "{SYS_NROOT}/SystemUpdate/downloading/latest.txt";
+
+_url_get ("{Get_Latest}","{SYS_NROOT}/SystemUpdate/downloading/latest.txt");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.txt")|_goto :GetLatestFail;
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/downloading/latest.txt";
+_var {PackageLatest} = _sipcfg latestversion;
+
 _if(!_cp("{PackageLatest}","{SYS_KERNEL_VID}"))|_goto :UpdateDetectStatus;
 
 _clear;
 _cout "Status :  OK Good";
-_cout "You are using latest version of NATVC";
+_cout "You are using latest version of NATVC {PackageLatest}";
 _cout "we are collect your problem and resolve these bug";
 _cout "We Recommand Check Update every week";
+_cout "Version  {SYSNAME}.{SYS_KERNEL_VID}";
 _pause;
 _return "OK_Good";
 
@@ -79,11 +104,27 @@ _return "OK_Good";
 :UpdateDetectStatus;
 //DETECT ANTI ERROR
 _clear;
+_cout "New update found ..";
+_cout "Do you want install ?";
+_cout "Your Version {SYS_KERNEL_VID},  Latest Version :  {PackageLatest}";
+_prt "type Y(y) to install (other type will cancel update)>";
+
+_var {UserMakeSure} = _getline;
+
+_if(_cp("{UserMakeSure}","Y"))|_goto :StartInstallerSure;
+_if(_cp("{UserMakeSure}","y"))|_goto :StartInstallerSure;
+_goto :UserCancelUpdate;
+
+:StartInstallerSure;
+_clear;
 _if(_<("{PackageLatest}","{SYS_KERNEL_VID}"))|_goto :packageNull;
 _cout "Install Update ...  Natvc Latest {PackageLatest}";
 //Auto Install Update
 _file_del "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp";
 _url_get("{PkgDownloadURL}","{SYS_NROOT}/SystemUpdate/downloading/latest.cstp");
+
+_if(_dir_exist "script/vdisk/Recovery")|_url_get("{PkgREDownload}","{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp");
+
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp")|_goto :FailDownload;
 _cout "Setup Worker is Extracting files";
 _file_uncstp("{SYS_NROOT}/SystemUpdate/downloading/latest.cstp","{SYS_NROOT}/SystemUpdate/installer");
@@ -125,12 +166,33 @@ _return "Network_Error";
 
 :packageNull;
 _clear;
-_cout "Status :  Not Compatible";
-_cout "This update package is oldest than your system version";
-_cout "Please Use latest update package";
+_cout "Status :  Not_Compatible";
+_cout "This update version is oldest than your system version";
 _cout "Recommand use online update";
+_cout "";
+_cout "If you are using a package downloaded from the internet, it indicates that you may be using a preview version.";
+_cout "Please use the installer we released to update.";
 _pause;
 _return "Not_Compatible";
+
+:GetLatestFail;
+_clear;
+_cout "Status : Server_Error";
+_cout "Failed.  Get latest file error";
+_cout "Server is not forward your request";
+_cout "Get From URL :  {Get_Latest}";
+_cout "If you can download this file. run diskclean to redownload NUSP";
+_pause;
+_return "Server_Error";
+
+:UserCancelUpdate;
+_clear;
+_cout "Status : Cancel";
+_cout "The user canceled the update.";
+_cout "You can run the service again to reinstall the updates.";
+_cout "Run diskclean will redownload nusp service";
+_pause;
+_return "Cancel";
 $CSTP_FILE_RECORD_MARK_ID_END(/setupworker.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/syspkgmake.ca);
 _$directmode;
