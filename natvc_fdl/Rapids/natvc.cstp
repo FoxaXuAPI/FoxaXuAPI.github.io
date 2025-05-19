@@ -1,72 +1,5 @@
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/bootres/BCD);
-//Boot Config Data
-//Natvc System Bootloader
-$systemvolume=;
-$ospath=;
-$osload=;
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/bootres/BCD);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/bootres/boot);
-//Volume Loader
-$DefaultLoader={BootVolume}/natvcbootmgr;
-$VolumeID="System Basic Loader";
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/bootres/boot);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/bootres/natvcbootmgr);
-// Boot Config Data 
-// Natvc OS
-// Loader
-_$directmode;
-_$nolog;
-
-//Main Loader 
-
-//LoadBCD
-_sipcfg.open "{BootVolume}/BCD";
-_var {osvolume} = _sipcfg systemvolume ;
-_var {Boot_OSPATH} = _sipcfg ospath;
-_var {NATVC_SYSLDR} = _sipcfg osload;
-
-//Boot System
-_var {NATVC_DISK} = "{osvolume}";
-
-//Edit {boot_rsmode} to Manager System Boot
-
-//Core
-_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
-
-_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
-
-_var {NATVC_MISSLOAD} = _script <"{NATVC_BOOTLOAD}">;
-_if(_cp("{NATVC_MISSLOAD}","$reboot"))|_return "$reboot";
-_if(_cp("{NATVC_MISSLOAD}","$shutdown"))|_return "$shutdown";
-_goto :NATVC_MS_FL;
-
-_var bvm_bm = "true";
-_return "$reboot";
-
-//ERRPAGE
-:NATVC_MS_SL;
-_cout "---NATVC Boot Manager";
-_cout "---File Not Found :  {NATVC_BOOTLOAD}";
-_cout "-Reboot. and select boot from your setup media";
-_cout "-Press any key to Reboot";
-_pause;
-_var {SysLocker} = "false";
-_var bvm_bm = "true";
-_return "$reboot";
-
-:NATVC_MS_FL;
-_clear;
-_cout "---NATVC System Loader";
-_cout "---Fail Load "{NATVC_MISSLOAD}"";
-_cout "-Reboot. and select boot from your setup media";
-_cout "-Press any key to Reboot";
-_pause;
-_var {SysLocker} = "false";
-_var bvm_bm = "true";
-_return "$reboot";
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/bootres/natvcbootmgr);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -100,6 +33,7 @@ $shutdown_exe_title=Please Wait. Prepare Update;
 $startup_execute=noexec;
 $startup_exe_title=Prepare Update ;
 
+//ALL DATA
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SETUP);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SOFTWARE);
 //NATVC SOFTWARE PATH BIND
@@ -135,10 +69,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4137;
+$SYS_KERNEL_VID=4142;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=Release_v3;
+$SYS_RELEASE_Channel=Release_v5;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -453,7 +387,10 @@ _$no_err_report;
 
 _clear;
 
-_sipcfg.open "$sys_def_disk/nbf/nbfload";
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
+
 _var {TempLoadRE} = _sipcfg RollBackLoad;
 _if(!_cp(_sipcfg DefaultOption,"recovery"))|_goto :SkipRollBackRE;
 _sipcfg DefaultOption = "{TempLoadRE}";
@@ -570,7 +507,7 @@ _return "$reboot";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/RE/re.nbf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/bootfail.txt);
 ╔══════════════════════════════════════════════╗
-║           NBF BOOT RECOVERY                  ║
+║         NATVC BOOT RECOVERY                  ║
 ╠══════════════════════════════════════════════╣
 ║     CRITICAL SYSTEM ERROR                    ║
 ║   ──────────────────────────────             ║
@@ -591,7 +528,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/filelost.txt);
 ╔══════════════════════════════════════════════╗
-║            NBF BOOT RECOVERY                 ║
+║         NATVC BOOT RECOVERY                  ║
 ╠══════════════════════════════════════════════╣
 ║     Missing Critical File                    ║
 ║   ──────────────────────────────             ║
@@ -611,7 +548,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/filelost.txt);
 ╚══════════════════════════════════════════════╝
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/filelost.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/nbfshell.txt);
-=== NBF BOOT Shell ===
+=== Natvc BOOTMGR Shell ===
 Location: BootVolume/nbf/*.nbf
 Legacy boot files not supported
 
@@ -1224,6 +1161,241 @@ Thank you.
 
 foxaxu_dev_lab 2025/5/11
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/start-read.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
+//Volume Loader
+$DefaultLoader={BootVolume}/bootmgr.ca;
+$DefaultOption=null;
+$RollBackLoad=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/boot);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/bootmgr.ca);
+_$directmode;
+_$nolog;
+
+//New Boot Format
+//LegacyEdition
+//NBF Boot Manager
+
+_var {BootLogFiles} = "{BootVolume}/BootLogFiles.log";
+
+_if(_file_exist "{BootLogFiles}.old")|_file_del "{BootLogFiles}.old";
+
+_if(_file_exist "{BootLogFiles}")|_file_rename ("{BootLogFiles}","{BootLogFiles}.old");
+
+_file_open "{BootLogFiles}";
+
+_file_write "@NBF System loader log file.   Time  %fulltime% ";
+
+_file_write "[%time%][Boot] Boot Start";
+
+_if(_cp("{NBFMenu}","true"))| _goto :BootSelect;
+
+//Load Default Option
+_file_write "[%time%][Boot] Load Default OS Loader";
+_sipcfg.open "{BootVolume}/$BVM_VOL_LOAD";
+_var {BootDefaultOption} = _sipcfg DefaultOption;
+_var {BootSetDefault} = "{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Default BCD File:  {BootDefaultOption}";
+
+:StartLoadingBootNBF
+
+//LoadBCD
+_file_write "[%time%][Boot] Checking Boot loader";
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}") | _goto :NoDefaultLoader;
+_sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Read BCD Files ...";
+
+_var {osvolume} = _sipcfg osvol;
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_file_write "[%time%][Boot] OS Volume :  {osvolume}";
+_file_write "[%time%][Boot] OS PATH :  {Boot_OSPATH}";
+_file_write "[%time%][Boot] OS System loader :  {NATVC_SYSLDR}";
+_file_write "[%time%][Boot] OS Sign :  {BootSign}";
+
+//Config All Disks
+_file_write "[%time%][Boot] Configuration Disk Device";
+
+//Boot System
+_var {NATVC_DISK} = "{osvolume}";
+
+//Edit {boot_rsmode} to Manager System Boot
+
+_file_write "[%time%][Boot] Configuration Boot loader";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+
+_file_write "[%time%][Boot] Check Boot loader";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+
+_file_write "[%time%][Boot] Check Boot Sign";
+//Verify Boot loader is VALID
+_sipcfg.open "{NATVC_BOOTLOAD}";
+_var {LoadSign} = _sipcfg signload;
+_if(!_cp("{BootSign}","{LoadSign}"))|_goto :SignInvalid;
+
+_file_write "[%time%][Boot] Startup System";
+
+_var {RE_ENV} = "false";
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_file_open "{BootLogFiles}";
+_file_write "[%time%][Boot] System Callback :  {OS_CALLBACK}";
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_file_write "[%time%][Boot][Error] Exception CALLBACK";
+_goto :NATVC_MS_FL;
+
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+//ERRPAGE
+:NATVC_MS_SL;
+_file_write "[%time%][Boot][Error] Device Error :   Boot loader is missing";
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+:NATVC_MS_FL;
+_file_write "[%time%][Boot][Error] Boot Fail :  OS CALLBACK =  {NBF_ErrorCode}";
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+//Boot Select Mode
+:BootSelect;
+_file_write "[%time%][Boot] Boot Menu";
+_var {NBFMenu} = "false";
+_clear;
+_typefile "{BootVolume}/res/NBFshell.txt";
+_prt "Select Boot load or type .exit shutdown $> ";
+_var {BootDefaultOption} = _getline;
+
+_if(_cp("{BootDefaultOption}",".exit"))|_return "$shutdown";
+_if(_cp("{BootDefaultOption}",".list"))|_goto :ListBootLDR;
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}")|_goto :BootSelect;
+
+_goto :StartLoadingBootNBF;
+
+
+
+:NoDefaultLoader;
+_file_write "[%time%][Boot] System No Default Loader";
+_cout "No Default System Loader";
+_sleep 2;
+_goto :BootSelect;
+
+:ListBootLDR;
+_file_write "[%time%][Boot] List all boot loader";
+_clear;
+_cout "All Boot loader";
+_cout "------------------------------------";
+_dir_list ("script/tempNBF","{BootVolume}/NBF");
+
+_file_replace "script/tempNBF" ("{BootVolume}/NBF/","");    
+
+_textprint "script/tempNBF";
+_cout "------------------------------------";
+_cout "Default :  ({BootSetDefault})";
+_cout "------------------------------------";
+_file_del "script/tempNBF";
+_pause;
+_goto :BootSelect;
+
+
+
+
+:SignInvalid;
+_file_write "[%time%][Boot] Bootloader sign is invalid :  not trusted device";
+_var {NBF_ErrorCode} = "Invalid Boot Loader :  {NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+//_cout "{LoadSign}";
+//_cout "{BootSign}";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/bootmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/NBF-Temple);
+//Boot Config Data
+//NBF File Loader
+$osvol=;
+$ospath=;
+$osload=;
+$bootsign=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/NBF-Temple);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/bootfail.txt);
+╔══════════════════════════════════════════════╗
+║         NATVC BOOT RECOVERY                  ║
+╠══════════════════════════════════════════════╣
+║     CRITICAL SYSTEM ERROR                    ║
+║   ──────────────────────────────             ║
+║   Error Code: {NBF_ErrorCode}
+║   Description: Bootloader verification failed║
+║                                              ║
+║    RECOVERY INSTRUCTIONS                     ║
+║   ──────────────────────────────             ║
+║  1. Insert your system recovery media        ║
+║  2. Select 'Repair startup files' option     ║
+║  3. Run boot sector repair tool              ║
+║                                              ║
+║    Without recovery media:                   ║
+║  Contact device manufacturer support:        ║
+║  - OEM: {MAF_OEM}
+║                                              ║
+╚══════════════════════════════════════════════╝
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/bootfail.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/filelost.txt);
+╔══════════════════════════════════════════════╗
+║         NATVC BOOT RECOVERY                  ║
+╠══════════════════════════════════════════════╣
+║     Missing Critical File                    ║
+║   ──────────────────────────────             ║
+║     File: {NBF_FILE}
+║     Status: Required for system startup      ║
+║                                              ║
+║    Recovery Instructions                     ║
+║   ──────────────────────────────             ║
+║  1. Insert your setup media                  ║
+║  2. Choose "Repair system files"             ║
+║  3. Restore or replace the missing file      ║
+║                                              ║
+║    No recovery media?                        ║
+║  Contact device manufacturer support:        ║
+║  - OEM: {MAF_OEM}
+║                                              ║
+╚══════════════════════════════════════════════╝
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/filelost.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/nbfshell.txt);
+=== Natvc BOOTMGR Shell ===
+Location: BootVolume/nbf/*.nbf
+Legacy boot files not supported
+
+Default: {BootSetDefault}
+
+COMMANDS:
+.list - Show available loaders
+.exit - Shutdown system
+=========================
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/nbfshell.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysinfo.txt);
 Welcome To Natvc
 Copyright FDL 2025
@@ -1279,7 +1451,6 @@ _var {select_boot_partion} = _getargs;
 
 _if(!_dir_exist "{select_boot_partion}")|_goto :ListHelp;
 
-
 _cout "Boot Volume :  {select_boot_partion}";
 
 _cout "OS Load Hardware :  $BVM_VOL_LOAD";
@@ -1294,23 +1465,56 @@ _if(_cp("$BVM_VOL_LOAD","nbfload"))|_goto :addNBFLoader;
 
 _file_write "[%time%][Setup] System boot is recreate on {select_boot_partion}";
 
-_dir_make "$sys_def_disk/sysboot";
-_file_copy ("{SYS_NROOT}/bootres/BCD","$sys_def_disk/sysboot/BCD");
-_file_copy ("{SYS_NROOT}/bootres/boot","$sys_def_disk/sysboot/boot");
-_file_copy ("{SYS_NROOT}/bootres/natvcbootmgr","$sys_def_disk/sysboot/natvcbootmgr");
+_var {FileLoadName} = "{BootName}";
+_var {sysmaindrv} = "{select_boot_partion}";
 
-_file_write "[%time%][Setup] Set SystemVolume is {select_boot_partion}";
 
-_sipcfg.open "$sys_def_disk/sysboot/BCD";
-_sipcfg systemvolume = "{select_boot_partion}";
+/////////////////////LEG PARTITION
+:addLegacyLoader;
+
+_var {FileLoadName} = "{BootName}";
+_var {sysmaindrv} = "{select_boot_partion}";
+
+_if(!_file_exist "$sys_def_disk/sysboot/bootmgr.ca")|_goto :NewLegBootloader;
+
+_file_copy("{SYS_NROOT}/sysboot/NBF-Temple","$sys_def_disk/sysboot/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/sysboot/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
 _sipcfg ospath = "Natvc";
 _sipcfg osload = "Natvc/System/ntvload.ca";
 
+_var {GetBootSign} = _script<"{sysmaindrv}/Natvc/System/ntvload.ca"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
 _sipcfg.open "$sys_def_disk/sysboot/boot";
-_sipcfg DefaultLoader = '{BootVolume}/natvcbootmgr';
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.ca';
+_sipcfg DefaultOption = "{FileLoadName}";
 _cout "Legacy Boot Create Succeed";
 _return "OK";
 
+//Add New Boot loader Core
+:NewLegBootloader;
+
+_dir_remove "$sys_def_disk/sysboot";
+
+_dir_make "$sys_def_disk/sysboot";
+_dir_make "$sys_def_disk/sysboot/nbf";
+_dir_make "$sys_def_disk/sysboot/res";
+
+_file_copy ("{SYS_NROOT}/sysboot/boot","$sys_def_disk/sysboot/boot");
+_file_copy ("{SYS_NROOT}/sysboot/bootmgr.ca","$sys_def_disk/sysboot/bootmgr.ca");
+
+_file_copy ("{SYS_NROOT}/sysboot/res/bootfail.txt","$sys_def_disk/sysboot/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/filelost.txt","$sys_def_disk/sysboot/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/nbfshell.txt","$sys_def_disk/sysboot/res/nbfshell.txt");
+
+_goto :addLegacyLoader;
+
+
+
+////////////////////// NBF PARTITION
 //Use NBF Loader
 :addNBFLoader;
 
@@ -1376,21 +1580,22 @@ _if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
 
 _clear;
 
-_var {ToolsName} = "BCDMGR";
+_var {ToolsName} = "bcdmgr.ca";
 
 
 //Load Main
 :BACKMAINCONSOLE;
 _clear;
-_cout "Boot Config Data Manager  ({SYSNAME}.{SYS_KERNEL_VID})";
-_if(_cp("$BVM_VOL_LOAD","nbfload"))|_cout "WARNING. this system use NBF to boot";
+_cout "sysboot Boot Manager ({SYSNAME}.{SYS_KERNEL_VID})";
+_if(!_cp("$BVM_VOL_LOAD","boot"))|_cout "WARNING. this system not use sysboot to boot";
 _cout "@--------------------------------------------------------@";
-_cout "Legacy Boot Loader natvcbootmgr is not support";
-_cout "Please new load nbfmgr.ca";
 _cout "select mode ";
 _cout "1. Create New Bootloader on device";
 _cout "2. Edit old bootloader";
+_cout "3. Delete Boot Loader";
 _cout "";
+_if(_cp("$BVM_VOL_LOAD","boot"))|_cout "Current Load file :  {BootVolume}/sysboot/{BootDefaultOption}";
+_cout "use "bootopt" on explorer. to restart to sysboot Shell";
 _cout "use .exit close this tool";
 _cout "Copyright FoxaXu 2024 . Project NATVC";
 _cout "@--------------------------------------------------------@";
@@ -1398,35 +1603,42 @@ _prts "select mode > ";
 _var {useropt} = _getline;
 _if(_cp("{useropt}","1"))|_goto :addblmode;
 _if(_cp("{useropt}","2"))|_goto :editblmode;
+_if(_cp("{useropt}","3"))|_goto :delblmode;
 _if(_cp("{useropt}",".exit"))|_return "ok";
 _goto :BACKMAINCONSOLE;
 
 
 
 :addblmode;
-_cout "Select System Driver";
+_cout "Select System Disk";
 _prts "SYSDRV> ";
 _var {sysmaindrv} = _getline;
 _if(!_file_exist "{sysmaindrv}/Natvc/System/ntvload.ca")|_goto :FailIndex;
+
+_cout "Set Load File Name";
+_prts "SYSDRV> ";
+_var {FileLoadName} = _getline;
+
 _cout "Please wait";
 
-_file_del "$sys_def_disk/sysboot/BCD";
-_file_del "$sys_def_disk/sysboot/boot";
-_file_del "$sys_def_disk/sysboot/natvcbootmgr";
-_dir_remove "$sys_def_disk/sysboot";
+_if(!_file_exist "$sys_def_disk/sysboot/bootmgr.ca")|_goto :NewBootloader;
 
-_dir_make "$sys_def_disk/sysboot";
-_file_copy ("{SYS_NROOT}/bootres/BCD","$sys_def_disk/sysboot/BCD");
-_file_copy ("{SYS_NROOT}/bootres/boot","$sys_def_disk/sysboot/boot");
-_file_copy ("{SYS_NROOT}/bootres/natvcbootmgr","$sys_def_disk/sysboot/natvcbootmgr");
+:BackCONADD;
 
-_sipcfg.open "$sys_def_disk/sysboot/BCD";
-_sipcfg systemvolume = "{sysmaindrv}";
+_file_copy("{SYS_NROOT}/sysboot/nbf-Temple","$sys_def_disk/sysboot/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/sysboot/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
 _sipcfg ospath = "Natvc";
 _sipcfg osload = "Natvc/System/ntvload.ca";
 
+_var {GetBootSign} = _script<"{sysmaindrv}/Natvc/System/ntvload.ca"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
 _sipcfg.open "$sys_def_disk/sysboot/boot";
-_sipcfg DefaultLoader = '{BootVolume}/natvcbootmgr';
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.ca';
+_sipcfg DefaultOption = "{FileLoadName}";
 
 _cout "Complete";
 _pause;
@@ -1434,29 +1646,71 @@ _goto :BACKMAINCONSOLE;
 
 
 
+:NewBootloader;
+
+_dir_remove "$sys_def_disk/sysboot";
+
+_dir_make "$sys_def_disk/sysboot";
+_dir_make "$sys_def_disk/sysboot/nbf";
+_dir_make "$sys_def_disk/sysboot/res";
+
+_file_copy ("{SYS_NROOT}/sysboot/boot","$sys_def_disk/sysboot/boot");
+_file_copy ("{SYS_NROOT}/sysboot/bootmgr.ca","$sys_def_disk/sysboot/bootmgr.ca");
+
+_file_copy ("{SYS_NROOT}/sysboot/res/bootfail.txt","$sys_def_disk/sysboot/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/filelost.txt","$sys_def_disk/sysboot/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/nbfshell.txt","$sys_def_disk/sysboot/res/nbfshell.txt");
+
+_goto :BackCONADD;
+
+
+
+
 :editblmode;
-_cout "Select Boot Driver";
-_prts "Default open current system bootloader .  select boot driver> ";
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
 _var {bootloaderdrv} = _getline;
-_if(!_file_exist "{bootloaderdrv}/BCD")|_goto :FailIndex2;
-_var {RegOpenFile} = "{bootloaderdrv}/BCD";
+_if(!_file_exist "{bootloaderdrv}/boot")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
 _script <"{SYS_ROOT}/confedit.ca"> "openedit";
 _goto :BACKMAINCONSOLE; 
 
 
+:delblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/boot")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+
+_if(_cp("{BootVolume}/sysboot/{BootDefaultOption}","{RegOpenFile}"))|_goto :DEF_WARNING;
+
+:ApplyDeleteBL;
+_file_del "{RegOpenFile}";
+_goto :BACKMAINCONSOLE; 
 
 
 //ErrPage
 :FailIndex;
-_cout "This Driver is invalid System. bcdmgr cannot create a boot loader for this system";
-_cout "Error :  No NTVLOAD.CA";
+_cout "This Disk is invalid System. bcdmgr.ca cannot create a boot loader for this system";
+_cout "Error : No load file on {bootloaderdrv}/boot";
 _pause;
 _goto :BACKMAINCONSOLE;
 
 
 :FailIndex2;
-_cout "This Driver is invalid boot data. bcdmgr cannot Edit BCD on here";
-_cout "Error :  No BCD";
+_cout "This Disk is invalid boot data. bcdmgr.ca cannot Edit sysboot on here";
+_cout "Error :  No sysboot CONFIG on {bootloaderdrv}/nbf/{FileLoadName}";
 _pause;
 _goto :BACKMAINCONSOLE;
 
@@ -1464,8 +1718,19 @@ _goto :BACKMAINCONSOLE;
 
 :FAIL_DISALLOW;
 _cout "Use Admin open this tools";
-_cout "bcdmgr.ca";
+_cout "bcdmgr.ca.ca";
 _return "fails";
+
+:DEF_WARNING;
+_cout "WARNING :  This boot loader is system now using boot load file";
+_cout "           If you delete this boot file, Your device won't boot";
+_cout "type y to Continue";
+_prts "y/n (default n)>";
+_var {DEFW_N} = _getline;
+
+_if(_cp("{DEFW_N}","y"))|_goto :ApplyDeleteBL;
+
+_goto :BACKMAINCONSOLE; 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/bcdmgr.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/confedit.ca);
 _$directmode;
@@ -2343,7 +2608,7 @@ _goto :BackCONADD;
 _cout "Select Boot Disk";
 _prts "Default open current system bootloader .  select boot Disk> ";
 _var {bootloaderdrv} = _getline;
-_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex2;
+_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex;
 
 _prts "Select boot load file> ";
 _var {FileLoadName} = _getline;
@@ -2358,7 +2623,7 @@ _goto :BACKMAINCONSOLE;
 _cout "Select Boot Disk";
 _prts "Default open current system bootloader .  select boot Disk> ";
 _var {bootloaderdrv} = _getline;
-_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex2;
+_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex;
 
 _prts "Select boot load file> ";
 _var {FileLoadName} = _getline;
@@ -2376,14 +2641,14 @@ _goto :BACKMAINCONSOLE;
 //ErrPage
 :FailIndex;
 _cout "This Disk is invalid System. nbfmgr cannot create a boot loader for this system";
-_cout "Error : No load file";
+_cout "Error : No load file on {bootloaderdrv}/nbfload";
 _pause;
 _goto :BACKMAINCONSOLE;
 
 
 :FailIndex2;
 _cout "This Disk is invalid boot data. nbfmgr cannot Edit NBF on here";
-_cout "Error :  No NBF CONFIG";
+_cout "Error :  No NBF CONFIG {bootloaderdrv}/nbf/{FileLoadName} ";
 _pause;
 _goto :BACKMAINCONSOLE;
 
@@ -3037,7 +3302,7 @@ _if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
 _var {last_startup} = _sipcfg last_startup;
 _var {last_shutdown} = _sipcfg last_shutdown;
 
-_if(!_file_exist "$sys_def_disk/nbf/nbf/recovery") | _sipcfg SystemRE_Status = "false";
+_if(!_file_exist "{BootVolume}/nbf/recovery") | _sipcfg SystemRE_Status = "false";
 _if(_cp(_sipcfg SystemRE_Status,"false"))| _sipcfg SystemRE_Dir = "{NoReEnv}";
 
 _if(_cp(_sipcfg shutdown_record,"0")) | _goto :BackToNormalBoot;
@@ -3122,7 +3387,7 @@ _file_write "[%time%][Kernel][Boot] System User Root :  {SYS_USERPATH}";
 _free {BL_Verify_F};
 
 _if(_cp("{BootMethod}","nbfload"))   | _var {BL_Verify_F} = "{SYS_NROOT}/nbf/bootmgr.nbf";
-_if(_cp("{BootMethod}","boot"))      | _var {BL_Verify_F} = "{SYS_NROOT}/bootres/natvcbootmgr";
+_if(_cp("{BootMethod}","boot"))      | _var {BL_Verify_F} = "{SYS_NROOT}/sysboot/bootmgr.ca";
 
 _file_write "[%time%][Kernel][Boot] BL Verify : {BL_Verify_F}";
 _file_write "[%time%][Kernel][Boot] BL Current :  {BVM_OSBOOT}";
@@ -3600,7 +3865,7 @@ _var {BootUIB} = "       N  A  T  V  C";
 _var {BootUIC} = "  Welcome to Natvc System ";
 
 //SignLoad
-//@signload=nvkrnl_universal_bootsignal_fullcore_natvc;
+//$signload=nvkrnl_universal_bootsignal_fullcore_natvc;
 
 _var {RBootSign} = "nvkrnl_universal_bootsignal_fullcore_natvc";
 _var {OSLOADER_FILE} = "ntvload.ca";
@@ -3884,14 +4149,13 @@ _$directmode;
 _$nolog;
 
 
-_if(!_cp("$BVM_VOL_LOAD","nbfload"))|_goto :notNBF;
-
-
 //RESTART TO NTVRE
 
-_if(!_file_exist "$sys_def_disk/nbf/nbf/recovery") | _goto :NullConfigRE;
+_if(!_file_exist "{BootVolume}/nbf/recovery") | _goto :NullConfigRE;
 
-_sipcfg.open "$sys_def_disk/nbf/nbfload";
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
 
 _if(_cp(_sipcfg DefaultOption,"recovery"))|_goto :BootAlready;
 
@@ -3902,12 +4166,6 @@ _return "restart";
 
 
 
-
-:notNBF;
-_cout "This system is not use NBF Boot";
-_cout "Please use new firmware to boot";
-_pause;
-_return "false";
 
 
 :BootAlready;
@@ -4574,17 +4832,21 @@ _$nolog;
 
 _var {ReDir} = _getargs;
 
-_if(!_cp("$BVM_VOL_LOAD","nbfload"))|_goto :notNBF;
-
 _if(!_file_exist "{ReDir}/Recovery/re.nbf")|_goto :NoNRBLoad;
 
-_file_copy("{SYS_NROOT}/nbf/NBF-Temple","$sys_def_disk/nbf/nbf/recovery");
+_if(_cp("{BootMethod}","nbfload"))|_file_copy("{SYS_NROOT}/nbf/NBF-Temple","script/vdisk/nbf/nbf/recovery");
+_if(_cp("{BootMethod}","boot"))|_file_copy("{SYS_NROOT}/nbf/NBF-Temple","script/vdisk/sysboot/nbf/recovery");
+
 
 _sipcfg.open "{ReDir}/Recovery/re.nbf";
 _var {refix_getsign} = _sipcfg signload;
 
-_file_del "$sys_def_disk/nbf/nbf/recovery";
-_sipcfg.open "$sys_def_disk/nbf/nbf/recovery";
+_if(_cp("{BootMethod}","nbfload"))|_file_del "script/vdisk/nbf/nbf/recovery";
+_if(_cp("{BootMethod}","boot"))|_file_del "script/vdisk/sysboot/nbf/recovery";
+
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "script/vdisk/nbf/nbf/recovery";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "script/vdisk/sysboot/nbf/recovery";
+
 _sipcfg osvol = "{ReDir}";
 _sipcfg ospath = "Recovery";
 _sipcfg osload = "Recovery/re.nbf";
@@ -4599,16 +4861,16 @@ _sipcfg.open "{ReDir}/Recovery/bindos";
 _sipcfg OSDIR="{osvolume}";
 
 _cout "Recovery Environment is OK";
+_if(_cp("{BootMethod}","nbfload"))|_cout "Boot dat file is copy on script/vdisk/nbf/nbf/recovery";
+_if(_cp("{BootMethod}","boot"))|_cout "Boot dat file is copy on script/vdisk/sysboot/nbf/recovery";
+
 _return "true";
 
-:notNBF;
-_cout "This system is not use NBF Boot";
-_cout "Please use new firmware to boot";
-_return "false";
 
 :NoNRBLoad;
 _cout "Recovery Environment Fix Tool";
 _cout "args = Re Dir";
+_cout "May be you are not type vaild system recovery path";
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/refix.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rootshell.ca);
@@ -4939,11 +5201,11 @@ _return "$reboot";
 
 //Add RE
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
-_if(!_file_exist "$sys_def_disk/nbf/nbf/recovery") | _goto :SkipCreateRE;
+_if(!_file_exist "{BootVolume}/nbf/recovery") | _goto :SkipCreateRE;
 
 _sipcfg SystemRE_Status = "true";
 
-_sipcfg.open "$sys_def_disk/nbf/nbf/recovery";
+_sipcfg.open "{BootVolume}/nbf/recovery";
 _var {GETREDIR} = _sipcfg osvol;
 
 _script<"{SYS_ROOT}/refix.ca"> "{GETREDIR}";
