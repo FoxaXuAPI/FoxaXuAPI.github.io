@@ -28,7 +28,7 @@ _cout "";
 _cout "";
 _cout "      Please wait";
 _cout "      Update Service is installing latest version of Natvc";
-_cout "      After install your Natvc will update to {SYSNAME}.{PackageLatest}";
+_cout "      After install your Natvc will update to {PackageLatest}";
 _cout "";
 _cout "";
 _cout "";
@@ -59,17 +59,20 @@ $latest=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/latest.txt
 $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/ntvre_pkg.cstp;
 
+//NUSP DATA
+$USV=1.0.21; 
+
 //All
 $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
-$CSTP_FILE_RECORD_MARK_ID_START(/setupworker.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/setuphost.ca);
 _$directmode;
 _$nolog;
 
-//Setup Worker
+//Setup Host
 //Detect Current System
 
 _clear;
-_cout "Natvc Update Service Package    -Setup Worker";
+_cout "Natvc Update Service Package    -Setup Host";
 _cout "Running ....     Checking your system";
 
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
@@ -126,7 +129,7 @@ _url_get("{PkgDownloadURL}","{SYS_NROOT}/SystemUpdate/downloading/latest.cstp");
 _if(_dir_exist "script/vdisk/Recovery")|_url_get("{PkgREDownload}","{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp");
 
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp")|_goto :FailDownload;
-_cout "Setup Worker is Extracting files";
+_cout "Setup Host is Extracting files";
 _file_uncstp("{SYS_NROOT}/SystemUpdate/downloading/latest.cstp","{SYS_NROOT}/SystemUpdate/installer");
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Natvc/System/ntvkernel.ca")|_goto :ExtractError;
 
@@ -193,6 +196,57 @@ _cout "You can run the service again to reinstall the updates.";
 _cout "Run diskclean will redownload nusp service";
 _pause;
 _return "Cancel";
+$CSTP_FILE_RECORD_MARK_ID_END(/setuphost.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/setupworker.ca);
+_$directmode;
+_$nolog;
+
+//LIST ALL OPTION
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
+_var {USV_DAT} = _sipcfg USV;
+
+:ReloadMainCLI;
+_clear;
+_cout "Natvc Update Service Package";
+_cout "Select Option";
+_cout "          1. Check updates";
+_cout "          2. Run Diskclean";
+_cout "          3. Remove all old Unsupported Element";
+_cout "          4. Exit";
+_cout " Client Update Services.";
+_cout " Update Service Version :  {USV_DAT}";
+_prt "Type Number >";
+_var {US_GET} = _getline;
+_if(_cp("{US_GET}","1"))|_goto :UpdateCheckMode;
+_if(_cp("{US_GET}","2"))|_goto :RunDiskclean;
+_if(_cp("{US_GET}","3"))|_goto :RemoveEMT;
+_if(_cp("{US_GET}","4"))|_return "ok";
+_goto :ReloadMainCLI;
+
+:UpdateCheckMode;
+_clear;
+_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/setuphost.ca">;
+_cout "Setup Host Service is Exit ,  Status :  {Work_CALLBACK}";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+:RunDiskclean;
+_clear;
+_script <"{SYS_ROOT}/diskclean.ca"> "auto";
+_cout "We recommand restart your device now to get best clean ";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+:RemoveEMT;
+_clear;
+_script <"{SYS_NROOT}/SystemUpdate/nusp/sys_emt_remove.ca">;
+_cout "We recommand restart your device now to keep your system no problem ";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
 $CSTP_FILE_RECORD_MARK_ID_END(/setupworker.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/syspkgmake.ca);
 _$directmode;
@@ -208,6 +262,40 @@ _file_del "{SYS_NROOT}/SystemUpdate/installer/Natvc/config/SOFTWARE";
 
 _return "PROCESS OK";
 $CSTP_FILE_RECORD_MARK_ID_END(/syspkgmake.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sys_emt_remove.ca);
+_$directmode;
+_$nolog;
+
+//Modern System remove all old system
+
+//Remove Old legacy boot loader
+_if(_<("4141","{SYS_KERNEL_VID}"))|_dir_remove "{SYS_NROOT}/bootres";
+
+//Remove Acient User SystemShell
+_if(_<("4001","{SYS_KERNEL_VID}"))|_goto :RemoveEMT_SYSSHELL;
+:BK_RemoveEMT_SYSSHELL;
+
+
+
+//Complete;
+_cout "Remove Serivce Complete.";
+_return "ok";
+
+
+
+
+
+
+
+
+
+
+:RemoveEMT_SYSSHELL;
+_sipcfg.open "{NATVC_CONFIG}/USERS";
+_sipcfg.remove SystemShell;
+_dir_remove "{SYS_NROOT}/SystemShell";
+_goto :BK_RemoveEMT_SYSSHELL;
+$CSTP_FILE_RECORD_MARK_ID_END(/sys_emt_remove.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/xcopy.ca);
 _$directmode;
 _$nolog;
