@@ -234,8 +234,8 @@ _goto :ReloadMainCLI;
 
 :RunDiskclean;
 _clear;
-_script <"{SYS_ROOT}/diskclean.ca"> "auto";
-_cout "We recommand restart your device now to get best clean ";
+_cover <"{SYS_ROOT}/diskclean.ca"> "auto";
+_cout "Fail to run diskclean";
 _cout "Press Enter to Back";
 _pause;
 _goto :ReloadMainCLI;
