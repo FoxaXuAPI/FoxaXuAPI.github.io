@@ -60,7 +60,7 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/natvc.cst
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.21; 
+$USV=1.0.27; 
 
 //All
 $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
