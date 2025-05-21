@@ -69,10 +69,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4146;
+$SYS_KERNEL_VID=4147;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=Release_v6;
+$SYS_RELEASE_Channel=Release_v6.2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
