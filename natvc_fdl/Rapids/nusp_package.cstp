@@ -60,10 +60,36 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/natvc.cst
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.27; 
+$USV=1.0.31; 
 
 //All
 $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
+$CSTP_FILE_RECORD_MARK_ID_START(/re_deploy.ca);
+_$directmode;
+_$nolog;
+
+//Download natvc_re
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
+_var {Get_Latest} = _sipcfg latest;
+_var {PkgDownloadURL} = _sipcfg package;
+_var {PkgREDownload} = _sipcfg REpackage;
+
+_url_get("{PkgREDownload}","{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp")|_goto :FailReDownload;
+
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp","script/vdisk/Recovery/Recovery");
+_script <"{SYS_ROOT}/refix.ca"> "script/vdisk/Recovery";
+
+_cout "Task Complete";
+_pause;
+_return "ok";
+
+:FailReDownload;
+_clear;
+_cout "Natvc Recovery Element Download Failed";
+_pause;
+_return "netfail";
+$CSTP_FILE_RECORD_MARK_ID_END(/re_deploy.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/setuphost.ca);
 _$directmode;
 _$nolog;
@@ -213,7 +239,8 @@ _cout "Select Option";
 _cout "          1. Check updates";
 _cout "          2. Run Diskclean";
 _cout "          3. Remove all old Unsupported Element";
-_cout "          4. Exit";
+_cout "          4. Deploy Natvc Recovery";
+_cout "          e. Exit";
 _cout " Client Update Services.";
 _cout " Update Service Version :  {USV_DAT}";
 _prt "Type Number >";
@@ -221,7 +248,8 @@ _var {US_GET} = _getline;
 _if(_cp("{US_GET}","1"))|_goto :UpdateCheckMode;
 _if(_cp("{US_GET}","2"))|_goto :RunDiskclean;
 _if(_cp("{US_GET}","3"))|_goto :RemoveEMT;
-_if(_cp("{US_GET}","4"))|_return "ok";
+_if(_cp("{US_GET}","4"))|_goto :DEPRE;
+_if(_cp("{US_GET}","e"))|_return "ok";
 _goto :ReloadMainCLI;
 
 :UpdateCheckMode;
@@ -244,6 +272,15 @@ _goto :ReloadMainCLI;
 _clear;
 _script <"{SYS_NROOT}/SystemUpdate/nusp/sys_emt_remove.ca">;
 _cout "We recommand restart your device now to keep your system no problem ";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+
+:DEPRE;
+_clear;
+_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/re_deploy.ca">;
+_cout "RE Deploy Service is Exit ,  Status :  {Work_CALLBACK}";
 _cout "Press Enter to Back";
 _pause;
 _goto :ReloadMainCLI;
