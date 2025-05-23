@@ -69,10 +69,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4147;
+$SYS_KERNEL_VID=4152;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=Release_v6.2;
+$SYS_RELEASE_Channel=Release_v7;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -5512,13 +5512,6 @@ _cout "Copying files  ...";
 
 //PROCESS
 
-_if(_cp("$BVM_VOL_LOAD","nbfload"))|_goto :rewriteNBF;
-_sipcfg.open "{BootVolume}/BCD";
-_sipcfg osload = 'NatvcUpdate/sysupd.ca';
-_goto :RollBackNext;
-
-
-:rewriteNBF
 _sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
 _sipcfg osload = 'NatvcUpdate/sysupd.ca';
 _sipcfg bootsign = "ntvupdate";
