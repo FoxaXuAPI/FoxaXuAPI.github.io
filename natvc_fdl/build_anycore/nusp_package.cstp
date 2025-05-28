@@ -55,12 +55,15 @@ $CSTP_FILE_RECORD_MARK_ID_END(/modernsetup.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/OSDAT);
 //Natvc Update Service Package
 //Register File
-$latest=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/latest.txt;
-$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/natvc.cstp;
-$REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/ntvre_pkg.cstp;
+$latest=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/latest.txt;
+$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
+$REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.31; 
+$USV=1.0.42; 
+
+/DEV VERSION CODENAME
+$codename=build_anycore;
 
 //All
 $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
@@ -100,6 +103,11 @@ _$nolog;
 _clear;
 _cout "Natvc Update Service Package    -Setup Host";
 _cout "Running ....     Checking your system";
+
+_var {updatehost_args} = _getargs;
+
+_if(_cp("{updatehost_args}","normal"))|_var {SYS_KERNEL_CDU} = "{SYS_KERNEL_CODENAME}";
+_if(_cp("{updatehost_args}","devupd"))|_var {SYS_KERNEL_CDU} = "build_anycore";
 
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_goto :WaitRestart;
@@ -200,7 +208,7 @@ _cout "This update version is oldest than your system version";
 _cout "Recommand use online update";
 _cout "";
 _cout "If you are using a package downloaded from the internet, it indicates that you may be using a preview version.";
-_cout "Please use the installer we released to update.";
+_cout "Please use the installer we released to update or use devupd";
 _pause;
 _return "Not_Compatible";
 
@@ -241,11 +249,14 @@ _cout "          2. Run Diskclean";
 _cout "          3. Remove all old Unsupported Element";
 _cout "          4. Deploy Natvc Recovery";
 _cout "          e. Exit";
+_cout "";
+_cout "    Do you want install Preview Version of Natvc ?  use "devupd" command to update";
 _cout " Client Update Services.";
 _cout " Update Service Version :  {USV_DAT}";
 _prt "Type Number >";
 _var {US_GET} = _getline;
 _if(_cp("{US_GET}","1"))|_goto :UpdateCheckMode;
+_if(_cp("{US_GET}","devupd"))|_goto :UpdateCheckMode_DEVMODE;
 _if(_cp("{US_GET}","2"))|_goto :RunDiskclean;
 _if(_cp("{US_GET}","3"))|_goto :RemoveEMT;
 _if(_cp("{US_GET}","4"))|_goto :DEPRE;
@@ -254,7 +265,15 @@ _goto :ReloadMainCLI;
 
 :UpdateCheckMode;
 _clear;
-_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/setuphost.ca">;
+_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/setuphost.ca"> "normal";
+_cout "Setup Host Service is Exit ,  Status :  {Work_CALLBACK}";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+:UpdateCheckMode_DEVMODE;
+_clear;
+_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/setuphost.ca"> "devupd";
 _cout "Setup Host Service is Exit ,  Status :  {Work_CALLBACK}";
 _cout "Press Enter to Back";
 _pause;
