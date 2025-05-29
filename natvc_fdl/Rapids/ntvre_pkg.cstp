@@ -55,8 +55,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SOFTWARE);
 //NATVC SOFTWARE GET
 
 //Software Register Link
-$devtool={PROG_PATH}/devlab_tookit/mainexp.ca;
-$nexp={PROG_PATH}/Nexplorer/nexplorer.ca;
+
+
+//For Support Legacy app
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SOFTWARE);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SYSTEM);
 //NATVC SYSTEM CONFIG
@@ -84,10 +85,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4152;
+$SYS_KERNEL_VID=4216;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=Release_v7;
+$SYS_RELEASE_Channel=ReleaseEV_2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -1891,11 +1892,11 @@ _var {PlayRate} = _getargs;
 
 _var {PLAYAVGTIME} = "50";
 
-_if(_cp("{PlayRate}","empty"))|_var {PlayRate} = 1;
+_if(_cp("{PlayRate}","empty"))|_var {PlayRate} = "1";
 
 :REPLAY ANI;
 
-_var {PlayRate} = _-("{PlayRate}",1);
+_var {PlayRate} = _-("{PlayRate}","1");
 
 _if(_<=("{PlayRate}","0"))|_goto :NullRequest;
 
@@ -1920,7 +1921,7 @@ _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                                     ";
 _prts "\r";
-_ms_sleep 1;
+_ms_sleep "1";
 
 _if(_cp("{PlayRate}","0"))|_goto :END PLAY ANI;
 
@@ -1956,7 +1957,7 @@ _var {NATVC_BOOTUI} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
 _var {NATVC_Compiler_Warning} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-cpw.txt";
 _var {NATVC_Fail_Startup} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-fail-startup.txt";
 
-_var {NATVC_FMV_REQ} = "1891";
+_var {NATVC_FMV_REQ} = "1932";
 
 _var {NATVC_CONFIG} = "{NATVC_DISK}/{Boot_OSPATH}/config/";
 
@@ -2997,6 +2998,9 @@ _if(_cp("{USER_REQ_LOGON}","noauth"))|_cout "This Application cannot running in 
 _if(_cp("{USER_REQ_LOGON}","failuserauth"))|_cout "This Application cannot running in current user";
 
 //Check this file exist ?
+
+_goto :TestMNAWork;
+:MNABACK;
 _if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
 
 //Check this file is exist in System Root?
@@ -3023,7 +3027,8 @@ _if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
 
 
 
-_file_write "[%time%][RootShell][Error] File not exist -->  {ROOTSHELL_CALLBACK}";
+_file_write "[%time%][RootShell][Error] Callback -->  {ROOTSHELL_CALLBACK}";
+_file_write "[%time%][RootShell] Origin Type  -->  "{UEL_OriginType}"  ";
 _cout " --> "{UEL_OriginType}" is not a command or execute program. ";
 _cout "use "help" to list command";
 _goto :RESET SHELL MODE;
@@ -3067,6 +3072,18 @@ _goto :RESET SHELL MODE;
 _cout "this directory is not exist or unable access";
 _cout "Could not set this path";
 _goto :RESET SHELL MODE;
+
+
+:TestMNAWork;
+//_file_write "MNA DETECT OK "{USER_REQ_LOGON}" ";
+_if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{USER_REQ_LOGON}";
+_if(_cp("{mna_Result}","noapp"))|_goto :MNABACK;
+//_file_write "mna service report :  {mna_Result}";
+//RunOKStatus
+:SKIP_TestMNAWork;
+_goto :MNABACK;
+
 
 
 //ERRPAGE
@@ -3688,6 +3705,9 @@ $nbfmgr={SYS_ROOT}/nbfmgr.ca;
 $textread={SYS_ROOT}/textreader.ca;
 $whoami={SYS_ROOT}/whoami.ca;
 $diskclean={SYS_ROOT}/diskclean.ca;
+$devtool=natvc_fdl.dev_toolkit.mna;
+$nexp=natvc_fdl.nexplorer.mna;
+$softmgr=mnacore.pkgmanager.mna;
 $CSTP_FILE_RECORD_MARK_ID_END(/Users/default/userindex);
 $CSTP_FILE_RECORD_MARK_ID_START(/Users/default/usermenu);
 //USERMENU

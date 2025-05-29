@@ -40,8 +40,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SOFTWARE);
 //NATVC SOFTWARE GET
 
 //Software Register Link
-$devtool={PROG_PATH}/devlab_tookit/mainexp.ca;
-$nexp={PROG_PATH}/Nexplorer/nexplorer.ca;
+
+
+//For Support Legacy app
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SOFTWARE);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SYSTEM);
 //NATVC SYSTEM CONFIG
@@ -69,10 +70,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4152;
+$SYS_KERNEL_VID=4216;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=Release_v7;
+$SYS_RELEASE_Channel=ReleaseEV_2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -182,6 +183,239 @@ _cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
 _pause;
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/hwtest.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/about.txt);
+Modern Natvc Application
+Modern App Core
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/about.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/checkexist.ca);
+_$directmode;
+_$nolog;
+
+_var {LoadApp} = _getargs;
+
+_var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+
+
+_if(_dir_exist "{AppDir}")|_return "true";
+
+_if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
+
+_if(_dir_exist "{AppDir}")|_return "true";
+
+_if(!_dir_exist "{AppDir}")|_goto :NoThisApps;
+
+
+:NoThisApps;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/checkexist.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/install.ca);
+_$directmode;
+_$nolog;
+
+//mna app installer tool
+//Install Main Service
+
+_var {Req_install_dev} = _getargs;
+
+_if(!_file_exist "{Req_install_dev}")|_goto :FailReqApp;
+
+//start setup application
+//Config Program Dir
+
+_if(_cp("0","{NATVC_isAdmin}"))|_goto :NoAuthPkgInstaller;
+
+
+//Start app
+//MKDIR
+_$no_cstp_output;
+_file_uncstp ("{Req_install_dev}","{temp}/mnaAppTemp");
+
+//Decode package
+_sipcfg.open "{temp}/mnaAppTemp/pkgdata.mna";
+_var {pkgSetupName} = _sipcfg Setup;
+_var {pkgAppName} = _sipcfg AppName;
+_var {pkgAppProperties} = _sipcfg AppProperties;
+
+_free {mna_pdir};
+
+_if(_cp ("systemapps","{pkgAppProperties}") ) |_var {mna_pdir} = "{SYS_NROOT}/NatvcApps";
+_if(_cp ("userapps","{pkgAppProperties}")   )   |_var {mna_pdir} = "{PROG_PATH}";
+
+_file_uncstp ("{Req_install_dev}","{mna_pdir}/{pkgSetupName}");
+
+//_cout "Save Succeed :  {mna_pdir}/{pkgSetupName}";
+
+_dir_remove "{temp}/mnaAppTemp";
+
+_cout "App Setup Succeed :  {pkgAppName}   Tag ;  {pkgAppProperties}   Path :  {mna_pdir}";
+_$open_cstp_output;
+_return "ok";
+
+
+:FailReqApp;
+_cout " mna install serivces";
+_cout " invaild package :  {Req_install_dev}";
+_cout " Check your type or repiar this file";
+_return "failinst";
+
+:NoAuthPkgInstaller;
+_cout " mna install serivces";
+_cout " Current User is not allowed to install this app";
+_cout " Use your administrator user try again";
+_return "failinst";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/install.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/mnaload.ca);
+_$directmode;
+_$nolog;
+
+_var {LoadApp} = _getargs;
+
+_var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_goto :UseMethod;
+
+_file_write "[Mna_service] Appload on {AppDir}";
+
+_if(!_file_exist "{AppDir}/apploader.ca")|_goto :BreakPackage;
+
+_file_write "[Mna_service] Execute Program :   {AppDir}/apploader.ca";
+
+_var {mna_loader_callback} = _script <"{AppDir}/apploader.ca">;
+
+_return "{mna_loader_callback}";
+
+
+
+:UseMethod;
+_cout "mna service load fail";
+_cout "Request App Launch Null :  {LoadApp}";
+_cout "method :   mnaload.ca     Args = App";
+_cout "Press any key to exit";
+_pause;
+_return "failLdr";
+
+:BreakPackage;
+_cout "mna service load fail";
+_cout "Request App Launch Null :  {AppDir}";
+_cout "This app package might be break. try to reinstall this application";
+_cout "Press any key to exit";
+_pause;
+_return "failLdr";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/mnaload.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/pkgSaved.ca);
+_$directmode;
+_$nolog;
+
+//mna app out toolkit
+// for debug tool
+
+:startuninst;
+_var {LoadApp} = _getargs;
+
+_var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_goto :UseMethod;
+
+_cout "Type Save Path";
+_prt "savefile >";
+_var {SavedFile} = _getline;
+
+_cout "";
+_cout "Please wait ... ";
+_file_cstp ("{AppDir}","{SavedFile}");
+_cout "App Out File Succeed :  {LoadApp}";
+_cout "On File :  {SavedFile}";
+_return "ok";
+
+:UseMethod;
+_cout "mna service load fail";
+_cout "Request Out package App fail :  {LoadApp}";
+_cout "method :   pkgSaved.ca     Args = App";
+_cout "Press any key to exit";
+_pause;
+_return "failLdr";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/pkgSaved.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/quickload.ca);
+_$directmode;
+_$nolog;
+
+_var {LoadApp} = _getargs;
+
+_var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_goto :UseMethod;
+
+_file_write "[Mna_service] Appload on {AppDir}";
+
+_if(!_file_exist "{AppDir}/apploader.ca")|_goto :BreakPackage;
+
+_file_write "[Mna_service] Execute Program :   {AppDir}/apploader.ca";
+
+_var {mna_loader_callback} = _script <"{AppDir}/apploader.ca">;
+
+_return "{mna_loader_callback}";
+
+
+
+:UseMethod;
+_return "noapp";
+
+:BreakPackage;
+_cout "mna service load fail";
+_cout "Request App Launch Null :  {AppDir}";
+_cout "This app package might be break. try to reinstall this application";
+_cout "Press any key to exit";
+_pause;
+_return "failLdr";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/quickload.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/uninstall.ca);
+_$directmode;
+_$nolog;
+
+//mna app uninstaller tool
+//Uninstall Main Service
+
+//start setup application
+//Config Program Dir
+_free {mna_pdir};
+_if(_cp("2","{NATVC_isAdmin}"))|_goto :startuninst;
+_if(_cp("1","{NATVC_isAdmin}"))|_goto :startuninst;
+_cout "This user is not allowed to uninstall any app";
+_return "noauth";
+
+
+//Start app
+//MKDIR
+:startuninst;
+_var {LoadApp} = _getargs;
+
+_var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_goto :UseMethod;
+
+_dir_remove "{AppDir}";
+_cout "App Uninstall Succeed :  {LoadApp}";
+_return "ok";
+
+:UseMethod;
+_cout "mna service load fail";
+_cout "Request Uninstall App Not Found :  {LoadApp}";
+_cout "method :   uninstall.ca     Args = App";
+_cout "Press any key to exit";
+_return "failLdr";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/uninstall.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/NatvcApps/$NATVC_APPS_ROOT.txt);
+NATVC APPS ROOT
+MANAGE
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/NatvcApps/$NATVC_APPS_ROOT.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/bootmgr.nbf);
 _$directmode;
 _$nolog;
@@ -2449,11 +2683,13 @@ _prts "Link Point file > ";
 _var {useroptY} = _getline;
 
 
+_var {AskForCheckExistMNA} = _script <"{SYS_NROOT}/mnacore/checkexist.ca"> "{useroptY}";
 
 _if(_cp("{useroptY}",".exit"))|_goto :OpenEditor;
+_if (_cp("{AskForCheckExistMNA}","true"))|_goto :ADDmnaPATH;
 _if (!_file_exist "{useroptY}")|_goto :EditMode2;
 
-
+:ADDmnaPATH;
 
 _sipcfg {useroptE} = "{useroptY}";
 _cout "succeed";
@@ -2507,6 +2743,98 @@ _cout "";
 
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ls.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mnaload.ca);
+_$directmode;
+_$nolog;
+
+//Detect This system is installed mna service
+//Forward Service
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/mnaload.ca")|_goto :FailDetMNA;
+
+_var {ttpFrwd_mna} = _getargs;
+
+_cover <"{SYS_NROOT}/mnacore/mnaload.ca"> "{ttpFrwd_mna}";
+
+
+:FailDetMNA;
+_cout "This system has no mna app run lib";
+_cout "fail load mna application";
+_pause;
+_exit;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/mnaload.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mnapath.ca);
+_$directmode;
+_$nolog;
+
+_var {rs_pathexec} = "{SYS_NROOT}/mnacore";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/mnapath.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mnareset.ca);
+_$directmode;
+_$nolog;
+
+_cout "";
+_cout "Please wait all mna apps is trying to restore";
+
+_var {GetAdvProc} = _getargs;
+
+_var {IntLoad} = "1";
+
+//Add New Package list files
+_file_del "{NATVC_CONFIG}/mnalist";
+
+_dir_list ("{NATVC_CONFIG}/mnalist","{SYS_NROOT}/SystemPackage");
+_file_replace "{NATVC_CONFIG}/mnalist" ("{SYS_NROOT}/SystemPackage/","");
+
+
+:MNARESETRESCAN;
+_var {ReadCache} = _file_read ("{NATVC_CONFIG}/mnalist","{IntLoad}");
+
+_if(_cp("{ReadCache}","FileNotExist"))|_goto :FailAddsPkgList;
+
+_if(_cp("{ReadCache}","overline")) | _goto :MNARESETRESCAN_OK;
+
+//Verify
+_file_write "[RestoreMNA] Restore Package :  {ReadCache}";
+
+//_cout "Restore package {SYS_NROOT}/SystemPackage/{ReadCache}";
+_cout "";
+_cout "Progress Restore... {IntLoad}    Please wait";
+
+_if(!_file_exist "{SYS_NROOT}/SystemPackage/{ReadCache}")|_goto :MNA_NullPackRestore;
+
+_if(!_cp("{GetAdvProc}","installonly"))|_script <"{SYS_NROOT}/mnacore/uninstall.ca"> "{ReadCache}";
+_if(!_cp("{GetAdvProc}","uninstallonly"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{SYS_NROOT}/SystemPackage/{ReadCache}";
+
+:BACKCTRESTORE;
+
+_var {IntLoad} = _+("{IntLoad}","1");
+_goto :MNARESETRESCAN;
+
+:MNARESETRESCAN_OK;
+//complete MNA Restore
+_cout "";
+_cout "";
+_cout "All Modern App Restore Complete..";
+_cout "We recommand restart your device now";
+_file_del "{NATVC_CONFIG}/mnalist";
+_return "ok";
+
+:FailAddsPkgList;
+_cout "";
+_cout "App cannot installed because package list is missing";
+_cout "";
+_return "ok";
+
+:MNA_NullPackRestore;
+_cout "";
+_cout "App cannot be installed because package {ReadCache} not found";
+_goto :BACKCTRESTORE;
+
+//LL
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/mnareset.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/nbfmgr.ca);
 //Natvc Boot Manager Tools
 //Design By FoxaXu
@@ -2681,11 +3009,11 @@ _var {PlayRate} = _getargs;
 
 _var {PLAYAVGTIME} = "50";
 
-_if(_cp("{PlayRate}","empty"))|_var {PlayRate} = 1;
+_if(_cp("{PlayRate}","empty"))|_var {PlayRate} = "1";
 
 :REPLAY ANI;
 
-_var {PlayRate} = _-("{PlayRate}",1);
+_var {PlayRate} = _-("{PlayRate}","1");
 
 _if(_<=("{PlayRate}","0"))|_goto :NullRequest;
 
@@ -2710,7 +3038,7 @@ _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                                     ";
 _prts "\r";
-_ms_sleep 1;
+_ms_sleep "1";
 
 _if(_cp("{PlayRate}","0"))|_goto :END PLAY ANI;
 
@@ -2750,8 +3078,12 @@ _$nolog;
 
 //Natvc System Deploy Toolkit
 _file_write "[%time%][NatvcDeploy] System need load OOBE Service";
-
+_file_write "[%time%][NatvcDeploy] Prepare OOBE Service";
 _if(!_cp("{NATVC_isAdmin}","2"))|_goto :AuthError;
+
+_clear;
+_cout "System is Deploy MNA Apps    Please wait...";
+_script <"{SYS_ROOT}/mnareset.ca"> "installonly";
 
 _clear;
 
@@ -2913,13 +3245,24 @@ _if(_cp("{NATVC_USEREXP_GET}","about"))|_goto :About;
 _if(_cp("{NATVC_USEREXP_GET}","help")) | _goto :ListHelper;
 _if(_cp("{NATVC_USEREXP_GET}","fdl_debug.crashtest")) | _goto :CrashTest;
 
+//Detect Direct Run MNA
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_USEREXP_GET}";
+_if(_cp("{mna_Result}","noapp"))|_goto :CheckIndexMode;
+_goto :BACKMAINCONSOLE;
 
 :CheckIndexMode;
 _sipcfg.open "{NATVC_USER_INDEX}";
 _var {NATVC_Execute_Program} = _sipcfg {NATVC_USEREXP_GET};
 _if(_cp("{NATVC_Execute_Program}",'{varspace.null}')) | _goto :SkipTestSOFTWARE;
 _if(_file_exist "{NATVC_Execute_Program}") | _goto :Exec_Script;
-_if(!_file_exist "{NATVC_Execute_Program}") | _goto :IndexNotWork;
+_if(!_file_exist "{NATVC_Execute_Program}") | _goto :TestMNAWork;
+
+
+:TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Execute_Program}";
+_if(_cp("{mna_Result}","noapp"))|_goto :SkipTestSOFTWARE;
+//RunOKStatus
+_goto :BACKMAINCONSOLE;
 
 
 :SkipTestSOFTWARE;
@@ -3244,7 +3587,7 @@ _var {NATVC_BOOTUI} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
 _var {NATVC_Compiler_Warning} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-cpw.txt";
 _var {NATVC_Fail_Startup} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-fail-startup.txt";
 
-_var {NATVC_FMV_REQ} = "1891";
+_var {NATVC_FMV_REQ} = "1932";
 
 _var {NATVC_CONFIG} = "{NATVC_DISK}/{Boot_OSPATH}/config/";
 
@@ -4948,6 +5291,9 @@ _if(_cp("{USER_REQ_LOGON}","noauth"))|_cout "This Application cannot running in 
 _if(_cp("{USER_REQ_LOGON}","failuserauth"))|_cout "This Application cannot running in current user";
 
 //Check this file exist ?
+
+_goto :TestMNAWork;
+:MNABACK;
 _if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
 
 //Check this file is exist in System Root?
@@ -4974,7 +5320,8 @@ _if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
 
 
 
-_file_write "[%time%][RootShell][Error] File not exist -->  {ROOTSHELL_CALLBACK}";
+_file_write "[%time%][RootShell][Error] Callback -->  {ROOTSHELL_CALLBACK}";
+_file_write "[%time%][RootShell] Origin Type  -->  "{UEL_OriginType}"  ";
 _cout " --> "{UEL_OriginType}" is not a command or execute program. ";
 _cout "use "help" to list command";
 _goto :RESET SHELL MODE;
@@ -5018,6 +5365,18 @@ _goto :RESET SHELL MODE;
 _cout "this directory is not exist or unable access";
 _cout "Could not set this path";
 _goto :RESET SHELL MODE;
+
+
+:TestMNAWork;
+//_file_write "MNA DETECT OK "{USER_REQ_LOGON}" ";
+_if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{USER_REQ_LOGON}";
+_if(_cp("{mna_Result}","noapp"))|_goto :MNABACK;
+//_file_write "mna service report :  {mna_Result}";
+//RunOKStatus
+:SKIP_TestMNAWork;
+_goto :MNABACK;
+
 
 
 //ERRPAGE
@@ -5337,6 +5696,7 @@ _if(!_cp("{makeusersure}","y"))| _return "cancel";
 
 _script <"{SYS_ROOT}/diskclean.ca"> "auto";
 _script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_script <"{SYS_ROOT}/mnareset.ca"> "uninstallonly";
 
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg oobe = "1";
@@ -5419,6 +5779,7 @@ _if(!_cp("{makeusersure}","y"))| _return "cancel";
 
 _script <"{SYS_ROOT}/diskclean.ca"> "auto";
 _script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_script <"{SYS_ROOT}/mnareset.ca"> "uninstallonly";
 
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg oobe = "1";
@@ -6207,52 +6568,184 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/LogonUI.txt);
-This file is the login verification file for the Natvc system
-Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/LogonUI.txt);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/userconfig);
-//NATVC USER CONFIG
-$UserName=SYSTEM;//User ID
-$isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
-$AutoRun={SYS_ROOT}/ntvue.ca;
-$DisableUser=0; // User is Disabled 0/1
-$UserPassword=%sysKerneluserPSWD; // UserPassword
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
-//User Ban Operation
-$useroptban=false;
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/useroptban);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
-//Natvc Explorer Themes
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
 
-//Copyright FoxaXu
+//ok
+_cover <"{AppDir}/pkm.ca">;
+_return "FailLoadUserInterface";
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc mna Package Manager;
+$Setup=mnacore.pkgmanager.mna;
+$AppProperties=systemapps; // systemapps or userapps
 
-$TitleA=World Best CLI;
-$TitleB=Welcome to Natvc 13;
-$TitleC=White Sand Themes;
+$AppVersion=1006;
 
-//Part 2
-$TitleD=Open Menu type "menu";
-$TitleE=Try to type "help" to list command;
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvexpThemes.txt);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
-//Logon Themes
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkm.ca);
+_$directmode;
+_$nolog;
 
-//Copyright FoxaXu
+//Modern Natvc application   -Package manager
+//mna manager
 
-$TitleA=World Best CLI;
-$TitleB=Welcome to Natvc 13;
-$TitleC=White Sand Themes;
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
-$CSTP_FILE_RECORD_MARK_ID_START(/Program/devlab_tookit/license.txt);
+_clear;
+:BACKMAINCONSOLE;
+_clear;
+_cout "-----------------------------------------------";
+_cout " Modern Natvc Application";
+_cout " Package Manager";
+_cout " ";
+_cout "       1. Install App";
+_cout "       2. Uninstall App";
+_cout "       3. Save Package";
+_cout "       4. Get Package Version";
+_cout "       5. List All installed apps";
+_cout "       e. Exit";
+_cout " ";
+_cout " PKM Version";
+_cout "-----------------------------------------------";
+_prt "Type number: >";
+_var {UserReq} = _getline;
+_if(_cp("{UserReq}","1"))|_goto :Pkm_InstallApp;
+_if(_cp("{UserReq}","2"))|_goto :Pkm_UninstallApp;
+_if(_cp("{UserReq}","3"))|_goto :Pkm_SavePkgApp;
+_if(_cp("{UserReq}","4"))|_goto :Pkm_GetPkmData;
+_if(_cp("{UserReq}","5"))|_goto :Pkm_GetAllApps;
+_if(_cp("{UserReq}","e"))|_return "ok";
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_InstallApp;
+//Install Apps
+_clear;
+_cout "Type software package file";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/install.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_UninstallApp;
+//Uninstall Apps
+//Install Apps
+_clear;
+_cout "Type software package uninstall";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/uninstall.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_SavePkgApp;
+//Save Packages File
+//Install Apps
+_clear;
+_cout "Type software package to save";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/pkgSaved.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_GetPkmData;
+//Get Package Info Data
+//Install Apps
+_clear;
+_cout "Type software package file";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+//Open Package Data
+_free {pkginfof};
+_if(_file_exist "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna")           |_var {pkginfof} = "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna";
+_if(_file_exist "{SYS_NROOT}/NatvcApps/{UserTypeSetup}/pkgdata.mna") |_var {pkginfof} = "{SYS_NROOT}/NatvcApps/{UserTypeSetup}/pkgdata.mna";
+_if(_cp("{pkginfof}",'{pkginfof}'))|_goto :BACKMAINCONSOLE;
+_sipcfg.open "{pkginfof}";
+_var {AppName_PKMF} = _sipcfg AppName;
+_var {Setup_PKMF} = _sipcfg Setup;
+_var {AppProperties_PKMF} = _sipcfg AppProperties;
+
+_var {AppVersion_PKMF} = _sipcfg AppVersion;
+
+_clear;
+
+_cout "---------------------------------------------";
+_cout " App Name :  {AppName_PKMF}";
+_cout " Setup Name :  {Setup_PKMF}";
+_cout " App Properties :  {AppProperties_PKMF}";
+_cout " App Version :   {AppVersion_PKMF}";
+_cout "";
+_cout " Install Directory :   {pkginfof}";
+_cout "---------------------------------------------";
+_cout " Modern Natvc Application    Pack info";
+_cout "---------------------------------------------";
+_cout "Press Enter to back";
+_pause;
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_GetAllApps;
+
+_dir_list ("{temp}/mnalist","{SYS_NROOT}/SystemPackage");
+_file_replace "{temp}/mnalist" ("{SYS_NROOT}/SystemPackage/","");
+
+//List All Apps
+_clear;
+_cout "---------------------------------------------";
+_cout "All installed mna apps";
+_cout "---------------------------------------------";
+_textprint "{temp}/mnalist";
+_file_del "{temp}/mnalist";
+_cout "---------------------------------------------";
+
+_pause;
+
+
+_goto :BACKMAINCONSOLE;
+$CSTP_FILE_RECORD_MARK_ID_END(/pkm.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc_fdl.dev_toolkit.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/mainexp.ca">;
+_return "FailLoadUserInterface";
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/license.txt);
 foxaxu_dev_lab
 DevLab_Tookit
 Copyright FDL 2025
 
 for natvc system
-$CSTP_FILE_RECORD_MARK_ID_END(/Program/devlab_tookit/license.txt);
-$CSTP_FILE_RECORD_MARK_ID_START(/Program/devlab_tookit/mainexp.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/license.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/mainexp.ca);
 _$directmode;
 _$nolog;
 
@@ -6277,8 +6770,31 @@ _if(_cp ("{dt_getreq}","2"))|_cout "Open Web site :    https://www.foxaxu.com/co
 _if(_cp ("{dt_getreq}","3"))|_return "ok";
 
 _goto :ReloadExplorer;
-$CSTP_FILE_RECORD_MARK_ID_END(/Program/devlab_tookit/mainexp.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Program/Nexplorer/nexplorer.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/mainexp.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc_FDL Dev Tookit;
+$Setup=natvc_fdl.dev_toolkit.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1002;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc_fdl.dev_toolkit.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc_fdl.nexplorer.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/nexplorer.ca">;
+_return "FailLoadInterface";
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/nexplorer.ca);
 _$directmode;
 _$nolog;
 
@@ -6328,7 +6844,60 @@ _cout "";
 _cout "";
 _cout "";
 _goto :EndloadPage;
-$CSTP_FILE_RECORD_MARK_ID_END(/Program/Nexplorer/nexplorer.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/nexplorer.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc Internet Explorer;
+$Setup=natvc_fdl.nexplorer.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1002;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc_fdl.nexplorer.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/LogonUI.txt);
+This file is the login verification file for the Natvc system
+Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/LogonUI.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/userconfig);
+//NATVC USER CONFIG
+$UserName=SYSTEM;//User ID
+$isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
+$AutoRun={SYS_ROOT}/ntvue.ca;
+$DisableUser=0; // User is Disabled 0/1
+$UserPassword=%sysKerneluserPSWD; // UserPassword
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
+//User Ban Operation
+$useroptban=false;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/useroptban);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
+//Natvc Explorer Themes
+
+//Copyright FoxaXu
+
+$TitleA=World Best CLI;
+$TitleB=Welcome to Natvc 13;
+$TitleC=White Sand Themes;
+
+//Part 2
+$TitleD=Open Menu type "menu";
+$TitleE=Try to type "help" to list command;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvexpThemes.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
+//Logon Themes
+
+//Copyright FoxaXu
+
+$TitleA=World Best CLI;
+$TitleB=Welcome to Natvc 13;
+$TitleC=White Sand Themes;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Program/$PROGRAM_ROOT.txt);
+PROGRAM
+$CSTP_FILE_RECORD_MARK_ID_END(/Program/$PROGRAM_ROOT.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Users/admin/userconfig);
 //NATVC USER CONFIG
 $UserName=Administrator;
@@ -6373,6 +6942,9 @@ $nbfmgr={SYS_ROOT}/nbfmgr.ca;
 $textread={SYS_ROOT}/textreader.ca;
 $whoami={SYS_ROOT}/whoami.ca;
 $diskclean={SYS_ROOT}/diskclean.ca;
+$devtool=natvc_fdl.dev_toolkit.mna;
+$nexp=natvc_fdl.nexplorer.mna;
+$softmgr=mnacore.pkgmanager.mna;
 $CSTP_FILE_RECORD_MARK_ID_END(/Users/default/userindex);
 $CSTP_FILE_RECORD_MARK_ID_START(/Users/default/usermenu);
 //USERMENU
