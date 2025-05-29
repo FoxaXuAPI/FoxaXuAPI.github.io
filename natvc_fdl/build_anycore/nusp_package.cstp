@@ -42,6 +42,7 @@ _if(_dir_exist "script/vdisk/Recovery")|_goto :UpdateRE;
 
 _script <"{SYS_NROOT}/SystemUpdate/nusp/xcopy.ca">;
 _script <"{SYS_ROOT}/autobl.ca"> "{NATVC_DISK}";
+_script <"{SYS_ROOT}/mnareset.ca">;
 _return "user_restart";
 
 
@@ -60,7 +61,7 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.42; 
+$USV=1.0.46; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
