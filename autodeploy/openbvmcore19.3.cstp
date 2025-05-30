@@ -1,12 +1,12 @@
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/bootloader);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/bootloader);
 // BVM Boot Loader 
 $boot=script/vdisk/sysboot/boot;
 $bootvolume=script/vdisk/sysboot;
 $oem=fdl_openbvmcore;
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/bootloader);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/bootmenu);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/bootloader);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/bootmenu);
 ╔══════════════════════════════════════════════════╗
 ║      BVM VIRTUAL HARDWARE MANAGER               ║
 ╚══════════════════════════════════════════════════╝
@@ -27,8 +27,8 @@ $CSTP_FILE_RECORD_MARK_ID_START(script//bvm/bootmenu);
 │  • Biato Version: {BiatoVersion}                │
 │  • Copyright © FoxaXu - Biato Project           │
 └──────────────────────────────────────────────────┘
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/bootmenu);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/bootui);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/bootmenu);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/bootui);
 
 
        
@@ -39,18 +39,18 @@ $CSTP_FILE_RECORD_MARK_ID_START(script//bvm/bootui);
 
 
 Based by Biato Core  
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/bootui);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/DefaultDisk);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/bootui);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/DefaultDisk);
 //DefaultDIsk
 $defaultdisk={path}/script/vdisk;
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/DefaultDisk);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/nbf/bootloader);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/DefaultDisk);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/bootloader);
 // BVM Boot Loader 
 $boot=script/vdisk/nbf/nbfload;
 $bootvolume=script/vdisk/nbf;
 $oem=fdl_openbvmcore;
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/nbf/bootloader);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/nbf/bootmenu);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/bootloader);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/bootmenu);
 ------------- BVM NBF Main Loader ----------------------
 - Biato Virtual Hardware
 - Boot Menu
@@ -66,8 +66,8 @@ $CSTP_FILE_RECORD_MARK_ID_START(script//bvm/nbf/bootmenu);
 -  NBF Biato : {BiatoVersion}
 -  Copyright FoxaXu .  Biato Project
 --------------------------------------------------------
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/nbf/bootmenu);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/nbf/bootui);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/bootmenu);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/bootui);
 
 
        
@@ -80,8 +80,8 @@ $CSTP_FILE_RECORD_MARK_ID_START(script//bvm/nbf/bootui);
 
 
  Based by Biato Core  
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/nbf/bootui);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/nbf/startup.nbf);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/bootui);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/startup.nbf);
 _$directmode;
 _$nolog;
 
@@ -166,22 +166,22 @@ _cout "";
 _cout "this directory is not exist or unable access";
 _cout "Could not set this path";
 _goto :ShellConsole;
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/nbf/startup.nbf);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/QuickScript/A-BVMStartup.bat);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/startup.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/QuickScript/A-BVMStartup.bat);
 @echo off
 "Calcium.exe" -run script/bvm.cah -nolang
 exit
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/QuickScript/A-BVMStartup.bat);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/QuickScript/A-NBFStartup.bat);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/QuickScript/A-BVMStartup.bat);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/QuickScript/A-NBFStartup.bat);
 @echo off
 "Calcium.exe" -run script/nbf -nolang
 exit
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/QuickScript/A-NBFStartup.bat);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm/var_reset.txt);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/QuickScript/A-NBFStartup.bat);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/var_reset.txt);
 9
 varspace;{path}=E:\CPPDEV\Calcium\Release;{oclt_path}=C:\Users\lzx13/.OpenCppLangTab;{VersionID}=116.7.8.6;_$lang.pause=Press%sbar%Enter...;{BootUIA}=%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%FDL%sbar%Build%sbar%Platform;{BootUIB}=%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%The%sbar%Best%sbar%Open%sbar%BVM%sbar%Core;{BootUIC}=%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%%sbar%Biato%sbar%Core;{SESSION_TOKEN}=TRUE;{CalciumL_FMV}=1936;
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm/var_reset.txt);
-$CSTP_FILE_RECORD_MARK_ID_START(script//bvm.cah);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/var_reset.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm.cah);
 // BIATO CORE
 // VIRTUAL MACHINE API
 // SCRIPT API
@@ -352,8 +352,8 @@ _cout "Fail Wake up from HiberMode";
 _cout "Hiber file is broken";
 _pause;
 _goto :ShutdownAPI;
-$CSTP_FILE_RECORD_MARK_ID_END(script//bvm.cah);
-$CSTP_FILE_RECORD_MARK_ID_START(script//nbf);
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm.cah);
+$CSTP_FILE_RECORD_MARK_ID_START(/nbf);
 // BIATO CORE
 
 // New Boot Format
@@ -543,4 +543,4 @@ _goto :ShutdownAPI;
 :LoadNativeShell;
 _var {BVM_OSBOOT} = "script/bvm/nbf/startup.nbf";
 _goto :BootStart;
-$CSTP_FILE_RECORD_MARK_ID_END(script//nbf);
+$CSTP_FILE_RECORD_MARK_ID_END(/nbf);
