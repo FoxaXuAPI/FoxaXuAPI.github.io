@@ -85,10 +85,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4216;
+$SYS_KERNEL_VID=4218;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=ReleaseEV_2;
+$SYS_RELEASE_Channel=ReleaseEV_3;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3080,6 +3080,7 @@ _if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
 _var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{USER_REQ_LOGON}";
 _if(_cp("{mna_Result}","noapp"))|_goto :MNABACK;
 //_file_write "mna service report :  {mna_Result}";
+_return "{mna_Result}";
 //RunOKStatus
 :SKIP_TestMNAWork;
 _goto :MNABACK;
@@ -3705,6 +3706,7 @@ $nbfmgr={SYS_ROOT}/nbfmgr.ca;
 $textread={SYS_ROOT}/textreader.ca;
 $whoami={SYS_ROOT}/whoami.ca;
 $diskclean={SYS_ROOT}/diskclean.ca;
+$run={SYS_ROOT}/runexec.ca;
 $devtool=natvc_fdl.dev_toolkit.mna;
 $nexp=natvc_fdl.nexplorer.mna;
 $softmgr=mnacore.pkgmanager.mna;

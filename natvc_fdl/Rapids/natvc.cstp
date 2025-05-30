@@ -70,10 +70,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4216;
+$SYS_KERNEL_VID=4218;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=ReleaseEV_2;
+$SYS_RELEASE_Channel=ReleaseEV_3;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3248,7 +3248,10 @@ _if(_cp("{NATVC_USEREXP_GET}","fdl_debug.crashtest")) | _goto :CrashTest;
 //Detect Direct Run MNA
 _var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_USEREXP_GET}";
 _if(_cp("{mna_Result}","noapp"))|_goto :CheckIndexMode;
-_goto :BACKMAINCONSOLE;
+_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
+_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
+_goto :Run Command;
+
 
 :CheckIndexMode;
 _sipcfg.open "{NATVC_USER_INDEX}";
@@ -3260,9 +3263,11 @@ _if(!_file_exist "{NATVC_Execute_Program}") | _goto :TestMNAWork;
 
 :TestMNAWork;
 _var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Execute_Program}";
+_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
 _if(_cp("{mna_Result}","noapp"))|_goto :SkipTestSOFTWARE;
 //RunOKStatus
-_goto :BACKMAINCONSOLE;
+_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
+_goto :Run Command;
 
 
 :SkipTestSOFTWARE;
@@ -5373,6 +5378,7 @@ _if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
 _var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{USER_REQ_LOGON}";
 _if(_cp("{mna_Result}","noapp"))|_goto :MNABACK;
 //_file_write "mna service report :  {mna_Result}";
+_return "{mna_Result}";
 //RunOKStatus
 :SKIP_TestMNAWork;
 _goto :MNABACK;
@@ -5453,6 +5459,112 @@ _cout " OS :  {SYS_RELEASE_Channel} ";
 _goto :RESET SHELL MODE;
 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/rootshell.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/run.ca);
+_$directmode;
+_$nolog;
+
+//RunCore
+
+_var {NATVC_Run_Script_RAL} = _getargs;
+
+
+_var {NATVC_Run_Script} = "{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "script/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "script/vdisk/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "{SYS_NROOT}/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "{SYS_ROOT}/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "{NATVC_DISK}/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Run_Script_RAL}";
+_if(_cp("{mna_Result}","noapp"))|_goto :SKIP_TestMNAWork;
+_return "{mna_Result}";
+
+//RunOKStatus
+:SKIP_TestMNAWork;
+
+//faildetect found
+_cout "fail execute program";
+_return "failfound";
+
+
+:startExecutePrg;
+//Start Script
+_var {NRS_CALLBACK} = _script <"{NATVC_Run_Script}">;
+_return "{NRS_CALLBACK}";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/run.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/runexec.ca);
+_$directmode;
+_$nolog;
+
+//RunCore
+:ReloadCore;
+_clear;
+_cout "         Natvc Run";
+_cout "Type Program you want execute";
+_cout "like tools. software and system files";
+_prt "Type here >";
+
+_var {NATVC_Run_Script_RAL} = _getline;
+_if(_cp("{NATVC_Run_Script_RAL}","exit"))|_return "reload";
+_if(_cp("{NATVC_Run_Script_RAL}",".exit"))|_return "reload";
+_if(_cp("{NATVC_Run_Script_RAL}","{varspace.null}"))|_return "reload";
+
+
+_var {NATVC_Run_Script} = "{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "script/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "script/vdisk/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "{SYS_NROOT}/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "{SYS_ROOT}/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+_var {NATVC_Run_Script} = "{NATVC_DISK}/{NATVC_Run_Script_RAL}";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Run_Script_RAL}";
+_if(_cp("{mna_Result}","noapp"))|_goto :SKIP_TestMNAWork;
+_return "{mna_Result}";
+
+//RunOKStatus
+:SKIP_TestMNAWork;
+
+//faildetect found
+
+_clear;
+_cout "Error. Execute Program not found ";
+_cout "Natvc cannot found this file :  "{NATVC_Run_Script_RAL}" ";
+_cout "check your type or found this file right path and try again";
+_pause;
+_goto :ReloadCore;
+
+
+:startExecutePrg;
+//Start Script
+_var {NRS_CALLBACK} = _script <"{NATVC_Run_Script}">;
+_return "{NRS_CALLBACK}";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/runexec.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/sysfix.ca);
 _$directmode;
 _$nolog;
@@ -6568,6 +6680,33 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mna.apptemple.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+//_cover <"{AppDir}/YourOwnApps.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=ModernApp temple;
+$Setup=mna.apptemple.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/mna.apptemple.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -6857,6 +6996,43 @@ $AppVersion=1002;
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc_fdl.nexplorer.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/system.shutdown.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/ssm.ca">;
+//_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=System Shutdown App;
+$Setup=system.shutdown.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ssm.ca);
+_$directmode;
+_$nolog;
+
+//Shutdown
+_clear;
+_cout "Press Enter to shutdown your device";
+_pause;
+_return "user_shutdown";
+$CSTP_FILE_RECORD_MARK_ID_END(/ssm.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/system.shutdown.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/LogonUI.txt);
 This file is the login verification file for the Natvc system
 Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
@@ -6942,6 +7118,7 @@ $nbfmgr={SYS_ROOT}/nbfmgr.ca;
 $textread={SYS_ROOT}/textreader.ca;
 $whoami={SYS_ROOT}/whoami.ca;
 $diskclean={SYS_ROOT}/diskclean.ca;
+$run={SYS_ROOT}/runexec.ca;
 $devtool=natvc_fdl.dev_toolkit.mna;
 $nexp=natvc_fdl.nexplorer.mna;
 $softmgr=mnacore.pkgmanager.mna;
