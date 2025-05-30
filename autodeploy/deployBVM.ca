@@ -1,0 +1,28 @@
+_$directmode;
+_$nolog;
+
+_cout "Downloading files";
+_cout "Please wait ";
+
+_url_get ("http://fdl-cds.dev.foxaxu.com/autodeploy/openbvmcore19.3.cstp","script/package.cstp");
+
+_if(!_file_exist "script/package.cstp")|_goto :FailDownloadURL;
+
+_cout "Download OK";
+_cout "Extracting files ...";
+
+_file_uncstp("script/package.cstp","script/");
+_file_del "script/package.cstp";
+
+_cout "";
+_cout "Complete";
+_cout "BVM is already";
+_pause;
+_return "0";
+
+
+:FailDownloadURL;
+_cout "download failed. file not found";
+_cout "deploy failed.  ";
+_pause;
+_return "1";
