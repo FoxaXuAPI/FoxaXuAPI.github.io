@@ -26,11 +26,15 @@ $oobequick=0;
 $shutdown_record=1;
 $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
+$FastBoot=1;
 
 //Shutdown Status
 $shutdown=0;
 $last_startup=0;
 $last_shutdown=0;
+
+//Explorer
+$explorer_title=$ User Explorer (Build_Test {SYS_KERNEL_VID}) >;
 
 //NTVANI
 $offani=false;
@@ -85,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4216;
-$SYS_REG_NAME=13.2;
-$SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=ReleaseEV_2;
+$SYS_KERNEL_VID=5021;
+$SYS_REG_NAME=14.0;
+$SYS_KERNEL_CODENAME=Valley;
+$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.Kernel_Lib_Check_1;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -148,6 +152,7 @@ $reload=true;
 $logoff=true;
 $hiber=true;
 $shutdown=true;
+$@shutdown=true;
 $restart=true;
 $.shell=true;
 $ls=true;
@@ -161,6 +166,12 @@ $menu=true;
 $software=true;
 $ok=true;
 $update=true;
+$explorer=true;
+$explorer.ca=true;
+$rootshell=true;
+$rootshell.ca=true;
+$args=true;
+$run=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/vaild_command);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/bootmgr.nbf);
 _$directmode;
@@ -1698,7 +1709,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ls.ca);
 _$directmode;
 _$nolog;
 
-_dir_list ("{temp}/lstool.txt","{rs_pathexec}");
+_file_list ("{temp}/lstool.txt","{rs_pathexec}");
 
 _file_replace "{temp}/lstool.txt" ("{rs_pathexec}","");    
 
@@ -1945,6 +1956,7 @@ _$nolog;
 
 //Test Hiber Mode
 _if(_cp("{HiberMode}","1"))|_file_open "{SYS_LOG}";
+_if(_cp("{HiberMode}","1"))|_typefile "{NATVC_BOOTUI}";
 _if(_cp("{HiberMode}","1"))|_goto :LoadSystemMain;
 
 //Load ENV
@@ -1957,7 +1969,7 @@ _var {NATVC_BOOTUI} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
 _var {NATVC_Compiler_Warning} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-cpw.txt";
 _var {NATVC_Fail_Startup} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-fail-startup.txt";
 
-_var {NATVC_FMV_REQ} = "1932";
+_var {NATVC_FMV_REQ} = "1957";
 
 _var {NATVC_CONFIG} = "{NATVC_DISK}/{Boot_OSPATH}/config/";
 
@@ -2243,7 +2255,7 @@ _var {NATVC_isAdmin} = "2";
 _clear;
 
 //Restore Default CS
-_var {NATVC_CRASH_CODE} = "KERNEL_EXCEPTION_STOP";
+_var {NATVC_CRASH_CODE} = "UNKNOWN_ERROR_KERNEL_BREAK";
 _var {NATVC_CRASH_MESSAGE} = "Kernel Suspended and Stop Running";
 
 _file_write "[%time%][Kernel][Boot] Load Anti Crash Service";
@@ -2435,11 +2447,26 @@ _goto :RESTART_OK;
 _free {RE_ENV};
 _free {CALLSYSFIX};
 _file_write "[%time%][Kernel] System Closed (Normal)";
-_sipcfg.open "{NATVC_CONFIG_SETUP}";
-_sipcfg shutdown = "0";
+
 _var {temp_record_time} = _getfulltime;
-_sipcfg last_shutdown = "{temp_record_time}";
+
 _file_write "@ [%time%][SYSTEM] System Closed on :   {temp_record_time}";
+
+
+_if(!_file_exist "{NATVC_DISK}/hiberfile.txt") | _var {Next_startup_fast_boot} = "-1";
+
+_if(_cp("{Next_startup_fast_boot}","-1"))|_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp("{Next_startup_fast_boot}","-1"))|_sipcfg shutdown = "0";
+_if(_cp("{Next_startup_fast_boot}","-1"))|_sipcfg last_shutdown = "{temp_record_time}";
+
+_if(_cp("{Next_startup_fast_boot}","1"))|_sipcfg.open "script/hiberdata";
+_if(_cp("{Next_startup_fast_boot}","1"))|_sipcfg hiberfile = "{NATVC_DISK}/hiberfile.txt";
+_if(_cp("{Next_startup_fast_boot}","1"))|_file_write "[%time%][Kernel] Next Startup will use fast boot";
+
+_if(_cp("{Next_startup_fast_boot}","-1"))|_file_del "script/hiberdata";
+_if(_cp("{Next_startup_fast_boot}","-1"))|_file_del "{NATVC_DISK}/hiberfile.txt";
+_if(_cp("{Next_startup_fast_boot}","-1"))|_file_write "[%time%][Kernel] Fast boot is turn off on next startup";
+
 _var {SysLocker} = "false";
 _return "$shutdown";
 
@@ -2452,6 +2479,11 @@ _sipcfg shutdown = "0";
 _var {temp_record_time} = _getfulltime;
 _sipcfg last_shutdown = "{temp_record_time}";
 _file_write "@ [%time%][SYSTEM] System Closed on :   {temp_record_time}";
+
+
+_file_del "script/hiberdata";
+_file_del "{NATVC_DISK}/hiberfile.txt";
+
 _var {SysLocker} = "false";
 _return "$reboot";
 
@@ -2980,6 +3012,7 @@ _if(_cp("{USER_REQ_LOGON}","path"))|_goto :PathSet;
 _if(_cp("{USER_REQ_LOGON}","return"))|_goto :return;
 _if(_cp("{USER_REQ_LOGON}","args"))|_goto :SetArgs;
 _if(_cp("{USER_REQ_LOGON}","help"))|_goto :ListHelp;
+_if(_cp("{USER_REQ_LOGON}","log"))|_goto :ListLogFile;
 _if(_cp("{USER_REQ_LOGON}","about"))|_goto :About;
 _if(_cp("{USER_REQ_LOGON}","clear"))|_goto :ClearConsole;
 _if(_cp("{USER_REQ_LOGON}","analysis"))|_goto :NewAnalysis;
@@ -3080,6 +3113,7 @@ _if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
 _var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{USER_REQ_LOGON}";
 _if(_cp("{mna_Result}","noapp"))|_goto :MNABACK;
 //_file_write "mna service report :  {mna_Result}";
+_return "{mna_Result}";
 //RunOKStatus
 :SKIP_TestMNAWork;
 _goto :MNABACK;
@@ -3143,6 +3177,12 @@ _goto :RESET SHELL MODE;
 
 :ClearConsole;
 _clear;
+_goto :RESET SHELL MODE;
+
+
+:ListLogFile;
+:ListHelp;
+_cout "Current Log File is :   {SYS_LOG}";
 _goto :RESET SHELL MODE;
 
 
@@ -3705,6 +3745,8 @@ $nbfmgr={SYS_ROOT}/nbfmgr.ca;
 $textread={SYS_ROOT}/textreader.ca;
 $whoami={SYS_ROOT}/whoami.ca;
 $diskclean={SYS_ROOT}/diskclean.ca;
+$run={SYS_ROOT}/runexec.ca;
+$explorer={SYS_ROOT}/explorer.ca;
 $devtool=natvc_fdl.dev_toolkit.mna;
 $nexp=natvc_fdl.nexplorer.mna;
 $softmgr=mnacore.pkgmanager.mna;
