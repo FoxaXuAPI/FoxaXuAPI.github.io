@@ -74,10 +74,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5021;
+$SYS_KERNEL_VID=5025;
 $SYS_REG_NAME=14.0;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.Kernel_Lib_Check_1;
+$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.Kernel_Patch_for_test_1;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -2381,11 +2381,11 @@ _var {EXPLORER_WORK_DIR_LAST} = "{nolastdir}";
 _file_del "{temp}/Explorer_cacheList.txt";
 _if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
 _clear;
-_cout "----- System File Explorer  -----------------------------------";
+_cout "----- File Explorer -- {SYS_NAME} {SYSNAME}.{SYS_KERNEL_VID} -------";
 _cout "| DIR:  {EXPLORER_WORK_DIR}";
 _cout "---------------------------------------------------------------";
 _file_list ("{temp}/Explorer_cacheList.txt","{EXPLORER_WORK_DIR}");
-_file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}","");
+_file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}/","");
 _if(_file_exist "{temp}/Explorer_cacheList.txt")|_textprint "{temp}/Explorer_cacheList.txt";
 _if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No File at here";
 _cout "---------------------------------------------------------------";
@@ -2401,15 +2401,13 @@ _if(_cp("{UserTypeGet}","mkdir"))|_goto :MakeDir;
 _if(_cp("{UserTypeGet}","cpdir"))|_goto :CopyDirMD;
 _if(_cp("{UserTypeGet}","cutdir"))|_goto :CutDirMD;
 _if(_cp("{UserTypeGet}","cd"))|_goto :CdDir;
-_if(_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :FileEdit_Manager;
-
 //paste
 _if(_cp("{UserTypeGet}","paste"))|_goto :PasteFileOrDir;
-
 
 _if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST} = "{EXPLORER_WORK_DIR}";
 _if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
 
+_if(_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :FileEdit_Manager;
 
 _if(_cp("{UserTypeGet}","exit"))|_return "ok";
 
