@@ -89,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5033;
+$SYS_KERNEL_VID=5037;
 $SYS_REG_NAME=14.0;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.New_OS_Loader;
+$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.ReDesign_SystemUI_Update_1;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -497,46 +497,46 @@ _var bvm_bm = "true";
 _return "$reboot";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/RE/re.nbf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/bootfail.txt);
-╔══════════════════════════════════════════════╗
-║         NATVC BOOT RECOVERY                  ║
-╠══════════════════════════════════════════════╣
-║     CRITICAL SYSTEM ERROR                    ║
-║   ──────────────────────────────             ║
-║   Error Code: {NBF_ErrorCode}
-║   Description: Bootloader verification failed║
-║                                              ║
-║    RECOVERY INSTRUCTIONS                     ║
-║   ──────────────────────────────             ║
-║  1. Insert your system recovery media        ║
-║  2. Select 'Repair startup files' option     ║
-║  3. Run boot sector repair tool              ║
-║                                              ║
-║    Without recovery media:                   ║
-║  Contact device manufacturer support:        ║
-║  - OEM: {MAF_OEM}
-║                                              ║
-╚══════════════════════════════════════════════╝
+
+         NATVC BOOT RECOVERY                  
+
+     CRITICAL SYSTEM ERROR                    
+           
+   Error Code: {NBF_ErrorCode}
+   Description: Bootloader verification failed
+                                              
+    RECOVERY INSTRUCTIONS                     
+          
+  1. Insert your system recovery media        
+  2. Select 'Repair startup files' option     
+  3. Run boot sector repair tool              
+                                              
+    Without recovery media:                   
+  Contact device manufacturer support:        
+  - OEM: {MAF_OEM}
+                                              
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/filelost.txt);
-╔══════════════════════════════════════════════╗
-║         NATVC BOOT RECOVERY                  ║
-╠══════════════════════════════════════════════╣
-║     Missing Critical File                    ║
-║   ──────────────────────────────             ║
-║     File: {NBF_FILE}
-║     Status: Required for system startup      ║
-║                                              ║
-║    Recovery Instructions                     ║
-║   ──────────────────────────────             ║
-║  1. Insert your setup media                  ║
-║  2. Choose "Repair system files"             ║
-║  3. Restore or replace the missing file      ║
-║                                              ║
-║    No recovery media?                        ║
-║  Contact device manufacturer support:        ║
-║  - OEM: {MAF_OEM}
-║                                              ║
-╚══════════════════════════════════════════════╝
+
+         NATVC BOOT RECOVERY                  
+
+     Missing Critical File                    
+   
+     File: {NBF_FILE}
+     Status: Required for system startup      
+                                              
+    Recovery Instructions                     
+          
+  1. Insert your setup media                  
+  2. Choose "Repair system files"             
+  3. Restore or replace the missing file      
+                                              
+    No recovery media?                        
+  Contact device manufacturer support:        
+  - OEM: {MAF_OEM}
+                                              
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/filelost.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/nbfshell.txt);
 === Natvc BOOTMGR Shell ===
@@ -551,31 +551,20 @@ COMMANDS:
 =========================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/nbfshell.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-abouts.txt);
-╔══════════════════════════════════════════════════╗
-║                About {ToolsName}
-╚══════════════════════════════════════════════════╝
+    About {ToolsName}
+=======================================================
+      FDL. {SYS_NAME} {SYSNAME}
+      
+   System Version: {SYS_RELEASE_Channel} 
+   [Inside Version: {SYSNAME}.{SYS_KERNEL_VID}]
 
-┌──────────────────────────────────────────────────┐
-│  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█       │
-│  █  SYSTEM INFORMATION                   █       │
-│  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█       │
-│                                                  │
-│  • Name:    {SYS_NAME}  {SYSNAME}
-│  • Tool:    {ToolsName} [{SYSNAME}.{SYS_KERNEL_VID}] 
-│  • Version: {SYS_KERNEL_VID} ({SYS_KERNEL_CODENAME}) 
-│                                                  │
-│  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█       │
-│  █  LICENSING INFORMATION                █       │
-│  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█       │
-│                                                  │
-│  Project Natvc_FDL / BiatoCore                   │
-│  © FoxaXu_Dev_Lab. All Rights Reserved.          │
-│                                                  │
-│  According to the End User License Agreement     │
-│  (EULA), this product is licensed to:            │
-│                                                  │
-│   {NATVC_USERNAME} ({NATVC_WHOIS})
-└──────────────────────────────────────────────────┘
+   (c)FoxaXu Dev Lab. All rights reserved.
+
+
+      According to the End User License Agreement
+   (EULA), this product is licensed to:  
+            {NATVC_USERNAME} ({NATVC_WHOIS})
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-abouts.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootui.txt);
 
@@ -644,23 +633,23 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-repair.txt);
    System Recovery
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-repair.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-startup.txt);
-╔══════════════════════════════════════════════════╗
-║            Advanced Boot Options Menu            ║
-║  System Boot Menu - {SystemStartupNotification}
-╚══════════════════════════════════════════════════╝
 
-┌──────────────────────────────────────────────────┐
-│  Select an option:                               │
-│                                                  │
-│    [1] Start up Normal (Default)                 │
-│    [s] Run System Repair                         │
-│    [2] Load Safe Mode (Root Shell)               │
-│    [3] Restart & Select Boot Device              │
-│    [4] Shutdown                                  │
-│    [5] Load Recovery                             │
-│                                                  │
-│  Type a number/key and press [ENTER] to select   │
-└──────────────────────────────────────────────────┘
+            Advanced Boot Options Menu            
+  System Boot Menu - {SystemStartupNotification}
+
+
+
+  Select an option:                               
+                                                  
+    [1] Start up Normal (Default)                 
+    [s] Run System Repair                         
+    [2] Load Safe Mode (Root Shell)               
+    [3] Restart & Select Boot Device              
+    [4] Shutdown                                  
+    [5] Load Recovery                             
+                                                  
+  Type a number/key and press [ENTER] to select   
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-startup.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-recovery-error.txt);
 
@@ -856,46 +845,46 @@ $osload=;
 $bootsign=;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/NBF-Temple);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/bootfail.txt);
-╔══════════════════════════════════════════════╗
-║         NATVC BOOT RECOVERY                  ║
-╠══════════════════════════════════════════════╣
-║     CRITICAL SYSTEM ERROR                    ║
-║   ──────────────────────────────             ║
-║   Error Code: {NBF_ErrorCode}
-║   Description: Bootloader verification failed║
-║                                              ║
-║    RECOVERY INSTRUCTIONS                     ║
-║   ──────────────────────────────             ║
-║  1. Insert your system recovery media        ║
-║  2. Select 'Repair startup files' option     ║
-║  3. Run boot sector repair tool              ║
-║                                              ║
-║    Without recovery media:                   ║
-║  Contact device manufacturer support:        ║
-║  - OEM: {MAF_OEM}
-║                                              ║
-╚══════════════════════════════════════════════╝
+
+         NATVC BOOT RECOVERY                  
+
+     CRITICAL SYSTEM ERROR                    
+           
+   Error Code: {NBF_ErrorCode}
+   Description: Bootloader verification failed
+                                              
+    RECOVERY INSTRUCTIONS                     
+          
+  1. Insert your system recovery media        
+  2. Select 'Repair startup files' option     
+  3. Run boot sector repair tool              
+                                              
+    Without recovery media:                   
+  Contact device manufacturer support:        
+  - OEM: {MAF_OEM}
+                                              
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/filelost.txt);
-╔══════════════════════════════════════════════╗
-║         NATVC BOOT RECOVERY                  ║
-╠══════════════════════════════════════════════╣
-║     Missing Critical File                    ║
-║   ──────────────────────────────             ║
-║     File: {NBF_FILE}
-║     Status: Required for system startup      ║
-║                                              ║
-║    Recovery Instructions                     ║
-║   ──────────────────────────────             ║
-║  1. Insert your setup media                  ║
-║  2. Choose "Repair system files"             ║
-║  3. Restore or replace the missing file      ║
-║                                              ║
-║    No recovery media?                        ║
-║  Contact device manufacturer support:        ║
-║  - OEM: {MAF_OEM}
-║                                              ║
-╚══════════════════════════════════════════════╝
+
+         NATVC BOOT RECOVERY                  
+
+     Missing Critical File                    
+   
+     File: {NBF_FILE}
+     Status: Required for system startup      
+                                              
+    Recovery Instructions                     
+          
+  1. Insert your setup media                  
+  2. Choose "Repair system files"             
+  3. Restore or replace the missing file      
+                                              
+    No recovery media?                        
+  Contact device manufacturer support:        
+  - OEM: {MAF_OEM}
+                                              
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/filelost.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/nbfshell.txt);
 === Natvc BOOTMGR Shell ===
@@ -3153,24 +3142,24 @@ _cout "The Command is execute Successfully";
 _goto :RESET SHELL MODE;
 
 :ListHelp;
-_cout "╭─────────────────────────── Natvc Shell Help ───────────────────────────╮";
-_cout "│                                                                        │";
-_cout "│  BASIC COMMANDS:                                                       │";
-_cout "│    path      Set script run path                                       │";
-_cout "│    return    Return message for call program                           │";
-_cout "│    args      Run program with arguments                                │";
-_cout "│    about     Show about information                                    │";
-_cout "│    clear     Clear console screen                                      │";
-_cout "│    exit      Exit Natvc Shell                                          │";
-_cout "│    help      Display this help menu                                    │";
-_cout "│                                                                        │";
-_cout "│  SYSTEM COMMANDS:                                                      │";
-_cout "│    shutdown  Shutdown device                                           │";
-_cout "│    restart   Restart device                                            │";
-_cout "│    logoff    Logoff current user                                       │";
-_cout "│                                                                        │";
-_cout "│  Root Shell {SYSNAME}.{SYS_KERNEL_VID}";
-_cout "╰────────────────────────────────────────────────────────────────────────╯";
+_cout " Natvc Shell Help ";
+_cout "                                                                        ";
+_cout "  BASIC COMMANDS:                                                       ";
+_cout "    path      Set script run path                                       ";
+_cout "    return    Return message for call program                           ";
+_cout "    args      Run program with arguments                                ";
+_cout "    about     Show about information                                    ";
+_cout "    clear     Clear console screen                                      ";
+_cout "    exit      Exit Natvc Shell                                          ";
+_cout "    help      Display this help menu                                    ";
+_cout "                                                                        ";
+_cout "  SYSTEM COMMANDS:                                                      ";
+_cout "    shutdown  Shutdown device                                           ";
+_cout "    restart   Restart device                                            ";
+_cout "    logoff    Logoff current user                                       ";
+_cout "                                                                        ";
+_cout "  Root Shell {SYSNAME}.{SYS_KERNEL_VID}";
+_cout "";
 _goto :RESET SHELL MODE;
 
 :ClearConsole;
