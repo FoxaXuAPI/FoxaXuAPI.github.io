@@ -89,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5025;
+$SYS_KERNEL_VID=5033;
 $SYS_REG_NAME=14.0;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.Kernel_Patch_for_test_1;
+$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.New_OS_Loader;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -2280,6 +2280,8 @@ _file_write "[%time%][Kernel][Boot] Load User Main Service";
 
 _var {UserSVCBUFFER} = "KernelModeDetect";
 
+_if(_cp("{Shutdown_Data}","1")) |_dir_remove "{SYS_NROOT}/SECURITY";
+
 _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "SYSTEM";
 
 _file_write "[%time%][Kernel] NUES Service is Closed";
@@ -2467,6 +2469,8 @@ _if(_cp("{Next_startup_fast_boot}","-1"))|_file_del "script/hiberdata";
 _if(_cp("{Next_startup_fast_boot}","-1"))|_file_del "{NATVC_DISK}/hiberfile.txt";
 _if(_cp("{Next_startup_fast_boot}","-1"))|_file_write "[%time%][Kernel] Fast boot is turn off on next startup";
 
+_if(_cp("{Next_startup_fast_boot}","-1"))|_dir_remove "{SYS_NROOT}/SECURITY";
+
 _var {SysLocker} = "false";
 _return "$shutdown";
 
@@ -2483,6 +2487,8 @@ _file_write "@ [%time%][SYSTEM] System Closed on :   {temp_record_time}";
 
 _file_del "script/hiberdata";
 _file_del "{NATVC_DISK}/hiberfile.txt";
+
+_dir_remove "{SYS_NROOT}/SECURITY";
 
 _var {SysLocker} = "false";
 _return "$reboot";
@@ -2976,16 +2982,8 @@ _file_write "[%time%][RootShell] Load Main";
 :BACKMAINTEXT;
 _var {USER_REQ_LOGON} = "{NULLUSER}";
 _clear
-_cout "╭──────────────────────────────────────────────╮";
-_cout "│  PROJECT NATVC {SYSNAME} ({SYS_KERNEL_VID})";
-_cout "├──────────────────────────────────────────────┤";
-_cout "│  NATVC SHELL · [Version {SYS_KERNEL_VID}]";
-_cout "│                                              │";
-_cout "│  > Welcome, {NATVC_USERNAME}. ";
-_cout "│  > Type ".exit" to quit                      │";
-_cout "│  > Type "help" for commands                  │";
-_cout "│                                              │";
-_cout "╰──────────────────────────────────────────────╯";
+_cout "FDL. {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+_cout "(c)FoxaXu Dev Lab. All rights reserved.";
 
 
 :RESET SHELL MODE;
@@ -3423,6 +3421,10 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/textreader.ca);
 _$directmode;
 _$nolog;
 
+_var {ACCESS_URL} = _getargs;
+
+_if(_file_exist "{ACCESS_URL}")|_goto :NEXPLORER MAIN;
+
 _clear;
 _cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID})";
 _cout "----------------------------------------------------------------";
@@ -3432,6 +3434,7 @@ _cout "----------------------------------------------------------------";
 _cout "Open files";
 _prts "File >";
 _var {ACCESS_URL} = _getline;
+_if(_cp("{ACCESS_URL}","exit"))|_return "close";
 _if(_cp("{ACCESS_URL}",".exit"))|_return "close";
 _goto :NEXPLORER MAIN;
 
@@ -3455,6 +3458,7 @@ _textprint "{ACCESS_URL}";
 _cout "----------------------------------------------------------------";
 _prts "File >";
 _var {ACCESS_URL} = _getline;
+_if(_cp("{ACCESS_URL}","exit"))|_return "close";
 _if(_cp("{ACCESS_URL}",".exit"))|_return "close";
 _goto :NEXPLORER MAIN;  
 
@@ -3489,6 +3493,8 @@ _var {UserSVCBUFFER} = "Unknown";
 
 //Load Pre
 _var {NATVC_REQ_LOGIN} = _getargs;
+
+_if(_file_exist "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc")|_goto :FastLoginFromFiles;
 
 _file_write "[%time%][UserService] Service Load";
 _file_write "[%time%][UserService] Request Login :  {NATVC_REQ_LOGIN}";
@@ -3561,12 +3567,36 @@ _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
   //_cout "Waitting User Auto Run ...";
 _ms_sleep 600;
 :RESTART_USER_MAIN_SERVICE;
+
+//Create User Dump
+_if(!_dir_exist "{SYS_NROOT}/SECURITY")|_dir_make "{SYS_NROOT}/SECURITY";
+_file_open "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc";
+_file_write "//Natvc User Secure Login Certificate";
+_file_write "$USERNAME={NATVC_USERNAME};";
+_file_write "$USERID={NATVC_WHOIS};";
+_file_write "$USERPROFILE={NATVC_USERPROFILE};";
+_file_write "$USERADMIN={NATVC_isAdmin};";
+_file_write "$AUTORUN={NATVC_UserAutoRun};";
+_file_write "$USERPASSWORD={NATVC_USER_PASSWORD};";
+_file_write "$DISABLEUSER={NATVC_DisableUser};";
+_goto :PASSFLB;
+
+:FASTLoginBack;
+_if(!_cp("{NATVC_USER_PASSWORD}","@nopswd")) | _goto :REQ_PASSWORD_TO_UNLOCKUSER;
+:PASSFLB;
+
+_file_open "{SYS_LOG}";
+
 _var {NATVC_USERSVC_CALLBACK} = _script<"{NATVC_UserAutoRun}">;
 
 _file_write "[%time%][UserService] User Service is Closed with argument :  {NATVC_USERSVC_CALLBACK}";
 
 _if(_cp("{NATVC_USERSVC_CALLBACK}","logoff")) | _return "reload_SYSTEM";
+_if(_cp("{NATVC_USERSVC_CALLBACK}","user_logoff")) | _file_del "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc";
 _if(_cp("{NATVC_USERSVC_CALLBACK}","user_logoff")) | _return "reload_SYSTEM";
+
+_if(_cp("{NATVC_USERSVC_CALLBACK}","user_lock")) | _return "reload_SYSTEM";
+
 _if(_cp("{NATVC_USERSVC_CALLBACK}","relogin")) | _goto :RELOADAPI;
 _if(_cp("{NATVC_USERSVC_CALLBACK}","runid.exit")) | _goto :RESTART_USER_MAIN_SERVICE;
 _if(_cp("{NATVC_USERSVC_CALLBACK}","ok")) | _goto :RESTART_USER_MAIN_SERVICE;
@@ -3633,6 +3663,50 @@ _file_write "[%time%][UserService][Error] Fail load user. this user is Disabled 
 _typefile "{SYS_NROOT}/res/natvc-ntvue-userban.txt";
 _pause;
 _return "logoff";
+
+
+:FastLoginFromFiles;
+_sipcfg.open "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc";
+
+_var {NATVC_USERNAME}      = _sipcfg USERNAME;
+_var {NATVC_WHOIS}         = _sipcfg USERID;
+_var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_var {NATVC_isAdmin}       = _sipcfg USERADMIN;
+_var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
+_var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
+_var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
+
+_goto :FASTLoginBack;
+
+
+//FOR Edit no Function
+ "$USERNAME={NATVC_USERNAME};";
+ "$USERID={NATVC_WHOIS}";
+ "$USERPROFILE={NATVC_USERPROFILE};";
+ "$USERADMIN={NATVC_isAdmin};";
+ 
+ "$AUTORUN={NATVC_UserAutoRun};";
+ "$USERPASSWORD={NATVC_USER_PASSWORD};";
+ "$DISABLEUSER={NATVC_DisableUser};";
+
+
+:REQ_PASSWORD_TO_UNLOCKUSER;
+
+_if(_cp("{NATVC_isAdmin}","2"))|_goto :PASSFLB;
+
+_clear;
+_cout "Type your password to unlock this user";
+_prt "password>";
+_var {GET_PASSWORD} = _getline;
+_if(_cp("{GET_PASSWORD}","{NATVC_USER_PASSWORD}"))|_goto :PASSFLB;
+
+_clear;
+_cout "Password wrong";
+_cout "Unlock user failed";
+//_cout "REAL PASSWORD:  {NATVC_USER_PASSWORD}";
+//_cout "Your type :  {GET_PASSWORD}";
+_pause;
+_return "reload_SYSTEM";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usersvc.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/xcopy.ca);
 _$directmode;
