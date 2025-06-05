@@ -1,5 +1,17 @@
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/confedit.ca);
+_$directmode;
+_$nolog;
+
+_var {COV_ARGS} = _getargs;
+
+_cover <"{SYS_ROOT}/confedit.ca"> "{COV_ARGS}";
+
+_cout "Invoke App failed. Use sysfix to repair this system";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/confedit.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -19,7 +31,7 @@ $last_startup=0;
 $last_shutdown=0;
 
 //Explorer
-$explorer_title=$ User Explorer (Build_Test {SYS_KERNEL_VID}) >;
+$explorer_title= User Explorer >;
 
 //NTVANI
 $offani=false;
@@ -74,10 +86,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5037;
+$SYS_KERNEL_VID=5102;
 $SYS_REG_NAME=14.0;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.ReDesign_SystemUI_Update_1;
+$SYS_RELEASE_Channel=Preview_System-{SYS_KERNEL_VID}.BUG_TEST_AND_SOFTWARE_MODIFY_1;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -158,42 +170,18 @@ $rootshell.ca=true;
 $args=true;
 $run=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/vaild_command);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/fdl_labc.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/explorer.ca);
 _$directmode;
 _$nolog;
 
-_clear;
+_var {COV_ARGS} = _getargs;
 
-//M
-_cout "Welcome to Natvc FDL Version";
-_cout "FoxaXu_Dev_Lab";
-_cout "more info to visit :  https://devlab.foxaxu.com";
-_cout "";
-_cout "Thanks your support";
-_pause;
+_cover <"{SYS_ROOT}/explorer.ca"> "{COV_ARGS}";
+
+_cout "Invoke App failed. Use sysfix to repair this system";
+
 _return "ok";
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/fdl_labc.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/hwtest.ca);
-_$directmode;
-_$nolog;
-
-_clear;
-
-//M
-_if(!_=>("{CalciumL_FMV}","1891"))|_goto :HWCompilerWarning;
-_cout "Your Device support run Natvc_FDL";
-_cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
-_pause;
-_return "ok";
-
-
-:HWCompilerWarning;
-_cout "Your Device Not Support Natvc_FDL";
-_cout "Update your device";
-_cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
-_pause;
-_return "ok";
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/hwtest.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/explorer.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/about.txt);
 Modern Natvc Application
 Modern App Core
@@ -1361,9 +1349,17 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-UserMenu.txt);
   Use "linkmgr" to manage program links
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-UserMenu.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/start-read.txt);
-We are prepare to write somethings on here
-please wait for update
+Welcome to Natvc.
+Before you begin, please read the EULA
+If you agree to the EULA content, press Enter to continue,
 
+Valley has a lot of differences from its predecessor, and you may need to adapt to the new changes
+If you have any questions, you can contact us on social platforms
+
+Thank you for choosing Natvc, please pay attention to our official website for more information
+https://devlab.foxaxu.com
+
+Press Enter to Start
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/start-read.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
 //Volume Loader
@@ -2279,6 +2275,9 @@ _var {EXPLORER_WORK_DIR} = _getargs;
 //Load Default Maps
 _if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
 
+_var {USE_NUM_SELECT_FOLDER} = "0";
+_if(_file_exist "{NATVC_USERPROFILE}/USE_NUM_SELECT_FOLDER")|_var {USE_NUM_SELECT_FOLDER} = "1";
+
 _free {EXPLORER_WORK_DIR_LAST};
 _free {EXPLORER_WORK_DIR_LAST_LAST};
 _free {EXPLORER_WORK_DIR_LAST_LAST_LAST};
@@ -2313,6 +2312,8 @@ _if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No File at here
 _cout "---------------------------------------------------------------";
 _cout "type dir name to opendir,type file name to edit file";
 _cout "command :   "rmdir"  "mkdir"  "cpdir" "cutdir" "cd"  "paste"  "exit"  ";
+_if(_cp("{USE_NUM_SELECT_FOLDER}","1"))|_cout "Number Select Folder/File is Enabled. You can type number to select";
+_cout "";
 _prt "Explorer >";
 _var {UserTypeGet} = _getline;
 //Process User Command
@@ -2346,6 +2347,8 @@ _if(_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :FileEdit_Manager;
 
 _if(_cp("{UserTypeGet}","exit"))|_return "ok";
 _if(_cp("{UserTypeGet}",".exit"))|_return "ok";
+
+_if(_cp("{USE_NUM_SELECT_FOLDER}","0"))|_goto :RELOADCONSOLE;
 
 _if(_cp("{UserTypeGet}","overline"))|_goto :RELOADCONSOLE;
 
@@ -5055,6 +5058,7 @@ _return "$shutdown";
 
 
 :UE_LOGOFF_API;
+_if(_cp("{NATVC_DisableUser}","1"))|_goto :ReloadSystemUser;
 _var {USER_REQ_LOGON} = "{NATVC_WHOIS}";
 _clear
 _file_write "[%time%][UserExperience] UserSvc Callback : user_logoff";
@@ -5829,22 +5833,38 @@ _if(_cp("{callback_temp}","false")) | _return "ok";
 
 _var {NATVC_Run_Script} = "{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "script/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "script/vdisk/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "{SYS_NROOT}/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "{SYS_ROOT}/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "{NATVC_DISK}/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
-
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
 
 _if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
 _var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Run_Script_RAL}";
@@ -5893,22 +5913,38 @@ _if(_cp("{callback_temp}","false")) | _goto :ReloadCore;
 
 _var {NATVC_Run_Script} = "{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "script/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "script/vdisk/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "{SYS_NROOT}/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "{SYS_ROOT}/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
+
 
 _var {NATVC_Run_Script} = "{NATVC_DISK}/{NATVC_Run_Script_RAL}";
 _if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
-
+_var {NATVC_Run_Script} = "{NATVC_Run_Script}.ca";
+_if(_file_exist "{NATVC_Run_Script}") | _goto :startExecutePrg;
 
 _if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
 _var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Run_Script_RAL}";
@@ -7124,33 +7160,6 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mna.apptemple.mna);
-Calcium_Text_Pack_File  New Format
-//START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
-_$directmode;
-_$nolog;
-
-//ok
-//_cover <"{AppDir}/YourOwnApps.ca">;
-_cout "Example App";
-_return "FailLoadUserInterface";
-
-
-//ExpamleApps
-$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
-//SIPCFG Package Data
-$AppName=ModernApp temple;
-$Setup=mna.apptemple.mna;
-$AppProperties=userapps; // systemapps or userapps
-
-$AppVersion=1001;
-
-//Copyright FoxaXu 2025
-//Default Package
-$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/mna.apptemple.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -7440,71 +7449,72 @@ $AppVersion=1002;
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc_fdl.nexplorer.mna);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/pkg_reset.manager.mna);
-Calcium_Text_Pack_File  New Format
-//START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/fdl_labc.ca);
 _$directmode;
 _$nolog;
 
-//ok
-_cout "Press Enter to Start";
-_pause
-_script <"{SYS_ROOT}/mnareset.ca">;
-_return "FailLoadUserInterface";
-
-
-//ExpamleApps
-$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
-//SIPCFG Package Data
-$AppName=ModernApp Reset Application;
-$Setup=pkg_reset.manager.mna;
-$AppProperties=systemapps; // systemapps or userapps
-
-$AppVersion=1001;
-
-//Copyright FoxaXu 2025
-//Default Package
-$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/pkg_reset.manager.mna);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/system.shutdown.mna);
-Calcium_Text_Pack_File  New Format
-//START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
-_$directmode;
-_$nolog;
-
-//ok
-_cover <"{AppDir}/ssm.ca">;
-//_cout "Example App";
-_return "FailLoadUserInterface";
-
-
-//ExpamleApps
-$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
-//SIPCFG Package Data
-$AppName=System Shutdown App;
-$Setup=system.shutdown.mna;
-$AppProperties=systemapps; // systemapps or userapps
-
-$AppVersion=1001;
-
-//Copyright FoxaXu 2025
-//Default Package
-$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
-$CSTP_FILE_RECORD_MARK_ID_START(/ssm.ca);
-_$directmode;
-_$nolog;
-
-//Shutdown
 _clear;
-_cout "Press Enter to shutdown your device";
+
+//M
+_cout "Welcome to Natvc FDL Version";
+_cout "FoxaXu_Dev_Lab";
+_cout "more info to visit :  https://devlab.foxaxu.com";
+_cout "";
+_cout "Thanks your support";
 _pause;
-_return "user_shutdown";
-$CSTP_FILE_RECORD_MARK_ID_END(/ssm.ca);
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/system.shutdown.mna);
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/fdl_labc.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/Hardware_Test.ca);
+_$directmode;
+_$nolog;
+
+_clear;
+
+//M
+_if(!_=>("{CalciumL_FMV}","1891"))|_goto :HWCompilerWarning;
+_cout "Your Device support run Natvc_FDL";
+_cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
+_pause;
+_return "ok";
+
+
+:HWCompilerWarning;
+_cout "Your Device Not Support Natvc_FDL";
+_cout "Update your device";
+_cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
+_pause;
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/Hardware_Test.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+//_cover <"{AppDir}/YourOwnApps.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=ModernApp temple;
+$Setup=mna.apptemple.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/SystemResourceNotUsed.txt);
+this folder is collect system old files
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/SystemResourceNotUsed.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/LogonUI.txt);
 This file is the login verification file for the Natvc system
 Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
@@ -7521,14 +7531,26 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
 //User Ban Operation
 $useroptban=false;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/useroptban);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/textread.ca);
+_$directmode;
+_$nolog;
+
+_var {COV_ARGS} = _getargs;
+
+_cover <"{SYS_ROOT}/textreader.ca"> "{COV_ARGS}";
+
+_cout "Invoke App failed. Use sysfix to repair this system";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/textread.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
 //Natvc Explorer Themes
 
 //Copyright FoxaXu
 
-$TitleA=Do not share this version;
-$TitleB=Test System.  Natvc Build  {SYS_KERNEL_VID};
-$TitleC=Do not install on work device;
+$TitleA=Bad times make a good man. Life is real, life is earnest.;
+$TitleB=Welcome to NATVC;
+$TitleC=Natvc Valley Preview {SYS_KERNEL_VID};
 
 //Part 2
 $TitleD=Open Menu type "menu";
@@ -7539,9 +7561,10 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=Do not share this version;
-$TitleB=Test System.  Natvc Build  {SYS_KERNEL_VID};
-$TitleC=Do not install on work device;
+$TitleA=Bad times make a good man. Life is real, life is earnest.;
+$TitleB=Welcome to NATVC;
+$TitleC=Natvc Valley Preview {SYS_KERNEL_VID};
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Program/$PROGRAM_ROOT.txt);
 PROGRAM

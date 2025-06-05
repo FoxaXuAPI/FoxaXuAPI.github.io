@@ -34,7 +34,7 @@ $last_startup=0;
 $last_shutdown=0;
 
 //Explorer
-$explorer_title=$ User Explorer (Build_Test {SYS_KERNEL_VID}) >;
+$explorer_title= User Explorer >;
 
 //NTVANI
 $offani=false;
@@ -89,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5037;
+$SYS_KERNEL_VID=5102;
 $SYS_REG_NAME=14.0;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Build_For_Test-{SYS_KERNEL_VID}.ReDesign_SystemUI_Update_1;
+$SYS_RELEASE_Channel=Preview_System-{SYS_KERNEL_VID}.BUG_TEST_AND_SOFTWARE_MODIFY_1;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -4128,17 +4128,17 @@ _pause;
 _goto :ReloadREMain;
 $CSTP_FILE_RECORD_MARK_ID_END(/Recovery.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/text/ReMain.txt);
-╔══════════════════════════════════════════════════╗
-║          Natvc Recovery Environment              ║
-║            RE {SYSNAME}.{SYS_KERNEL_VID}
-╚══════════════════════════════════════════════════╝
 
-┌──────────────────────────────────────────────────┐
-│  1. Run OS Repair Tool                           │
-│  2. Open Root Shell                              │
-│  3. Advanced Boot Options                        │
-│  4. Exit to System                               │
-└──────────────────────────────────────────────────┘
+          Natvc Recovery Environment              
+            RE {SYSNAME}.{SYS_KERNEL_VID}
+
+
+
+  1. Run OS Repair Tool                           
+  2. Open Root Shell                              
+  3. Advanced Boot Options                        
+  4. Exit to System                               
+
 
   Enter selection
 $CSTP_FILE_RECORD_MARK_ID_END(/text/ReMain.txt);
