@@ -85,10 +85,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4218;
+$SYS_KERNEL_VID=4229;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=ReleaseEV_3;
+$SYS_RELEASE_Channel=Release_For_2025.6;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3707,6 +3707,7 @@ $textread={SYS_ROOT}/textreader.ca;
 $whoami={SYS_ROOT}/whoami.ca;
 $diskclean={SYS_ROOT}/diskclean.ca;
 $run={SYS_ROOT}/runexec.ca;
+$explorer={SYS_ROOT}/explorer.ca;
 $devtool=natvc_fdl.dev_toolkit.mna;
 $nexp=natvc_fdl.nexplorer.mna;
 $softmgr=mnacore.pkgmanager.mna;
