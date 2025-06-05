@@ -1,0 +1,4042 @@
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/bootdat);
+//NATVC RE OSLOADER
+$tempdisk=tempreos;
+$ospack=ntvre.cstp;
+
+//REBOOT
+$ospath=Natvc;
+$osload=Natvc/System/ntvload.nbf;
+$bootsign=nvkrnl_universal_bootsignal_fullcore_natvc;
+
+$REAutoExec=Recovery/Recovery.ca;
+$CSTP_FILE_RECORD_MARK_ID_END(/bootdat);
+$CSTP_FILE_RECORD_MARK_ID_START(/ntvre.cstp);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
+//NATVC SETUP ADVANCED
+$oobe=1;
+$SystemDeploy={SYS_ROOT}/ntvdeploy.ca;
+$callexec={SYS_ROOT}/oobe.ca;
+$oobequick=0;
+
+//Shutdown Record  0 - false    1 - true
+$shutdown_record=1;
+$SystemRE_Status=false;
+$SystemRE_Dir={NoReEnv};
+
+//Shutdown Status
+$shutdown=0;
+$last_startup=0;
+$last_shutdown=0;
+
+//NTVANI
+$offani=false;
+
+//Command Manager
+$whitelist=0;
+$whitelist_file={NATVC_CONFIG}/vaild_command;
+
+//Shutdown Execute
+$shutdown_execute=noexec;
+$shutdown_exe_title=Please Wait. Prepare Update;
+
+
+//Startup Execute
+$startup_execute=noexec;
+$startup_exe_title=Prepare Update ;
+
+//ALL DATA
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SETUP);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SOFTWARE);
+//NATVC SOFTWARE PATH BIND
+//NATVC SOFTWARE GET
+
+//Software Register Link
+
+
+//For Support Legacy app
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SOFTWARE);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SYSTEM);
+//NATVC SYSTEM CONFIG
+//Log Record
+
+//WARNING:  THIS CONFIG FILE IS SYSTEM FILE
+//changes may cause system fail to boot.
+
+//LogFile
+$NATVC_SYS_LOG=Natvc/LogFile; //This Record IS logfile path
+$DebugNoGUIBoot=0; //set 1 to print boot message
+
+//MAIN
+//System boot will check bootloader file is credible
+$BL_TrustCheck=false;    
+
+$Edition=Personal;
+
+//PATH BIND
+$SYS_ROOT={Boot_OSPATH}/System;  //SYSTEM ROOT PATH
+$SYS_NROOT={Boot_OSPATH};        //Natvc System Path
+$PROG_PATH=Program;      //Natvc Program Path
+$SYS_USERDIR=Users;      //Natvc User Path Bind
+
+
+//System Messagex
+$SYS_NAME=Natvc;
+$SYS_KERNEL_VID=4229;
+$SYS_REG_NAME=13.2;
+$SYS_KERNEL_CODENAME=Rapids;
+$SYS_RELEASE_Channel=Release_For_2025.6;
+
+//System Index Kernel File
+$NATVC_USERSVC=usersvc.ca;
+$NATVC_USERMENU=usermenu.ca;
+$NATVC_ROOTSHELL=rootshell.ca;
+$NATVC_EXPLORER=ntvexp.ca;
+
+//System Secure Settings
+$NATVC_BOOT_DLOAD=1;
+$NATVC_SHUTDOWN_SECURE=0;  //Set 1 Enabled . 0 Disabled.
+$NATVC_CRASH_EXECUTE=$reboot;  //Set $shutdown or $reboot . 
+
+//Resource File
+$NATVC_LOGON_TEXT=Natvc/res/natvc-ntvue.txt;
+$NATVC_LOGGING_TEXT=Natvc/res/natvc-ntvue-loggin.txt;
+$NATVC_RESTART_TEXT=Natvc/res/natvc-ntvue-restart.txt;
+$NATVC_WAIT_REST_TEXT=Natvc/res/natvc-ntvue-wait.txt;
+$NATVC_SHUTDOWN_TEXT=Natvc/res/natvc-ntvue-shutdown.txt;
+$NATVC_LOGOFF_TEXT=Natvc/res/natvc-ntvue-logoff.txt;
+$NATVC_EXPLORER_TEXT=Natvc/res/natvc-explorer.txt;
+$NATVC_ABOUTS_TEXT={SYS_NROOT}/res/natvc-abouts.txt;
+$NATVC_CRASH_TEXT=Natvc/res/natvc-crash.txt;
+
+//End
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SYSTEM);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/UPDATE);
+//NATVC UPDATE SERVICE PROXY
+//SERVER and SETUP CONFIG
+
+$NUSP_GET=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/nusp_package.cstp;
+
+//That`s all
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/UPDATE);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/USERS);
+//PUBLIC USER DATA
+//USERPATH DIR
+$default=@;
+
+//WARNING:  THIS CONFIG FILE IS SYSTEM FILE
+//changes may cause system fail to boot.
+
+//UserData
+//SYSTEM is Kernel User. Do Not Set this user
+$SYSTEM=Natvc/SystemUser;
+
+//admin is default system admin user
+$admin=Users/admin;
+
+//Add User
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/USERS);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/vaild_command);
+//CONFIG USER ALLOW EXECUTE
+$help=true;
+$.exit=true;
+$exit=true;
+$reload=true;
+$logoff=true;
+$hiber=true;
+$shutdown=true;
+$restart=true;
+$.shell=true;
+$ls=true;
+$clear=true;
+$path=true;
+$return=true;
+$about=true;
+$aboutsys=true;
+$whoami=true;
+$menu=true;
+$software=true;
+$ok=true;
+$update=true;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/vaild_command);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/bootmgr.nbf);
+_$directmode;
+_$nolog;
+
+//New Boot Format
+//NBF Boot Manager
+
+_var {BootLogFiles} = "{BootVolume}/BootLogFiles.log";
+
+_if(_file_exist "{BootLogFiles}.old")|_file_del "{BootLogFiles}.old";
+
+_if(_file_exist "{BootLogFiles}")|_file_rename ("{BootLogFiles}","{BootLogFiles}.old");
+
+_file_open "{BootLogFiles}";
+
+_file_write "@NBF System loader log file.   Time  %fulltime% ";
+
+_file_write "[%time%][Boot] Boot Start";
+
+_if(_cp("{NBFMenu}","true"))| _goto :BootSelect;
+
+//Load Default Option
+_file_write "[%time%][Boot] Load Default OS Loader";
+_sipcfg.open "{BootVolume}/$BVM_VOL_LOAD";
+_var {BootDefaultOption} = _sipcfg DefaultOption;
+_var {BootSetDefault} = "{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Default BCD File:  {BootDefaultOption}";
+
+:StartLoadingBootNBF
+
+//LoadBCD
+_file_write "[%time%][Boot] Checking Boot loader";
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}") | _goto :NoDefaultLoader;
+_sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Read BCD Files ...";
+
+_var {osvolume} = _sipcfg osvol;
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_file_write "[%time%][Boot] OS Volume :  {osvolume}";
+_file_write "[%time%][Boot] OS PATH :  {Boot_OSPATH}";
+_file_write "[%time%][Boot] OS System loader :  {NATVC_SYSLDR}";
+_file_write "[%time%][Boot] OS Sign :  {BootSign}";
+
+//Config All Disks
+_file_write "[%time%][Boot] Configuration Disk Device";
+
+//Boot System
+_var {NATVC_DISK} = "{osvolume}";
+
+//Edit {boot_rsmode} to Manager System Boot
+
+_file_write "[%time%][Boot] Configuration Boot loader";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+
+_file_write "[%time%][Boot] Check Boot loader";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+
+_file_write "[%time%][Boot] Check Boot Sign";
+//Verify Boot loader is VALID
+_sipcfg.open "{NATVC_BOOTLOAD}";
+_var {LoadSign} = _sipcfg signload;
+_if(!_cp("{BootSign}","{LoadSign}"))|_goto :SignInvalid;
+
+_file_write "[%time%][Boot] Startup System";
+
+_var {RE_ENV} = "false";
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_file_open "{BootLogFiles}";
+_file_write "[%time%][Boot] System Callback :  {OS_CALLBACK}";
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_file_write "[%time%][Boot][Error] Exception CALLBACK";
+_goto :NATVC_MS_FL;
+
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+//ERRPAGE
+:NATVC_MS_SL;
+_file_write "[%time%][Boot][Error] Device Error :   Boot loader is missing";
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+:NATVC_MS_FL;
+_file_write "[%time%][Boot][Error] Boot Fail :  OS CALLBACK =  {NBF_ErrorCode}";
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+//Boot Select Mode
+:BootSelect;
+_file_write "[%time%][Boot] Boot Menu";
+_var {NBFMenu} = "false";
+_clear;
+_typefile "{BootVolume}/res/nbfshell.txt";
+_prt "Select Boot load or type .exit shutdown $> ";
+_var {BootDefaultOption} = _getline;
+
+_if(_cp("{BootDefaultOption}",".exit"))|_return "$shutdown";
+_if(_cp("{BootDefaultOption}",".list"))|_goto :ListBootLDR;
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}")|_goto :BootSelect;
+
+_goto :StartLoadingBootNBF;
+
+
+
+:NoDefaultLoader;
+_file_write "[%time%][Boot] System No Default Loader";
+_cout "No Default System Loader";
+_sleep 2;
+_goto :BootSelect;
+
+:ListBootLDR;
+_file_write "[%time%][Boot] List all boot loader";
+_clear;
+_cout "All Boot loader";
+_cout "------------------------------------";
+_dir_list ("script/tempnbf","{BootVolume}/nbf");
+
+_file_replace "script/tempnbf" ("{BootVolume}/nbf/","");    
+
+_textprint "script/tempnbf";
+_cout "------------------------------------";
+_cout "Default :  ({BootSetDefault})";
+_cout "------------------------------------";
+_file_del "script/tempnbf";
+_pause;
+_goto :BootSelect;
+
+
+
+
+:SignInvalid;
+_file_write "[%time%][Boot] Bootloader sign is invalid :  not trusted device";
+_var {NBF_ErrorCode} = "Invalid Boot Loader :  {NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+//_cout "{LoadSign}";
+//_cout "{BootSign}";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/bootmgr.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/NBF-Temple);
+//Boot Config Data
+//NBF File Loader
+$osvol=;
+$ospath=;
+$osload=;
+$bootsign=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/NBF-Temple);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/nbfload);
+//Volume Loader
+$DefaultLoader={BootVolume}/bootmgr.nbf;
+$DefaultOption=null;
+$RollBackLoad=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/nbfload);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/RE/bootdat);
+//NATVC RE OSLOADER
+$tempdisk=tempreos;
+$ospack=;
+
+//REBOOT
+$ospath=;
+$osload=;
+$bootsign=;
+
+$REAutoExec=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/RE/bootdat);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/RE/re.nbf);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc RE System Loader
+//Anti rootshell load
+
+//SignLoad
+//$signload=ntvre_osloader_sign;
+
+_clear;
+
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
+
+_var {TempLoadRE} = _sipcfg RollBackLoad;
+_if(!_cp(_sipcfg DefaultOption,"recovery"))|_goto :SkipRollBackRE;
+_sipcfg DefaultOption = "{TempLoadRE}";
+_sipcfg RollBackLoad = "";
+
+:SkipRollBackRE;
+
+
+//Load main
+//GET REDATA
+_if(!_file_exist "{NATVC_DISK}/{Boot_OSPATH}/bootdat")|_goto :loadfail_nodat;
+
+_sipcfg.open "{NATVC_DISK}/{Boot_OSPATH}/bootdat";
+_var {tempdisk} = _sipcfg tempdisk;
+_var {tempdisk} = "script/{tempdisk}";
+_var {ospack} = _sipcfg ospack;
+_var {REAutoExec} = _sipcfg REAutoExec;
+
+_var {ospack} = "{NATVC_DISK}/{Boot_OSPATH}/{ospack}";
+
+_if(!_file_exist "{ospack}")|_goto :loadfail_nocstp;
+
+_var {OriginDisk} = "{NATVC_DISK}";
+_var {NATVC_DISK} = "{tempdisk}";
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_clear;
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "    {BootUIA}";
+_cout "    {BootUIB}";
+_cout "    {BootUIC}";
+_cout "";
+_cout "";
+_cout "";
+_cout "  Please wait.  Natvc is loading files";
+_cout "";
+
+//Extract to TempDisk
+_if(_dir_exist "{tempdisk}")|_dir_remove "{tempdisk}";
+
+_file_uncstp("{ospack}","{tempdisk}");
+
+//Boot System
+_var {osvolume} = "{tempdisk}";
+_var {NATVC_DISK} = "{osvolume}";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+_var {RE_ENV} = "true";
+_clear;
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_dir_remove "{tempdisk}";
+
+_free {OriginDisk};
+_free {NATVC_DISK};
+_free {Boot_OSPATH};
+_free {NATVC_SYSLDR};
+_free {BootSign};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+_free {REAutoExec};
+_free {BL_Verify_F};
+
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_goto :NATVC_MS_FL;
+
+
+
+//ERRPAGE
+:loadfail_nodat;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {NATVC_DISK}/{Boot_OSPATH}/bootdat   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+:loadfail_nocstp;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {ospack}   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+
+
+:NATVC_MS_SL;
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+:NATVC_MS_FL;
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/RE/re.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/bootfail.txt);
+╔══════════════════════════════════════════════╗
+║         NATVC BOOT RECOVERY                  ║
+╠══════════════════════════════════════════════╣
+║     CRITICAL SYSTEM ERROR                    ║
+║   ──────────────────────────────             ║
+║   Error Code: {NBF_ErrorCode}
+║   Description: Bootloader verification failed║
+║                                              ║
+║    RECOVERY INSTRUCTIONS                     ║
+║   ──────────────────────────────             ║
+║  1. Insert your system recovery media        ║
+║  2. Select 'Repair startup files' option     ║
+║  3. Run boot sector repair tool              ║
+║                                              ║
+║    Without recovery media:                   ║
+║  Contact device manufacturer support:        ║
+║  - OEM: {MAF_OEM}
+║                                              ║
+╚══════════════════════════════════════════════╝
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/bootfail.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/filelost.txt);
+╔══════════════════════════════════════════════╗
+║         NATVC BOOT RECOVERY                  ║
+╠══════════════════════════════════════════════╣
+║     Missing Critical File                    ║
+║   ──────────────────────────────             ║
+║     File: {NBF_FILE}
+║     Status: Required for system startup      ║
+║                                              ║
+║    Recovery Instructions                     ║
+║   ──────────────────────────────             ║
+║  1. Insert your setup media                  ║
+║  2. Choose "Repair system files"             ║
+║  3. Restore or replace the missing file      ║
+║                                              ║
+║    No recovery media?                        ║
+║  Contact device manufacturer support:        ║
+║  - OEM: {MAF_OEM}
+║                                              ║
+╚══════════════════════════════════════════════╝
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/filelost.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/nbfshell.txt);
+=== Natvc BOOTMGR Shell ===
+Location: BootVolume/nbf/*.nbf
+Legacy boot files not supported
+
+Default: {BootSetDefault}
+
+COMMANDS:
+.list - Show available loaders
+.exit - Shutdown system
+=========================
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/nbfshell.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-abouts.txt);
+╔══════════════════════════════════════════════════╗
+║                About {ToolsName}
+╚══════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────┐
+│  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█       │
+│  █  SYSTEM INFORMATION                   █       │
+│  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█       │
+│                                                  │
+│  • Name:    {SYS_NAME}  {SYSNAME}
+│  • Tool:    {ToolsName} [{SYSNAME}.{SYS_KERNEL_VID}] 
+│  • Version: {SYS_KERNEL_VID} ({SYS_KERNEL_CODENAME}) 
+│                                                  │
+│  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█       │
+│  █  LICENSING INFORMATION                █       │
+│  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█       │
+│                                                  │
+│  Project Natvc_FDL / BiatoCore                   │
+│  © FoxaXu_Dev_Lab. All Rights Reserved.          │
+│                                                  │
+│  According to the End User License Agreement     │
+│  (EULA), this product is licensed to:            │
+│                                                  │
+│   {NATVC_USERNAME} ({NATVC_WHOIS})
+└──────────────────────────────────────────────────┘
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-abouts.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootui.txt);
+
+
+
+
+        {BootUIA}
+        {BootUIB}
+        {BootUIC}
+
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-bootui.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootupdate.txt);
+
+
+
+
+        {BootUIA}
+        {BootUIB}
+        {BootUIC}
+
+
+
+     {update_title}
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-bootupdate.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
+
+   Natvc Recovery
+   Your Device not support this NATVC Version
+
+     Your Platform CLFMV :   {CalciumL_FMV} 
+     Requirement CLFMV   :   {NATVC_FMV_REQ} or Later
+
+   
+   type 1 to start Natvc
+   type 2 to shutdown (Default)
+   System Recovery
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
+
+
+
+
+
+
+     Your Device ran into problem need restart now.
+
+
+
+
+     Stop Code: {NATVC_CRASH_CODE} ({BUG_REPORT})
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-crash.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-repair.txt);
+
+   Natvc Recovery
+   Automatic repair couldn't repair your pc
+   SystemImage is corrupted
+
+   File :   {SYSFIX_DIR}/{ReadCache}
+
+
+   
+   Press enter to run system fix tool
+   or you can shutdown or reinstall system
+   System Recovery
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-repair.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-startup.txt);
+╔══════════════════════════════════════════════════╗
+║            Advanced Boot Options Menu            ║
+║  System Boot Menu - {SystemStartupNotification}
+╚══════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────┐
+│  Select an option:                               │
+│                                                  │
+│    [1] Start up Normal (Default)                 │
+│    [s] Run System Repair                         │
+│    [2] Load Safe Mode (Root Shell)               │
+│    [3] Restart & Select Boot Device              │
+│    [4] Shutdown                                  │
+│    [5] Load Recovery                             │
+│                                                  │
+│  Type a number/key and press [ENTER] to select   │
+└──────────────────────────────────────────────────┘
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-startup.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-recovery-error.txt);
+
+  Recovery
+  System boot fail
+  file  {REV_Missing_File}
+
+
+
+
+  Press any key to restart
+  Your device need recovery
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-recovery-error.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
+//Volume Loader
+$DefaultLoader={BootVolume}/bootmgr.ca;
+$DefaultOption=null;
+$RollBackLoad=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/boot);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/bootmgr.ca);
+_$directmode;
+_$nolog;
+
+//New Boot Format
+//LegacyEdition
+//NBF Boot Manager
+
+_var {BootLogFiles} = "{BootVolume}/BootLogFiles.log";
+
+_if(_file_exist "{BootLogFiles}.old")|_file_del "{BootLogFiles}.old";
+
+_if(_file_exist "{BootLogFiles}")|_file_rename ("{BootLogFiles}","{BootLogFiles}.old");
+
+_file_open "{BootLogFiles}";
+
+_file_write "@NBF System loader log file.   Time  %fulltime% ";
+
+_file_write "[%time%][Boot] Boot Start";
+
+_if(_cp("{NBFMenu}","true"))| _goto :BootSelect;
+
+//Load Default Option
+_file_write "[%time%][Boot] Load Default OS Loader";
+_sipcfg.open "{BootVolume}/$BVM_VOL_LOAD";
+_var {BootDefaultOption} = _sipcfg DefaultOption;
+_var {BootSetDefault} = "{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Default BCD File:  {BootDefaultOption}";
+
+:StartLoadingBootNBF
+
+//LoadBCD
+_file_write "[%time%][Boot] Checking Boot loader";
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}") | _goto :NoDefaultLoader;
+_sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Read BCD Files ...";
+
+_var {osvolume} = _sipcfg osvol;
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_file_write "[%time%][Boot] OS Volume :  {osvolume}";
+_file_write "[%time%][Boot] OS PATH :  {Boot_OSPATH}";
+_file_write "[%time%][Boot] OS System loader :  {NATVC_SYSLDR}";
+_file_write "[%time%][Boot] OS Sign :  {BootSign}";
+
+//Config All Disks
+_file_write "[%time%][Boot] Configuration Disk Device";
+
+//Boot System
+_var {NATVC_DISK} = "{osvolume}";
+
+//Edit {boot_rsmode} to Manager System Boot
+
+_file_write "[%time%][Boot] Configuration Boot loader";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+
+_file_write "[%time%][Boot] Check Boot loader";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+
+_file_write "[%time%][Boot] Check Boot Sign";
+//Verify Boot loader is VALID
+_sipcfg.open "{NATVC_BOOTLOAD}";
+_var {LoadSign} = _sipcfg signload;
+_if(!_cp("{BootSign}","{LoadSign}"))|_goto :SignInvalid;
+
+_file_write "[%time%][Boot] Startup System";
+
+_var {RE_ENV} = "false";
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_file_open "{BootLogFiles}";
+_file_write "[%time%][Boot] System Callback :  {OS_CALLBACK}";
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_file_write "[%time%][Boot][Error] Exception CALLBACK";
+_goto :NATVC_MS_FL;
+
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+//ERRPAGE
+:NATVC_MS_SL;
+_file_write "[%time%][Boot][Error] Device Error :   Boot loader is missing";
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+:NATVC_MS_FL;
+_file_write "[%time%][Boot][Error] Boot Fail :  OS CALLBACK =  {NBF_ErrorCode}";
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+//Boot Select Mode
+:BootSelect;
+_file_write "[%time%][Boot] Boot Menu";
+_var {NBFMenu} = "false";
+_clear;
+_typefile "{BootVolume}/res/NBFshell.txt";
+_prt "Select Boot load or type .exit shutdown $> ";
+_var {BootDefaultOption} = _getline;
+
+_if(_cp("{BootDefaultOption}",".exit"))|_return "$shutdown";
+_if(_cp("{BootDefaultOption}",".list"))|_goto :ListBootLDR;
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}")|_goto :BootSelect;
+
+_goto :StartLoadingBootNBF;
+
+
+
+:NoDefaultLoader;
+_file_write "[%time%][Boot] System No Default Loader";
+_cout "No Default System Loader";
+_sleep 2;
+_goto :BootSelect;
+
+:ListBootLDR;
+_file_write "[%time%][Boot] List all boot loader";
+_clear;
+_cout "All Boot loader";
+_cout "------------------------------------";
+_dir_list ("script/tempNBF","{BootVolume}/NBF");
+
+_file_replace "script/tempNBF" ("{BootVolume}/NBF/","");    
+
+_textprint "script/tempNBF";
+_cout "------------------------------------";
+_cout "Default :  ({BootSetDefault})";
+_cout "------------------------------------";
+_file_del "script/tempNBF";
+_pause;
+_goto :BootSelect;
+
+
+
+
+:SignInvalid;
+_file_write "[%time%][Boot] Bootloader sign is invalid :  not trusted device";
+_var {NBF_ErrorCode} = "Invalid Boot Loader :  {NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+//_cout "{LoadSign}";
+//_cout "{BootSign}";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/bootmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/NBF-Temple);
+//Boot Config Data
+//NBF File Loader
+$osvol=;
+$ospath=;
+$osload=;
+$bootsign=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/NBF-Temple);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/bootfail.txt);
+╔══════════════════════════════════════════════╗
+║         NATVC BOOT RECOVERY                  ║
+╠══════════════════════════════════════════════╣
+║     CRITICAL SYSTEM ERROR                    ║
+║   ──────────────────────────────             ║
+║   Error Code: {NBF_ErrorCode}
+║   Description: Bootloader verification failed║
+║                                              ║
+║    RECOVERY INSTRUCTIONS                     ║
+║   ──────────────────────────────             ║
+║  1. Insert your system recovery media        ║
+║  2. Select 'Repair startup files' option     ║
+║  3. Run boot sector repair tool              ║
+║                                              ║
+║    Without recovery media:                   ║
+║  Contact device manufacturer support:        ║
+║  - OEM: {MAF_OEM}
+║                                              ║
+╚══════════════════════════════════════════════╝
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/bootfail.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/filelost.txt);
+╔══════════════════════════════════════════════╗
+║         NATVC BOOT RECOVERY                  ║
+╠══════════════════════════════════════════════╣
+║     Missing Critical File                    ║
+║   ──────────────────────────────             ║
+║     File: {NBF_FILE}
+║     Status: Required for system startup      ║
+║                                              ║
+║    Recovery Instructions                     ║
+║   ──────────────────────────────             ║
+║  1. Insert your setup media                  ║
+║  2. Choose "Repair system files"             ║
+║  3. Restore or replace the missing file      ║
+║                                              ║
+║    No recovery media?                        ║
+║  Contact device manufacturer support:        ║
+║  - OEM: {MAF_OEM}
+║                                              ║
+╚══════════════════════════════════════════════╝
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/filelost.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/nbfshell.txt);
+=== Natvc BOOTMGR Shell ===
+Location: BootVolume/nbf/*.nbf
+Legacy boot files not supported
+
+Default: {BootSetDefault}
+
+COMMANDS:
+.list - Show available loaders
+.exit - Shutdown system
+=========================
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/nbfshell.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysinfo.txt);
+Welcome To Natvc
+Copyright FDL 2025
+
+This is Project Natvc
+
+Based "Calcium Project" "Biato Core" "OCLT"
+Thanks your support
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysinfo.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/autobl.ca);
+_$directmode;
+_$nolog;
+
+//System Load Fix
+
+_cout "Auto Boot loader fix tools";
+
+_var {select_boot_partion} = _getargs;
+
+_if(!_dir_exist "{select_boot_partion}")|_goto :ListHelp;
+
+_cout "Boot Volume :  {select_boot_partion}";
+
+_cout "OS Load Hardware :  $BVM_VOL_LOAD";
+
+_sipcfg.open "{select_boot_partion}/Natvc/config/SYSTEM";
+
+_var {BootName} = _sipcfg SYS_REG_NAME;
+
+//Check NBF or Legacy 
+
+_if(_cp("$BVM_VOL_LOAD","nbfload"))|_goto :addNBFLoader;
+
+_file_write "[%time%][Setup] System boot is recreate on {select_boot_partion}";
+
+_var {FileLoadName} = "{BootName}";
+_var {sysmaindrv} = "{select_boot_partion}";
+
+
+/////////////////////LEG PARTITION
+:addLegacyLoader;
+
+_var {FileLoadName} = "{BootName}";
+_var {sysmaindrv} = "{select_boot_partion}";
+
+_if(!_file_exist "$sys_def_disk/sysboot/bootmgr.ca")|_goto :NewLegBootloader;
+
+_file_copy("{SYS_NROOT}/sysboot/NBF-Temple","$sys_def_disk/sysboot/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/sysboot/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
+_sipcfg ospath = "Natvc";
+_sipcfg osload = "Natvc/System/ntvload.ca";
+
+_var {GetBootSign} = _script<"{sysmaindrv}/Natvc/System/ntvload.ca"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
+_sipcfg.open "$sys_def_disk/sysboot/boot";
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.ca';
+_sipcfg DefaultOption = "{FileLoadName}";
+_cout "Legacy Boot Create Succeed";
+_return "OK";
+
+//Add New Boot loader Core
+:NewLegBootloader;
+
+_dir_remove "$sys_def_disk/sysboot";
+
+_dir_make "$sys_def_disk/sysboot";
+_dir_make "$sys_def_disk/sysboot/nbf";
+_dir_make "$sys_def_disk/sysboot/res";
+
+_file_copy ("{SYS_NROOT}/sysboot/boot","$sys_def_disk/sysboot/boot");
+_file_copy ("{SYS_NROOT}/sysboot/bootmgr.ca","$sys_def_disk/sysboot/bootmgr.ca");
+
+_file_copy ("{SYS_NROOT}/sysboot/res/bootfail.txt","$sys_def_disk/sysboot/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/filelost.txt","$sys_def_disk/sysboot/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/nbfshell.txt","$sys_def_disk/sysboot/res/nbfshell.txt");
+
+_goto :addLegacyLoader;
+
+
+
+////////////////////// NBF PARTITION
+//Use NBF Loader
+:addNBFLoader;
+
+_var {FileLoadName} = "{BootName}";
+_var {sysmaindrv} = "{select_boot_partion}";
+
+_if(!_file_exist "$sys_def_disk/nbf/bootmgr.nbf")|_goto :NewBootloader;
+
+_file_copy("{SYS_NROOT}/nbf/NBF-Temple","$sys_def_disk/nbf/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/nbf/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
+_sipcfg ospath = "Natvc";
+_sipcfg osload = "Natvc/System/ntvload.nbf";
+
+_var {GetBootSign} = _script<"{sysmaindrv}/Natvc/System/ntvload.nbf"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
+_sipcfg.open "$sys_def_disk/nbf/nbfload";
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.nbf';
+_sipcfg DefaultOption = "{FileLoadName}";
+_cout "NBF Boot Create Succeed";
+_return "OK";
+
+//Add New Boot loader Core
+:NewBootloader;
+
+_dir_remove "$sys_def_disk/nbf";
+
+_dir_make "$sys_def_disk/nbf";
+_dir_make "$sys_def_disk/nbf/nbf";
+_dir_make "$sys_def_disk/nbf/res";
+
+_file_copy ("{SYS_NROOT}/nbf/nbfload","$sys_def_disk/nbf/nbfload");
+_file_copy ("{SYS_NROOT}/nbf/bootmgr.nbf","$sys_def_disk/nbf/bootmgr.nbf");
+
+_file_copy ("{SYS_NROOT}/nbf/res/bootfail.txt","$sys_def_disk/nbf/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/nbf/res/filelost.txt","$sys_def_disk/nbf/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/nbf/res/nbfshell.txt","$sys_def_disk/nbf/res/nbfshell.txt");
+
+_goto :addNBFLoader;
+
+
+
+
+
+:ListHelp;
+_cout "Auto Bootloader Create tools";
+_cout "Command : ";
+_cout " autonewbl.ca | args: <System Volume>";
+_cout "";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/autobl.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/bcdmgr.ca);
+//Natvc Boot Manager Tools
+//Design By FoxaXu
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_clear;
+
+_var {ToolsName} = "bcdmgr.ca";
+
+
+//Load Main
+:BACKMAINCONSOLE;
+_clear;
+_cout "sysboot Boot Manager ({SYSNAME}.{SYS_KERNEL_VID})";
+_if(!_cp("$BVM_VOL_LOAD","boot"))|_cout "WARNING. this system not use sysboot to boot";
+_cout "@--------------------------------------------------------@";
+_cout "select mode ";
+_cout "1. Create New Bootloader on device";
+_cout "2. Edit old bootloader";
+_cout "3. Delete Boot Loader";
+_cout "";
+_if(_cp("$BVM_VOL_LOAD","boot"))|_cout "Current Load file :  {BootVolume}/sysboot/{BootDefaultOption}";
+_cout "use "bootopt" on explorer. to restart to sysboot Shell";
+_cout "use .exit close this tool";
+_cout "Copyright FoxaXu 2024 . Project NATVC";
+_cout "@--------------------------------------------------------@";
+_prts "select mode > ";
+_var {useropt} = _getline;
+_if(_cp("{useropt}","1"))|_goto :addblmode;
+_if(_cp("{useropt}","2"))|_goto :editblmode;
+_if(_cp("{useropt}","3"))|_goto :delblmode;
+_if(_cp("{useropt}",".exit"))|_return "ok";
+_goto :BACKMAINCONSOLE;
+
+
+
+:addblmode;
+_cout "Select System Disk";
+_prts "SYSDRV> ";
+_var {sysmaindrv} = _getline;
+_if(!_file_exist "{sysmaindrv}/Natvc/System/ntvload.ca")|_goto :FailIndex;
+
+_cout "Set Load File Name";
+_prts "SYSDRV> ";
+_var {FileLoadName} = _getline;
+
+_cout "Please wait";
+
+_if(!_file_exist "$sys_def_disk/sysboot/bootmgr.ca")|_goto :NewBootloader;
+
+:BackCONADD;
+
+_file_copy("{SYS_NROOT}/sysboot/nbf-Temple","$sys_def_disk/sysboot/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/sysboot/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
+_sipcfg ospath = "Natvc";
+_sipcfg osload = "Natvc/System/ntvload.ca";
+
+_var {GetBootSign} = _script<"{sysmaindrv}/Natvc/System/ntvload.ca"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
+_sipcfg.open "$sys_def_disk/sysboot/boot";
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.ca';
+_sipcfg DefaultOption = "{FileLoadName}";
+
+_cout "Complete";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:NewBootloader;
+
+_dir_remove "$sys_def_disk/sysboot";
+
+_dir_make "$sys_def_disk/sysboot";
+_dir_make "$sys_def_disk/sysboot/nbf";
+_dir_make "$sys_def_disk/sysboot/res";
+
+_file_copy ("{SYS_NROOT}/sysboot/boot","$sys_def_disk/sysboot/boot");
+_file_copy ("{SYS_NROOT}/sysboot/bootmgr.ca","$sys_def_disk/sysboot/bootmgr.ca");
+
+_file_copy ("{SYS_NROOT}/sysboot/res/bootfail.txt","$sys_def_disk/sysboot/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/filelost.txt","$sys_def_disk/sysboot/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/nbfshell.txt","$sys_def_disk/sysboot/res/nbfshell.txt");
+
+_goto :BackCONADD;
+
+
+
+
+:editblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/boot")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_goto :BACKMAINCONSOLE; 
+
+
+:delblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/boot")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+
+_if(_cp("{BootVolume}/sysboot/{BootDefaultOption}","{RegOpenFile}"))|_goto :DEF_WARNING;
+
+:ApplyDeleteBL;
+_file_del "{RegOpenFile}";
+_goto :BACKMAINCONSOLE; 
+
+
+//ErrPage
+:FailIndex;
+_cout "This Disk is invalid System. bcdmgr.ca cannot create a boot loader for this system";
+_cout "Error : No load file on {bootloaderdrv}/boot";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:FailIndex2;
+_cout "This Disk is invalid boot data. bcdmgr.ca cannot Edit sysboot on here";
+_cout "Error :  No sysboot CONFIG on {bootloaderdrv}/nbf/{FileLoadName}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:FAIL_DISALLOW;
+_cout "Use Admin open this tools";
+_cout "bcdmgr.ca.ca";
+_return "fails";
+
+:DEF_WARNING;
+_cout "WARNING :  This boot loader is system now using boot load file";
+_cout "           If you delete this boot file, Your device won't boot";
+_cout "type y to Continue";
+_prts "y/n (default n)>";
+_var {DEFW_N} = _getline;
+
+_if(_cp("{DEFW_N}","y"))|_goto :ApplyDeleteBL;
+
+_goto :BACKMAINCONSOLE; 
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/bcdmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/confedit.ca);
+_$directmode;
+_$nolog;
+//Natvc Config Editor Tool
+//Args use "openedit"
+
+_var {ToolsName} = "CONFEDIT";
+_var {CONFEDIT_TEMP_SIGN} = "false";
+_if(_cp(_getargs,"openedit"))|_goto :OpenEditor;
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+_var {CONFEDIT_TEMP_SIGN} = "true";
+
+
+
+//Natvc Config Editor
+:BACKMAINCONSOLE;
+
+_if(!_cp("{CONFEDIT_TEMP_SIGN}","true"))|_return "exitconsole";
+
+_clear;
+
+_cout "----------------------------------------------";
+_cout "@ Natvc Config Edit   ({SYSNAME}.{SYS_KERNEL_VID}) ";
+_cout "----------------------------------------------";
+_cout "- NATVC Config Editor ";
+_cout "-    Config:   ";
+_cout "-";
+
+_dir_list ("{temp}/confedit","{NATVC_CONFIG}");
+_file_replace "{temp}/confedit" ("{NATVC_CONFIG}/","-  ");
+_file_replace "{temp}/confedit" ("/{NATVC_CONFIG}/","-  ");
+_file_replace "{temp}/confedit" ("/{NATVC_CONFIG}","-  ");
+
+_textprint "{temp}/confedit";
+_file_del "{temp}/confedit";
+_cout "-";
+_cout "-";
+_cout "- Select and Settings.  use exit to back ";
+_cout "- Mode (1 - edit/creat new reg .  2 - del reg)";
+_cout "- You can open any Config Files";
+_cout "----------------------------------------------";
+
+
+_prts "Open File >";
+_var {regmode} = _getline;
+_if(_cp("{regmode}",".exit"))|_return "ok";
+_if(_cp("{regmode}","exit"))|_return "ok";
+_if(_cp("{regmode}","about"))|_goto :About;
+//Check Files
+
+_var {RegOpenFile} = "{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_var {RegOpenFile} = "{NATVC_DISK}/{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_var {RegOpenFile} = "{SYS_NROOT}/config/{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_var {RegOpenFile} = "{NATVC_USERPROFILE}/{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:OpenEditor;
+_if(!_file_exist "{RegOpenFile}")|_return "failopen";
+_sipcfg.open "{RegOpenFile}";
+_clear;
+_cout "Config Edit   ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "@--------------------------------------------------------@";
+_cout "  File :  {RegOpenFile}";
+_cout " --------------------------------------------------------";
+_textprint "{RegOpenFile}";
+_cout "@--------------------------------------------------------@";
+
+_prts "Set add/edit(1) or delete(2) . use .exit back>";
+_var {useropt} = _getline;
+_if(_cp("{useropt}",".exit"))|_goto :BACKMAINCONSOLE;
+_if(_cp("{useropt}","exit"))|_goto :BACKMAINCONSOLE;
+_if(_cp("{useropt}","1"))|_goto :EditMode;
+_if(_cp("{useropt}","2"))|_goto :DelMode;
+_goto :OpenEditor;
+
+:EditMode;
+_prts "select edit module(add / edit) > ";
+_var {useroptE} = _getline;
+_if(_cp("{useroptE}",".exit"))|_goto :OpenEditor;
+
+_prts "type new info > ";
+_var {useroptY} = _getline;
+_if(_cp("{useroptY}",".exit"))|_goto :OpenEditor;
+
+_sipcfg {useroptE} = "{useroptY}";
+_goto :OpenEditor;
+
+
+
+
+
+:DelMode;
+_prts "select edit module(Remove) > ";
+_var {useroptE} = _getline;
+_if(_cp("{useroptE}",".exit"))|_goto :OpenEditor;
+
+_sipcfg.remove {useroptE};
+_goto :OpenEditor;
+
+
+
+
+
+:About;
+_clear;
+_typefile "{NATVC_ABOUTS_TEXT}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC CONFIG EDIT";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/confedit.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/confget.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc Config Get
+//Get File
+
+_free {callback_temp};
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp(_sipcfg whitelist,"1"))|_goto :WL_Mode;
+
+
+:Fallback_WL;
+//_file_write "[%time%][OpenLibrary] config get :  "{CONFGET_WORD}" ";
+//_file_write "[%time%][OpenLibrary] config get Origin File :  "{CONFGET_FILE}" ";
+
+_if(!_file_exist "{CONFGET_FILE}") |_return "null";
+
+//_file_write "[%time%][OpenLibrary] config get :  file exist";
+
+_sipcfg.open "{CONFGET_FILE}";
+
+//_file_write "[%time%][OpenLibrary] Try to Read Sipcfg Data";
+
+_free {ConfGet_CALLBACK_PTR};
+
+_var {ConfGet_CALLBACK_PTR} = _sipcfg {CONFGET_WORD};
+
+//_file_write "[%time%][OpenLibrary] config get :  Return Value is "{CONFGET_WORD}" ";
+
+_return "{ConfGet_CALLBACK_PTR}";
+
+
+:WL_Mode;
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {VAILD_RUN} = _sipcfg whitelist_file;
+
+_if(!_file_exist "{VAILD_RUN}")|_goto :Fallback_WL;
+
+_sipcfg.open "{VAILD_RUN}";
+_if(!_cp(_sipcfg {CONFGET_WORD},"true"))|_return "false";
+_return "true";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/confget.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/del.ca);
+_$directmode;
+_$nolog;
+
+//File Delete
+//Check args
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_var {file_delete_args} = _getargs;
+
+_if(!_file_exist "{file_delete_args}")|_goto :userselect;
+_file_del "{file_delete_args}";
+
+_if(_file_exist "{file_delete_args}")|_goto :DeleteFail;
+_return "delok";
+
+
+:userselect;
+_cout "Type File name";
+_prts "file >";
+_var {file_delete_args} = _getline;
+_file_del "{file_delete_args}";
+
+_if(_file_exist "{file_delete_args}")|_goto :DeleteFail;
+_return "delok";
+
+:DeleteFail;
+_cout "Could not delete this file :  {file_delete_args}";
+_cout "Access Is Denied";
+_return "delfail";
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC DELETE";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/del.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/filecstp.ca);
+//NATVC File Cstp Tools
+//Use _file_pack /  _file_unpack / _file_exist / _file_del  Exist API 
+//Extract or PackFile
+//Use NEW FORMAT
+
+_$directmode;
+_$nolog;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_var {ToolsName} = "FileCstp";
+
+:MainFileExplorer;
+_clear;
+_cout "Natvc File Cstp Tools ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "----File Cstp and Extract tools--------------";
+_cout "";
+_cout "    1. Extract Mode";
+_cout "    2. Pack Files";
+_cout "";
+_cout " Use New Cstp Format.";
+_cout " Copyright foxaxu 2024";
+_cout "---------------------------------------------";
+_cout "select mode . (use .exit cancel)" 
+_prts "$FileCstp >";
+_var {UserExplorerConsole} = _getline;
+
+_if(_cp("{UserExplorerConsole}","1"))|_goto :ExtractMode;
+_if(_cp("{UserExplorerConsole}","2"))|_goto :PackFileMode;
+_if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_goto :MainFileExplorer;
+
+
+
+:ExtractMode;
+_cout "Extract File.   Select File (use .exit cancel)";
+_prts "$FilePack >";
+_var {packfile} = _getline;
+_if(_cp("{packfile}",".exit")) |_goto :MainFileExplorer;
+_if(!_file_exist "{packfile}")  |_goto :ExtractMode;
+
+_prts "$Extract Directory >";
+_var {extractdir} = _getline;
+_if(_cp("{extractdir}",".exit")) |_goto :MainFileExplorer;
+
+_dir_remove "{extractdir}";
+_file_uncstp ("{packfile}","{extractdir}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+
+
+:PackFileMode;
+_cout "Pack File.   Select Dir";
+_prts "$Dir >";
+_var {extractdir} = _getline;
+_if(_cp("{extractdir}",".exit")) |_goto :MainFileExplorer;
+
+_if(!_dir_exist "{extractdir}")   |_goto :PackFileMode;
+
+_prts "$Pack File Name >";
+_var {packfile} = _getline;
+_if(_cp("{packfile}",".exit")) |_goto :MainFileExplorer;
+
+_dir_remove "{packfile}";
+_file_cstp ("{extractdir}","{packfile}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC FILE CSTP";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/filecstp.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/filemgr.ca);
+//NATVC File Manager
+//Use _file_pack /  _file_unpack / _file_exist / _file_del / _file_copy / _dir_exist / _dir_make / _dir_remove / _dir_make  Exist API 
+_$directmode;
+_$nolog;
+
+_$req_cl_fmv 1502;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_var {ToolsName} = "FILEMGR";
+
+_var {FileExpAddr} = "$sys_def_disk";
+
+
+:MainFileExplorer;
+_clear;
+_cout "";
+_cout "Natvc File Manager ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "----File Explorer -------------------------------";
+_cout "{FileExpAddr}";
+_cout "-------------------------------------------------";
+_cout "type folder or select file ." 
+_cout "use #make - to make dir ,use .exit to close file manager";
+_prts "$FileExp >";
+_var {UserExplorerConsole} = _getline;
+_if(_dir_exist "{UserExplorerConsole}")|_goto :FolderMode;
+_if(_file_exist "{UserExplorerConsole}")|_goto :FileMode;
+_if(_cp("{UserExplorerConsole}","#make"))|_goto :MakeFolder;
+_if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_goto :MainFileExplorer;
+
+
+
+:FolderMode;
+_cout "";
+_cout "Select Remove(type "r") or Cancel(Enter)"; 
+_prts "${UserExplorerConsole} >";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_if(_cp("{UserSelectMode}","r"))|_dir_remove "{UserExplorerConsole}";
+_goto :MainFileExplorer;
+
+
+
+:FileMode;
+_cout "";
+_cout "Select Remove(type "r") or Rename(n) or Copy(c) . Cancel (Enter)";
+_prts "${UserExplorerConsole} - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_if(_cp("{UserSelectMode}","r"))|_file_del "{UserExplorerConsole}";
+_if(_cp("{UserSelectMode}","n"))|_goto :FileMode_ReName;
+_if(_cp("{UserSelectMode}","c"))|_goto :FileMode_Copy;
+_goto :MainFileExplorer;
+
+
+
+:FileMode_ReName;
+_cout "";
+_cout "New Name (TypeFullPath) >";
+_prts "${UserExplorerConsole} - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_file_rename ("{UserExplorerConsole}","{UserSelectMode}");
+_goto :MainFileExplorer;
+
+
+
+:FileMode_Copy;
+_cout "";
+_cout "Copy Path and New Name >";
+_prts "${UserExplorerConsole} - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_file_rename ("{UserExplorerConsole}","{UserSelectMode}");
+_goto :MainFileExplorer;
+
+
+
+:MakeFolder;
+_cout "";
+_cout "Make New Folder >";
+_prts "Path - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_dir_make "{UserSelectMode}";
+_goto :MainFileExplorer;
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC File Manager";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/filemgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/filepack.ca);
+//NATVC File Pack Tools
+//Use _file_pack /  _file_unpack / _file_exist / _file_del  Exist API 
+//Extract or PackFile
+_$directmode;
+_$nolog;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_var {ToolsName} = "FILEPACK";
+
+
+
+:MainFileExplorer;
+_clear;
+_cout "Natvc File Pack Tools ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "----File Pack and Extract tools--------------";
+_cout "";
+_cout "    1. Extract Mode";
+_cout "    2. Pack Files";
+_cout "";
+_cout " Legacy Format will not support on future";
+_cout " Copyright foxaxu 2024";
+_cout "---------------------------------------------";
+_cout "select mode . (use .exit cancel)" 
+_prts "$FilePack >";
+_var {UserExplorerConsole} = _getline;
+
+_if(_cp("{UserExplorerConsole}","1"))|_goto :ExtractMode;
+_if(_cp("{UserExplorerConsole}","2"))|_goto :PackFileMode;
+_if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_goto :MainFileExplorer;
+
+
+
+:ExtractMode;
+_cout "Extract File.   Select File (use .exit cancel)";
+_prts "$FilePack >";
+_var {packfile} = _getline;
+_if(_cp("{packfile}",".exit")) |_goto :MainFileExplorer;
+_if(!_file_exist "{packfile}")  |_goto :ExtractMode;
+
+_prts "$Extract Directory >";
+_var {extractdir} = _getline;
+_if(_cp("{extractdir}",".exit")) |_goto :MainFileExplorer;
+
+_dir_remove "{extractdir}";
+_file_unpack ("{packfile}","{extractdir}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+
+
+:PackFileMode;
+_cout "Pack File.   Select Dir";
+_prts "$Dir >";
+_var {extractdir} = _getline;
+_if(_cp("{extractdir}",".exit")) |_goto :MainFileExplorer;
+
+_if(!_dir_exist "{extractdir}")   |_goto :PackFileMode;
+
+_prts "$Pack File Name >";
+_var {packfile} = _getline;
+_if(_cp("{packfile}",".exit")) |_goto :MainFileExplorer;
+
+_dir_remove "{packfile}";
+_file_pack ("{extractdir}","{packfile}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC FILE PACK";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/filepack.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ls.ca);
+_$directmode;
+_$nolog;
+
+_dir_list ("{temp}/lstool.txt","{rs_pathexec}");
+
+_file_replace "{temp}/lstool.txt" ("{rs_pathexec}","");    
+
+_cout "";
+_cout "List all files";
+_cout "Directory :   {rs_pathexec}";
+_cout "";
+
+_textprint "{temp}/lstool.txt";
+
+_file_del "{temp}/lstool.txt";
+
+_cout "";
+_cout "List All File";
+_cout "{SYSNAME}.{SYS_KERNEL_VID}";
+_cout "";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ls.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/nbfmgr.ca);
+//Natvc Boot Manager Tools
+//Design By FoxaXu
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_clear;
+
+_var {ToolsName} = "NBFMGR";
+
+
+//Load Main
+:BACKMAINCONSOLE;
+_clear;
+_cout "NBF Boot Manager ({SYSNAME}.{SYS_KERNEL_VID})";
+_if(!_cp("$BVM_VOL_LOAD","nbfload"))|_cout "WARNING. this system not use NBF to boot";
+_cout "@--------------------------------------------------------@";
+_cout "select mode ";
+_cout "1. Create New Bootloader on device";
+_cout "2. Edit old bootloader";
+_cout "3. Delete Boot Loader";
+_cout "";
+_if(_cp("$BVM_VOL_LOAD","nbfload"))|_cout "Current Load file :  {BootVolume}/nbf/{BootDefaultOption}";
+_cout "use "bootopt" on explorer. to restart to NBF Shell";
+_cout "use .exit close this tool";
+_cout "Copyright FoxaXu 2024 . Project NATVC";
+_cout "@--------------------------------------------------------@";
+_prts "select mode > ";
+_var {useropt} = _getline;
+_if(_cp("{useropt}","1"))|_goto :addblmode;
+_if(_cp("{useropt}","2"))|_goto :editblmode;
+_if(_cp("{useropt}","3"))|_goto :delblmode;
+_if(_cp("{useropt}",".exit"))|_return "ok";
+_goto :BACKMAINCONSOLE;
+
+
+
+:addblmode;
+_cout "Select System Disk";
+_prts "SYSDRV> ";
+_var {sysmaindrv} = _getline;
+_if(!_file_exist "{sysmaindrv}/Natvc/System/ntvload.nbf")|_goto :FailIndex;
+
+_cout "Set Load File Name";
+_prts "SYSDRV> ";
+_var {FileLoadName} = _getline;
+
+_cout "Please wait";
+
+_if(!_file_exist "$sys_def_disk/nbf/bootmgr.nbf")|_goto :NewBootloader;
+
+:BackCONADD;
+
+_file_copy("{SYS_NROOT}/nbf/NBF-Temple","$sys_def_disk/nbf/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/nbf/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
+_sipcfg ospath = "Natvc";
+_sipcfg osload = "Natvc/System/ntvload.nbf";
+
+_var {GetBootSign} = _script<"{sysmaindrv}/Natvc/System/ntvload.nbf"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
+_sipcfg.open "$sys_def_disk/nbf/nbfload";
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.nbf';
+_sipcfg DefaultOption = "{FileLoadName}";
+
+_cout "Complete";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:NewBootloader;
+
+_dir_remove "$sys_def_disk/nbf";
+
+_dir_make "$sys_def_disk/nbf";
+_dir_make "$sys_def_disk/nbf/nbf";
+_dir_make "$sys_def_disk/nbf/res";
+
+_file_copy ("{SYS_NROOT}/nbf/nbfload","$sys_def_disk/nbf/nbfload");
+_file_copy ("{SYS_NROOT}/nbf/bootmgr.nbf","$sys_def_disk/nbf/bootmgr.nbf");
+
+_file_copy ("{SYS_NROOT}/nbf/res/bootfail.txt","$sys_def_disk/nbf/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/nbf/res/filelost.txt","$sys_def_disk/nbf/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/nbf/res/nbfshell.txt","$sys_def_disk/nbf/res/nbfshell.txt");
+
+_goto :BackCONADD;
+
+
+
+
+:editblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_goto :BACKMAINCONSOLE; 
+
+
+:delblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+
+_if(_cp("{BootVolume}/nbf/{BootDefaultOption}","{RegOpenFile}"))|_goto :DEF_WARNING;
+
+:ApplyDeleteBL;
+_file_del "{RegOpenFile}";
+_goto :BACKMAINCONSOLE; 
+
+
+//ErrPage
+:FailIndex;
+_cout "This Disk is invalid System. nbfmgr cannot create a boot loader for this system";
+_cout "Error : No load file on {bootloaderdrv}/nbfload";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:FailIndex2;
+_cout "This Disk is invalid boot data. nbfmgr cannot Edit NBF on here";
+_cout "Error :  No NBF CONFIG {bootloaderdrv}/nbf/{FileLoadName} ";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:FAIL_DISALLOW;
+_cout "Use Admin open this tools";
+_cout "nbfmgr.ca";
+_return "fails";
+
+:DEF_WARNING;
+_cout "WARNING :  This boot loader is system now using boot load file";
+_cout "           If you delete this boot file, Your device won't boot";
+_cout "type y to Continue";
+_prts "y/n (default n)>";
+_var {DEFW_N} = _getline;
+
+_if(_cp("{DEFW_N}","y"))|_goto :ApplyDeleteBL;
+
+_goto :BACKMAINCONSOLE; 
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/nbfmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvani.ca);
+_$directmode;
+_$nolog;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp(_sipcfg offani,"true"))|_return "ani is disabled";
+
+_var {PlayRate} = _getargs;
+
+_var {PLAYAVGTIME} = "50";
+
+_if(_cp("{PlayRate}","empty"))|_var {PlayRate} = "1";
+
+:REPLAY ANI;
+
+_var {PlayRate} = _-("{PlayRate}","1");
+
+_if(_<=("{PlayRate}","0"))|_goto :NullRequest;
+
+//Play Again
+_prts "\r                                          \r        ████                         ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r             ████                    ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                  ████               ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                        ████         ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                            ████     ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                                 ████";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                                     ";
+_prts "\r";
+_ms_sleep "1";
+
+_if(_cp("{PlayRate}","0"))|_goto :END PLAY ANI;
+
+_goto :REPLAY ANI;
+
+:END PLAY ANI;
+_return "playOK";
+
+
+:NullRequest;
+_cout "NATVC ANI Error";
+_cout "Null Request :  {PlayRate}";
+_return "fail play";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvani.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvkernel.ca);
+_$directmode;
+_$nolog;
+
+//NATVC KERNEL
+//NATVC LOAD
+
+//Test Hiber Mode
+_if(_cp("{HiberMode}","1"))|_file_open "{SYS_LOG}";
+_if(_cp("{HiberMode}","1"))|_goto :LoadSystemMain;
+
+//Load ENV
+
+_if(_cp("{SysLocker}","true"))|_return "ntvkernel.ca - session fail. Try Restart your device";
+
+_var {SysLocker} = "true";
+
+_var {NATVC_BOOTUI} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
+_var {NATVC_Compiler_Warning} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-cpw.txt";
+_var {NATVC_Fail_Startup} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-fail-startup.txt";
+
+_var {NATVC_FMV_REQ} = "1932";
+
+_var {NATVC_CONFIG} = "{NATVC_DISK}/{Boot_OSPATH}/config/";
+
+//CONFIG DIR
+_var {NATVC_CONFIG_SYS}      = "{NATVC_CONFIG}/SYSTEM";
+_var {NATVC_CONFIG_SOFTWARE} = "{NATVC_CONFIG}/SOFTWARE";
+_var {NATVC_CONFIG_USERS}    = "{NATVC_CONFIG}/USERS";
+_var {NATVC_CONFIG_SETUP}    = "{NATVC_CONFIG}/SETUP";
+
+_var {StopStartup} = "true";
+_if(!_file_exist "{NATVC_CONFIG_SYS}") | _goto :SysBootFallbackConfig;
+_if(!_file_exist "{NATVC_CONFIG_USERS}") | _goto :SysBootFallbackConfig;
+_if(!_file_exist "{NATVC_CONFIG_SETUP}") | _goto :SysBootFallbackConfig;
+_var {StopStartup} = "false";
+
+_sipcfg.open "{NATVC_CONFIG_SYS}";
+
+_var {GET_SYSTIMEL} = _getdate;
+_var {GET_SYSTIMEL} = _str_replace "{GET_SYSTIMEL}" ("\","");
+_var {GET_SYSTIMEL} = _str_replace "{GET_SYSTIMEL}" ("/","");
+
+_var {SYS_LOG_PATH} = _sipcfg NATVC_SYS_LOG;
+_dir_full "{NATVC_DISK}/{SYS_LOG_PATH}/{GET_SYSTIMEL}/A";
+
+//TimeBd
+_var {LOG_TIMESTR} = _getclock;
+
+_var {LOG_TIMESTR} = _str_replace "{LOG_TIMESTR}" (":","_");
+
+_var {SYS_LOG} = "{NATVC_DISK}/{SYS_LOG_PATH}/{GET_SYSTIMEL}/StartupTime-{LOG_TIMESTR}.log";
+
+_var {NoGUIBootOpt} = _sipcfg DebugNoGUIBoot;
+
+_if(_cp("{NoGUIBootOpt}","1"))|_clear;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Startup Debug is Enabled";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Prepare System Startup Logfile";
+
+_file_open "{SYS_LOG}";
+
+_file_write "@ NATVC is a simulation system. based on Calcium_Project(EXE) and BVM_Project(Script). Copyright FoxaXu 2024";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Checking System FMV";
+
+// Check Hardware Complier
+_if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerWarning;
+:BackToTryBoot;
+
+//Check last startup;
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
+
+_var {last_startup} = _sipcfg last_startup;
+_var {last_shutdown} = _sipcfg last_shutdown;
+
+_if(!_file_exist "{BootVolume}/nbf/recovery") | _sipcfg SystemRE_Status = "false";
+_if(_cp(_sipcfg SystemRE_Status,"false"))| _sipcfg SystemRE_Dir = "{NoReEnv}";
+
+_if(_cp(_sipcfg shutdown_record,"0")) | _goto :BackToNormalBoot;
+_var {Shutdown_Data} = _sipcfg shutdown;
+_if(_cp("{Shutdown_Data}","1")) | _goto :failbootRecovery;
+
+_if(_cp("{NATVC_A_RE}","true")) | _goto :failbootRecovery;
+
+_file_write "[%time%][NATVC Boot Loader] Last shutdown is normal.";
+
+_sipcfg shutdown = "1";
+
+:BackToNormalBoot;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Starting Natvc...";
+
+//Check Is Kernel Need Update
+_if(!_cp(_sipcfg startup_execute,"noexec")) | _goto :UpdateKernel;
+:backUpdateKernel;
+
+_var {temp_record_time} = _getfulltime;
+_sipcfg last_startup = "{temp_record_time}";
+
+//Display
+
+_file_write "@ [%time%][SYSTEM] System is Startup on %fulltime%";
+
+//Load System
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading {NATVC_CONFIG_SYS}";
+_sipcfg.open "{NATVC_CONFIG_SYS}";
+
+//Type Record Time
+
+_file_write "[%time%][NATVC Boot Loader] Last Startup (Normal)  :  {last_startup} ";
+_file_write "[%time%][NATVC Boot Loader] Last Shutdown (Normal) :  {last_shutdown} ";
+
+//Check Hardware
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading Hardware Platform...";
+_file_write "[%time%][Hardware]System Hardware :   {Hardware}";
+_file_write "[%time%][Hardware]System Platform :   {Platform}";
+_file_write "[%time%][Hardware]System Firmware :   {BootMethod}";
+_file_write "[%time%][Hardware]System Original Equipment Manufacturer :   {MAF_OEM}";
+_file_write "[%time%][Kernel][Boot] Load config/SYSTEM";
+
+//Set System Path
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Free Memory Environment";
+
+_free {SYS_ROOT};
+_free {SYS_NROOT};
+_free {PROG_PATH};
+_free {SYS_USERPATH};
+_free {SYS_USERDIR};
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Root ...";
+
+_var {SYS_ROOT} = _sipcfg SYS_ROOT;
+_var {SYS_ROOT} = "{NATVC_DISK}/{SYS_ROOT}";
+_file_write "[%time%][Kernel][Boot] System Root :  {SYS_ROOT}";
+_if(!_dir_exist "{SYS_ROOT}") | _goto :SysBootFallbackConfig;
+
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "System Root : {SYS_ROOT}";
+
+_var {SYS_NROOT} = _sipcfg SYS_NROOT;
+_var {SYS_NROOT} = "{NATVC_DISK}/{SYS_NROOT}";
+_if(!_dir_exist "{SYS_NROOT}") | _goto :SysBootFallbackConfig;
+
+_var {PROG_PATH} = _sipcfg PROG_PATH;
+_var {PROG_PATH} = "{NATVC_DISK}/{PROG_PATH}";
+
+_var {SYS_USERDIR} = _sipcfg SYS_USERDIR;
+_var {SYS_USERPATH} =  "{NATVC_DISK}/{SYS_USERDIR}";
+
+_file_write "[%time%][Kernel][Boot] System Native Root :  {SYS_NROOT}";
+_file_write "[%time%][Kernel][Boot] System Program Root :  {PROG_PATH}";
+_file_write "[%time%][Kernel][Boot] System User Root :  {SYS_USERPATH}";
+
+//Check Bootloader is Trusted
+//Config Boot Check Files
+
+_free {BL_Verify_F};
+
+_if(_cp("{BootMethod}","nbfload"))   | _var {BL_Verify_F} = "{SYS_NROOT}/nbf/bootmgr.nbf";
+_if(_cp("{BootMethod}","boot"))      | _var {BL_Verify_F} = "{SYS_NROOT}/sysboot/bootmgr.ca";
+
+_file_write "[%time%][Kernel][Boot] BL Verify : {BL_Verify_F}";
+_file_write "[%time%][Kernel][Boot] BL Current :  {BVM_OSBOOT}";
+
+_if(_cp(_sipcfg BL_TrustCheck,"false"))|_goto :SkipBLTrustCheck;
+
+_if(!_file_cp("{BVM_OSBOOT}","{BL_Verify_F}"))|_goto :BLFail_Repair;
+
+_file_write "[%time%][Kernel][Boot] Bootloader is trusted";
+_file_write "[%time%][Kernel][Boot] BL File :  {BVM_OSBOOT}";
+:SkipBLTrustCheck;
+
+
+
+//Load System Data
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Data...";
+
+_var {NATVC_EDITION} = _sipcfg Edition;
+
+_file_write "[%time%][Kernel][Boot] System Edition :  {NATVC_EDITION}";
+
+_var {DEF_Title} = " ";
+
+_file_write "[%time%][Kernel][Boot] System Root (System Folder) :  {SYS_NROOT}";
+
+_var {SYS_NAME} = _sipcfg SYS_NAME;
+
+_var {SYS_KERNEL_VID} = _sipcfg SYS_KERNEL_VID;
+
+_file_write "[%time%][Kernel][Boot] System Inside Version :  {SYS_KERNEL_VID}";
+
+_var {SYSNAME} = _sipcfg SYS_REG_NAME;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "System VID :  {SYSNAME} {NATVC_EDITION} ({SYS_KERNEL_VID})";
+
+_file_write "[%time%][Kernel][Boot] System Register Name :  {SYSNAME}";
+
+_var {SYS_KERNEL_CODENAME} = _sipcfg SYS_KERNEL_CODENAME;
+
+_file_write "[%time%][Kernel][Boot] System Kernel CodeName :  {SYS_KERNEL_CODENAME}";
+
+_var {SYS_RELEASE_Channel} = _sipcfg SYS_RELEASE_Channel;
+
+_file_write "[%time%][Kernel][Boot] System Kernel Release Channel :  {SYS_RELEASE_Channel}";
+
+_var {_NATVC_SYSID} = "natvc_sys@{SYS_KERNEL_CODENAME}_{SYS_KERNEL_VID}:{SYS_RELEASE_Channel}@Path:{SYS_NROOT}@calcium:{cav}@_FMV:{CalciumL_FMV}";
+
+_file_write "[%time%][Kernel][Boot] User Directory is bind on :  {SYS_USERDIR}";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Services ...";
+
+_var {NATVC_USERSVC} = _sipcfg NATVC_USERSVC;
+_var {NATVC_USERSVC} = "{SYS_ROOT}/{NATVC_USERSVC}";
+
+_var {NATVC_USERMENU} = _sipcfg NATVC_USERMENU;
+_var {NATVC_USERMENU} = "{SYS_ROOT}/{NATVC_USERMENU}";
+
+_var {NATVC_ROOTSHELL} = _sipcfg NATVC_ROOTSHELL;
+_var {NATVC_ROOTSHELL} = "{SYS_ROOT}/{NATVC_ROOTSHELL}";
+
+_var {NATVC_EXPLORER} = _sipcfg NATVC_EXPLORER;
+_var {NATVC_EXPLORER} = "{SYS_ROOT}/{NATVC_EXPLORER}";
+
+_var {NATVC_BOOT_DLOAD} = _sipcfg NATVC_BOOT_DLOAD;
+_var {NATVC_SHUTDOWN_SECURE} = _sipcfg NATVC_SHUTDOWN_SECURE;
+
+_file_write "[%time%][Kernel][Boot] Shutdown Secure Mode is :  {NATVC_SHUTDOWN_SECURE}";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading Base Kernel ... ";
+
+_var {NATVC_CRASH_EXECUTE} = _sipcfg NATVC_CRASH_EXECUTE;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Register File Map...";
+
+_var {NATVC_LOGON_TEXT} = _sipcfg NATVC_LOGON_TEXT;
+_var {NATVC_LOGON_TEXT} = "{NATVC_DISK}/{NATVC_LOGON_TEXT}";
+
+_var {NATVC_LOGGING_TEXT} = _sipcfg NATVC_LOGGING_TEXT;
+_var {NATVC_LOGGING_TEXT} = "{NATVC_DISK}/{NATVC_LOGGING_TEXT}";
+
+_var {NATVC_LOGOFF_TEXT} = _sipcfg NATVC_LOGOFF_TEXT;
+_var {NATVC_LOGOFF_TEXT} = "{NATVC_DISK}/{NATVC_LOGOFF_TEXT}";
+
+_var {NATVC_SHUTDOWN_TEXT} = _sipcfg NATVC_SHUTDOWN_TEXT;
+_var {NATVC_SHUTDOWN_TEXT} = "{NATVC_DISK}/{NATVC_SHUTDOWN_TEXT}";
+
+
+_var {NATVC_RESTART_TEXT} = _sipcfg NATVC_RESTART_TEXT;
+_var {NATVC_RESTART_TEXT} = "{NATVC_DISK}/{NATVC_RESTART_TEXT}";
+
+_var {NATVC_WAIT_REST_TEXT} = _sipcfg NATVC_WAIT_REST_TEXT;
+_var {NATVC_WAIT_REST_TEXT} = "{NATVC_DISK}/{NATVC_WAIT_REST_TEXT}";
+
+_var {NATVC_EXPLORER_TEXT} = _sipcfg NATVC_EXPLORER_TEXT;
+_var {NATVC_EXPLORER_TEXT} = "{NATVC_DISK}/{NATVC_EXPLORER_TEXT}";
+
+_var {NATVC_ABOUTS_TEXT} = _sipcfg NATVC_ABOUTS_TEXT;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Safe Mode Detect ...";
+
+_file_write "[%time%][Kernel][Boot] Boot Safe Mode :  {boot_rsmode}";
+
+_var {NATVC_CRASH_TEXT} = _sipcfg NATVC_CRASH_TEXT;
+_var {NATVC_CRASH_TEXT} = "{NATVC_DISK}/{NATVC_CRASH_TEXT}";
+
+_if(_cp("{NoGUIBootOpt}","1"))|_goto :SkipLoadUIBoot2;
+_if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadUIBoot2;
+_script <"{SYS_ROOT}/ntvani.ca">;
+:SkipLoadUIBoot2;
+
+//END
+
+//Check SysImage
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Checking System Image...";
+
+_if(!_dir_exist "{NATVC_DISK}/{Boot_OSPATH}/SystemImage")|_var {CALLSYSFIX} = _script<"{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca"> "new";
+
+_if(_cp("{CALLSYSFIX}","restart"))|_goto :RESTART_OK;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Start Complete ...";
+
+_file_write "[%time%][Kernel][Boot] System Image Status:  OK";
+
+_file_write "[%time%][Kernel][Boot] SYSTEM Startup Complete";
+_file_write "[%time%][Kernel][Boot] Load Default SystemUser (SYSTEM)";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _ms_sleep 500;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loggin KERNEL USER (SYSTEM)";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Run User Service ...";
+
+_if(_cp("{NoGUIBootOpt}","1"))| _ms_sleep 700;
+
+_var {PRE_AUTOENTRY_PASSWORD} = "@EMPTY";
+_var {NATVC_isAdmin} = "2";
+
+_clear;
+
+//Restore Default CS
+_var {NATVC_CRASH_CODE} = "KERNEL_EXCEPTION_STOP";
+_var {NATVC_CRASH_MESSAGE} = "Kernel Suspended and Stop Running";
+
+_file_write "[%time%][Kernel][Boot] Load Anti Crash Service";
+
+//Complete
+//Load SYSTEM USER
+:LoadSystemMain;
+//_if(_cp("{HiberMode}","1"))|_clear;
+_if(_cp("{HiberMode}","1"))|_file_write "[%time%][Kernel][Boot] System Wake up from hiberfile";
+_if(_cp("{HiberMode}","1"))|_file_write "@ [%time%][SYSTEM] System is Wake up on %fulltime%";
+
+_var {HiberMode} = "0";
+_var {IsAutoLogin} = true;
+
+_file_write "[%time%][Kernel][Boot] Load -->  NATVC User Experience Service (NUES)";
+
+_if(!_file_exist "{NATVC_USERSVC}") | _return "{NATVC_USERSVC}";
+_var {PRE_AUTOENTRY_PASSWORD} = "%sysKerneluserPSWD";
+
+_file_write "[%time%][Kernel][Boot] SYSTEM Startup Succeeded";
+_file_write "[%time%][Kernel][Boot] Load User Main Service";
+
+_var {UserSVCBUFFER} = "KernelModeDetect";
+
+_var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "SYSTEM";
+
+_file_write "[%time%][Kernel] NUES Service is Closed";
+
+_if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","user_restart")) | _goto :RESTART_OK;
+
+//If nues service crash
+_if(_cp("{K_SERVICE_CALLBACK}","logoff")) | _goto :NUES_EXIT;
+_if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :NUES_EXIT;
+_if(_cp("{K_SERVICE_CALLBACK}","reload_SYSTEM")) | _goto :NUES_EXIT;
+_if(_cp("{K_SERVICE_CALLBACK}","runid.exit")) | _goto :NUES_EXIT;
+_if(_cp("{K_SERVICE_CALLBACK}","failuserauth")) | _goto :NUES_EXIT;
+_if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :NUES_EXIT;
+
+//System API
+_if(_cp("{K_SERVICE_CALLBACK}","$shutdown")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","$reboot")) | _goto :RESTART_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","$hiber")) | _return "$shutdown";
+
+
+
+_file_write "[%time%][Kernel][Error] NUES Report a unexpected error on Callback :  {K_SERVICE_CALLBACK}";
+
+_file_write "[%time%][Kernel][Error] An attempt is being made to analyze the issue and generate a report";
+
+//Exception
+_if(_cp("{K_SERVICE_CALLBACK}","failsys")) | _goto :FAILSYSMODE;
+_if(_cp("{K_SERVICE_CALLBACK}","device_crash")) | _goto :BACKLOADCRASH;
+_if(_cp("{K_SERVICE_CALLBACK}","user_hiber")) | _goto :NULLKERNEL_DEBUG;
+_if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :FAILSERVICEBACK;
+
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {ToolsName} = "OS Kernel";
+_var {NATVC_CRASH_CODE} = "SYSTEM_SERVICE_EXCEPTION";
+_var {NATVC_CRASH_MESSAGE} = "NUES Service Error. callback: {K_SERVICE_CALLBACK}";
+
+
+
+:BACKLOADCRASH;
+_file_write "[%time%][Kernel][Error] Crash Screen Load";
+_file_write "[%time%][Kernel][Error] Crash Error    : {NATVC_CRASH_CODE}";
+_file_write "[%time%][Kernel][Error] Error Message  : {NATVC_CRASH_MESSAGE}";
+_file_write "[%time%][Kernel][Error] Last Execute Program is {ToolsName}";
+
+
+//Display Crash Screen
+_clear;
+_if(!_file_exist "{NATVC_CRASH_TEXT}")|_goto :MissResCT;
+_typefile "{NATVC_CRASH_TEXT}";
+:MissResCT;
+_if(!_file_exist "{NATVC_CRASH_TEXT}")|_clear;
+
+_if(!_file_exist "{NATVC_CRASH_TEXT}")|_cout "Your device ran into problem. need restart now";
+_if(!_file_exist "{NATVC_CRASH_TEXT}")|_cout "Stop Code :  {NATVC_CRASH_CODE}";
+_if(!_file_exist "{NATVC_CRASH_TEXT}")|_cout "Some Resources File is missing. the crash screen could not display";
+_if(!_file_exist "{NATVC_CRASH_TEXT}")|_cout "Try to reinstall Natvc";
+
+_file_write "[%time%][Kernel][Error] Crash Report print Complete";
+_file_write "[%time%][Kernel][Notice] If you are unable to resolve this issue, please contact us";
+
+_if(!_file_exist "{SYS_ROOT}/krnlrep.ca")|_cout "[Error] Could not collect error report.   krnlrep.ca missing";
+_if(!_file_exist "{SYS_ROOT}/krnlrep.ca")|_goto :SkipKRP;
+_script <"{SYS_ROOT}/krnlrep.ca"> "kernelmode";
+:SkipKRP;
+
+_cout "                 Press enter to Continue";
+_pause;
+_file_write "[%time%][Kernel] Crash Report is saved on :  {SYS_NROOT}/MiniRep/CrashReport-{CurrentDate}-{LOG_REPSTR}.txt";
+_file_write "[%time%][Kernel] try to contact develop and send them this file";
+_file_write "[%time%][Kernel] System Closed(unexpected)";
+_var {SysLocker} = "false";
+_return "{NATVC_CRASH_EXECUTE}";
+_exit;
+
+
+//Error Code
+:NUES_EXIT;
+_clear;
+_file_write "[%time%][Kernel][Error] NUES Service exit";
+_cout "Failed to initialize the Natvc User Experience Service (NUES).";
+_cout "Press Enter to restart NUES Service";
+_pause;
+_goto :LoadSystemMain;
+
+:FAILSYSMODE;
+_file_write "[%time%][Kernel][Error][Exception] CID : failsys (unexpected)";
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {NATVC_CRASH_CODE} = "CRITICAL_MODULE_DIED";
+_var {NATVC_CRASH_MESSAGE} = "A Critical Module unexpected died . Your device needs to be aware of this problem";
+_goto :BACKLOADCRASH;
+
+:NULLKERNEL_DEBUG;
+_file_write "[%time%][Kernel][Error][Exception] CID : FailKernel_Debug (unexpected)";
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {NATVC_CRASH_CODE} = "INVALID_SERVICE_OPERATION";
+_var {NATVC_CRASH_MESSAGE} = "This service prohibits invocation of kernel operations";
+_goto :BACKLOADCRASH;
+
+:FAILSERVICEBACK;
+_file_write "[%time%][Kernel][Error][Exception] CID : FailKernel_Debug (unexpected)";
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {NATVC_CRASH_CODE} = "KERNEL_SERVICE_ERROR";
+_var {NATVC_CRASH_MESSAGE} = "Kernel service error";
+_goto :BACKLOADCRASH;
+
+
+
+//Load Recovery
+:failbootRecovery;
+_var {NATVC_A_RE} = "false";
+_var {SystemStartupNotification} = "Please select boot option";
+
+_if(_cp("{Shutdown_Data}","0")) | _goto :SkipProcessUnexp;
+
+_file_write "[%time%][NATVC Boot Loader][Error] last shutdown is unexpected";
+_var {SystemStartupNotification} = "System last shutdown is unexpected.";
+
+:SkipProcessUnexp;
+_file_write "[%time%][NATVC Boot Loader] Load Advanced Boot Option .. ";
+_clear;
+_typefile "{NATVC_Fail_Startup}";
+_prt "Type here. default 1 >";
+_var {boot_set} = _getline;
+_clear;
+_if( _cp ("{boot_set}" , "s") )| _goto :NBR_REPAIR;
+_if( _cp ("{boot_set}" , "2") )| _goto :NBR_RS;
+_if( _cp ("{boot_set}" , "3") )| _goto :NBR_RBS;
+_if( _cp ("{boot_set}" , "4") )| _goto :SHUTDOWN_OK;
+_if( _cp ("{boot_set}" , "5") )| _goto :GORECOVERY;
+_file_write "[%time%][Kernel] Startup Recovery :  Normal Boot";
+_clear;
+_if(_cp("{NoGUIBootOpt}","1"))| _goto :SkipLoadUIBoot3;
+_typefile "{NATVC_BOOTUI}";
+:SkipLoadUIBoot3;
+
+_goto :BackToNormalBoot;
+
+//Other
+:NBR_REPAIR;
+_var {checksysfix} = "true";
+_goto :RESTART_OK;
+
+
+:NBR_RS;
+_file_write "[%time%][Kernel] Advanced Boot Option :  Load Safe mode (rootshell)";
+_var {boot_rsmode} = "true";
+_clear;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _goto :SkipLoadUIBoot4;
+_typefile "{NATVC_BOOTUI}";
+:SkipLoadUIBoot4;
+
+_goto :BackToNormalBoot;
+
+
+:NBR_RBS;
+_file_write "[%time%][Kernel] Advanced Boot Option :  Reboot and select boot device";
+_var bvm_bm = "true";
+_goto :RESTART_OK;
+
+//Set Shutdown Complete
+:SHUTDOWN_OK;
+_free {RE_ENV};
+_free {CALLSYSFIX};
+_file_write "[%time%][Kernel] System Closed (Normal)";
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg shutdown = "0";
+_var {temp_record_time} = _getfulltime;
+_sipcfg last_shutdown = "{temp_record_time}";
+_file_write "@ [%time%][SYSTEM] System Closed on :   {temp_record_time}";
+_var {SysLocker} = "false";
+_return "$shutdown";
+
+:RESTART_OK;
+_free {RE_ENV};
+_free {CALLSYSFIX};
+_file_write "[%time%][Kernel] System Closed (Normal)";
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg shutdown = "0";
+_var {temp_record_time} = _getfulltime;
+_sipcfg last_shutdown = "{temp_record_time}";
+_file_write "@ [%time%][SYSTEM] System Closed on :   {temp_record_time}";
+_var {SysLocker} = "false";
+_return "$reboot";
+
+
+
+
+:UpdateKernel;
+_clear;
+_file_write "[%time%][Kernel][Update] Kernel Need Update";
+_var {ReCreateImage} = "true";
+//Get Update Execute File
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {update_execute} = _sipcfg startup_execute;
+_var {update_title} = _sipcfg startup_exe_title;
+
+//restore default
+_sipcfg startup_exe_title = "Prepare Update ";
+_sipcfg startup_execute = "noexec";
+
+_file_write "[%time%][Kernel][Update] Execute File :  {update_execute}";
+_file_write "[%time%][Kernel][Update] Check File Exist if not back restart";
+
+_if(!_file_exist "{update_execute}")|_goto :backUpdateKernel;
+_file_write "[%time%][Kernel][Update] Start Update File :  {update_execute}";
+
+
+_file_write "[%time%][Kernel][Update] Title :  {update_title}";
+
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
+_file_write "[%time%][Kernel][Update] Starting Update";
+
+_var {update_callback} = _script<"{update_execute}"> "kernel";
+
+_script<"{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca"> "remove";
+
+_file_write "[%time%][Kernel][Update] Update End";
+_file_write "[%time%][Kernel][Update] Status :  {update_callback}";
+//If Need Restart
+_if(_cp("{update_callback}","restart"))|_goto :RESTART_OK;
+//Back Restart
+_goto :backUpdateKernel;
+
+
+
+//ToWARNING
+:CompilerWarning;
+_file_write "[%time%][NATVC Boot Loader][Error] Bootloader Report a problem :  Hardware not Complier & Warning";
+_file_write "[%time%][NATVC Boot Loader][Error] Update your Platform {CalciumL_FMV} to {NATVC_FMV_REQ} or Later";
+_clear;
+_typefile "{NATVC_Compiler_Warning}";
+_prt "Type here. default 2 >";
+_var {boot_set} = _getline;
+_clear;
+_if( _cp ("{boot_set}" , "1") )|_goto :BackToTryBoot;
+_file_write "[%time%][Kernel] Startup Recovery :  Shutdown";
+_goto :SHUTDOWN_OK;
+
+
+:BLFail_Repair;
+_file_write "[%time%][Kernel][Boot][Error] Boot loader is not trusted try repair";
+
+_var {update_title} = "System is update bootloader";
+
+_clear;
+
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
+_sleep 2;
+
+_file_copy("{BL_Verify_F}","{BVM_OSBOOT}");
+
+_goto :RESTART_OK;
+
+
+:GORECOVERY;
+_var {NTV_AutoRepair} = "true";
+
+_cout "Recovery";
+
+_ms_sleep 300;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :RESTART_OK;
+
+_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">;
+
+_goto :RESTART_OK;
+
+
+
+:SysBootFallbackConfig;
+_clear;
+_cout " Natvc System Loader";
+_cout " Error Report";
+_cout " ";
+_cout "       Some system config files are abnormal";
+_cout "     Have you change your device config files ?";
+_cout "     If you didn`t known what happend";
+_cout "     Press Enter to Run ASR (Automatic System Repair)";
+_cout " ";
+_cout " ";
+_cout " Pree Enter (<_|) to Run ASR";
+_cout " ";
+
+_file_write "[%time%][Kernel][Boot][ERROR] Some system config files are abnormal";
+_file_write "[%time%][Kernel][Boot][ERROR] System need recovery";
+_file_write "[%time%][Kernel][Boot][ERROR] Startup failed ..";
+
+_pause;
+_return "configMiss";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvkernel.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvload.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc System Loader
+//Anti rootshell load
+
+_var {BootUIA} = "     "; 
+_var {BootUIB} = "       N  A  T  V  C";
+_var {BootUIC} = "  Welcome to Natvc System ";
+
+//SignLoad
+//$signload=nvkrnl_universal_bootsignal_fullcore_natvc;
+
+_var {RBootSign} = "nvkrnl_universal_bootsignal_fullcore_natvc";
+_var {OSLOADER_FILE} = "ntvload.ca";
+
+
+
+//Main Loader
+
+_var {BootMethod} = "$BVM_VOL_LOAD";
+
+//Check System Loader is Valid 
+
+_var {Status} = _getargs;
+
+_if(_cp("{Status}","getsign"))|_return "{RBootSign}";
+
+//Load Main
+
+_if(_cp("{BootSign}",'{BootSign}'))|_goto :SkipCheckBootSign;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/{OSLOADER_FILE}";
+_var {REV_ErrorCode} = "Null Boot Load Signature";
+_if(!_cp("{BootSign}","{RBootSign}"))|_goto :SystemLoadError;
+
+:SkipCheckBootSign;
+
+_free {BootSign};
+
+_if(_cp("{HiberMode}","1"))|_goto :SkipSessionCheck;
+
+_if(_cp("{SysLocker}","true"))|_return "notworkonusermode";
+
+_clear;
+_typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
+
+:SkipSessionCheck;
+
+
+// Load Main System 
+
+:NatvcReloader;
+
+
+//Check system load
+
+_if(_cp("{checksysfix}","true"))|_goto :LoadSysFix; 
+
+//Check System file is exist
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemLoadError;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvani.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/usersvc.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "System Boot fail";
+
+
+//Load System Kernel
+_var {Status} = _script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca"> ;
+_if(_cp("{Status}","$reboot"))|_return "$reboot";
+_if(_cp("{Status}","$shutdown"))|_return "$shutdown";
+_goto :SystemRecovery;
+
+
+
+
+
+
+
+//System Recovery
+:SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :FailFix;
+
+
+:LoadSysFix;
+_var {checksysfix} = "false";
+
+//Prepare Basic Env
+_var {SYS_NROOT} = "{NATVC_DISK}/{Boot_OSPATH}";
+_var {SYS_ROOT} = "{NATVC_DISK}/{Boot_OSPATH}/System";
+
+_var {Status} = _script<"{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca"> "check";
+_if(_cp("{Status}","$reboot"))|_return "$reboot";
+_if(_cp("{Status}","$shutdown"))|_return "$shutdown";
+_goto :NatvcReloader;
+
+//FailFix
+:FailFix;
+:GORECOVERY;
+
+_var {NTV_AutoRepair} = "true";
+_cout "Recovery";
+_ms_sleep 300;
+
+_sipcfg.open "{NATVC_DISK}/{Boot_OSPATH}/config/SETUP";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_return "$reboot";
+
+_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">;
+
+_return "$reboot";
+
+
+
+
+//Error Load System
+:SystemLoadError;
+_var bvm_bm = "true";
+_clear;
+_typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-recovery-error.txt";
+_pause;
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvload.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvload.nbf);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc System Loader
+//Anti rootshell load
+
+//SignLoad
+//$signload=nvkrnl_universal_bootsignal_fullcore_natvc;
+
+_var {RBootSign} = "nvkrnl_universal_bootsignal_fullcore_natvc";
+_var {OSLOADER_FILE} = "ntvload.nbf";
+
+
+
+//Main Loader
+
+_var {BootMethod} = "$BVM_VOL_LOAD";
+
+//Check System Loader is Valid 
+
+_var {Status} = _getargs;
+
+_if(_cp("{Status}","getsign"))|_return "{RBootSign}";
+
+//Load Main
+
+_if(_cp("{BootSign}",'{BootSign}'))|_goto :SkipCheckBootSign;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/{OSLOADER_FILE}";
+_var {REV_ErrorCode} = "Null Boot Load Signature";
+_if(!_cp("{BootSign}","{RBootSign}"))|_goto :SystemLoadError;
+
+:SkipCheckBootSign;
+
+_free {BootSign};
+
+_if(_cp("{HiberMode}","1"))|_goto :SkipSessionCheck;
+
+_if(_cp("{SysLocker}","true"))|_return "notworkonusermode";
+
+_clear;
+_typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
+
+:SkipSessionCheck;
+
+
+// Load Main System 
+
+:NatvcReloader;
+
+
+//Check system load
+
+_if(_cp("{checksysfix}","true"))|_goto :LoadSysFix; 
+
+//Check System file is exist
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemLoadError;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvani.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/usersvc.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
+
+_var {REV_Missing_File} = "System Boot fail";
+
+
+//Load System Kernel
+_var {Status} = _script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca"> ;
+_if(_cp("{Status}","$reboot"))|_return "$reboot";
+_if(_cp("{Status}","$shutdown"))|_return "$shutdown";
+_goto :SystemRecovery;
+
+
+
+
+
+
+
+//System Recovery
+:SystemRecovery;
+
+_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca";
+_if(!_file_exist "{REV_Missing_File}")|_goto :FailFix;
+
+
+:LoadSysFix;
+_var {checksysfix} = "false";
+
+//Prepare Basic Env
+_var {SYS_NROOT} = "{NATVC_DISK}/{Boot_OSPATH}";
+_var {SYS_ROOT} = "{NATVC_DISK}/{Boot_OSPATH}/System";
+
+_var {Status} = _script<"{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca"> "check";
+_if(_cp("{Status}","$reboot"))|_return "$reboot";
+_if(_cp("{Status}","$shutdown"))|_return "$shutdown";
+_goto :NatvcReloader;
+
+//FailFix
+:FailFix;
+:GORECOVERY;
+
+_var {NTV_AutoRepair} = "true";
+_cout "Recovery";
+_ms_sleep 300;
+
+_sipcfg.open "{NATVC_DISK}/{Boot_OSPATH}/config/SETUP";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_return "$reboot";
+
+_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">;
+
+_return "$reboot";
+
+
+
+
+//Error Load System
+:SystemLoadError;
+_var bvm_bm = "true";
+_clear;
+_typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-recovery-error.txt";
+_pause;
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvload.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvrebl.ca);
+_$directmode;
+_$nolog;
+
+
+//RESTART TO NTVRE
+
+_if(!_file_exist "{BootVolume}/nbf/recovery") | _goto :NullConfigRE;
+
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
+
+_if(_cp(_sipcfg DefaultOption,"recovery"))|_goto :BootAlready;
+
+_sipcfg DefaultOption = "recovery";
+_sipcfg RollBackLoad = "{BootDefaultOption}";
+
+_return "restart";
+
+
+
+
+
+:BootAlready;
+_cout "Recovery is Ready";
+_cout "Restart your device";
+_pause;
+_return "false";
+
+:NullConfigRE;
+_clear;
+_cout "Error Recovery";
+_cout "Not Found Recovery Boot File";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvrebl.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/refix.ca);
+_$directmode;
+_$nolog;
+
+//Recovery Fix
+
+_var {ReDir} = _getargs;
+
+_if(!_file_exist "{ReDir}/Recovery/re.nbf")|_goto :NoNRBLoad;
+
+_if(_cp("{BootMethod}","nbfload"))|_file_copy("{SYS_NROOT}/nbf/NBF-Temple","script/vdisk/nbf/nbf/recovery");
+_if(_cp("{BootMethod}","boot"))|_file_copy("{SYS_NROOT}/nbf/NBF-Temple","script/vdisk/sysboot/nbf/recovery");
+
+
+_sipcfg.open "{ReDir}/Recovery/re.nbf";
+_var {refix_getsign} = _sipcfg signload;
+
+_if(_cp("{BootMethod}","nbfload"))|_file_del "script/vdisk/nbf/nbf/recovery";
+_if(_cp("{BootMethod}","boot"))|_file_del "script/vdisk/sysboot/nbf/recovery";
+
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "script/vdisk/nbf/nbf/recovery";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "script/vdisk/sysboot/nbf/recovery";
+
+_sipcfg osvol = "{ReDir}";
+_sipcfg ospath = "Recovery";
+_sipcfg osload = "Recovery/re.nbf";
+_sipcfg bootsign = "{refix_getsign}";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg SystemRE_Status = "true";
+_sipcfg SystemRE_Dir = "{ReDir}";
+
+_file_del "{ReDir}/Recovery/bindos";
+_sipcfg.open "{ReDir}/Recovery/bindos";
+_sipcfg OSDIR="{osvolume}";
+
+_cout "Recovery Environment is OK";
+_if(_cp("{BootMethod}","nbfload"))|_cout "Boot dat file is copy on script/vdisk/nbf/nbf/recovery";
+_if(_cp("{BootMethod}","boot"))|_cout "Boot dat file is copy on script/vdisk/sysboot/nbf/recovery";
+
+_return "true";
+
+
+:NoNRBLoad;
+_cout "Recovery Environment Fix Tool";
+_cout "args = Re Dir";
+_cout "May be you are not type vaild system recovery path";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/refix.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rootshell.ca);
+// NATVC ROOT SHELL
+// Only Running on SYSTEM
+_$directmode;
+_$nolog;
+
+_var {ToolsName} = "ROOTSHELL";
+
+_var {boot_rsmode} = "false"; 
+_file_write "[%time%][RootShell] Load Root shell";
+
+_var {RunArgs} = "RootShell";
+
+_var {rs_pathexec} = "{SYS_ROOT}";
+
+//Load Main
+_clear
+_file_write "[%time%][RootShell] Load Main";
+:BACKMAINTEXT;
+_var {USER_REQ_LOGON} = "{NULLUSER}";
+_clear
+_cout "╭──────────────────────────────────────────────╮";
+_cout "│  PROJECT NATVC {SYSNAME} ({SYS_KERNEL_VID})";
+_cout "├──────────────────────────────────────────────┤";
+_cout "│  NATVC SHELL · [Version {SYS_KERNEL_VID}]";
+_cout "│                                              │";
+_cout "│  > Welcome, {NATVC_USERNAME}. ";
+_cout "│  > Type ".exit" to quit                      │";
+_cout "│  > Type "help" for commands                  │";
+_cout "│                                              │";
+_cout "╰──────────────────────────────────────────────╯";
+
+
+:RESET SHELL MODE;
+_file_open "{SYS_LOG}";
+_var {USER_REQ_LOGON} = "";
+_cout "";
+_file_write "[%time%][RootShell] wait User Operation";
+_prt "@{NATVC_WHOIS}:{rs_pathexec}/>";
+_var {USER_REQ_LOGON} = _getline;
+_var {UEL_OriginType} = "{USER_REQ_LOGON}";
+
+//Check EXP is allow?
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{USER_REQ_LOGON}";
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :bancmd;
+
+
+_if(_cp("{USER_REQ_LOGON}",".exit"))|_return "ok";
+_if(_cp("{USER_REQ_LOGON}","exit"))|_return "ok";
+_if(_cp("{USER_REQ_LOGON}","cd"))|_goto :PathSet;
+_if(_cp("{USER_REQ_LOGON}","path"))|_goto :PathSet;
+_if(_cp("{USER_REQ_LOGON}","return"))|_goto :return;
+_if(_cp("{USER_REQ_LOGON}","args"))|_goto :SetArgs;
+_if(_cp("{USER_REQ_LOGON}","help"))|_goto :ListHelp;
+_if(_cp("{USER_REQ_LOGON}","about"))|_goto :About;
+_if(_cp("{USER_REQ_LOGON}","clear"))|_goto :ClearConsole;
+_if(_cp("{USER_REQ_LOGON}","analysis"))|_goto :NewAnalysis;
+_if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :RESET SHELL MODE;
+
+_if(_cp("{USER_REQ_LOGON}","shutdown"))|_return "user_shutdown";
+_if(_cp("{USER_REQ_LOGON}","restart"))|_return "user_restart";
+_if(_cp("{USER_REQ_LOGON}","logoff"))|_return "user_logoff";
+_if(_cp("{USER_REQ_LOGON}",".shell"))|_goto :RESET SHELL MODE;
+_if(_cp("{USER_REQ_LOGON}","ver"))|_goto :List Version Message;
+_if(_cp("{USER_REQ_LOGON}","version"))|_goto :List Version Message;
+
+//Type Fallback
+_if(_cp("{USER_REQ_LOGON}","notworkonusermode"))|_cout "This Application cannot running on User Mode";
+_if(_cp("{USER_REQ_LOGON}","noauth"))|_cout "This Application cannot running in current user";
+_if(_cp("{USER_REQ_LOGON}","failuserauth"))|_cout "This Application cannot running in current user";
+
+//Check this file exist ?
+
+_goto :TestMNAWork;
+:MNABACK;
+_if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
+
+//Check this file is exist in System Root?
+_var {USER_REQ_LOGON_D} = "{USER_REQ_LOGON}";
+
+_var {USER_REQ_LOGON} = "{SYS_ROOT}/{USER_REQ_LOGON}";
+_if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
+
+_var {USER_REQ_LOGON} = "{USER_REQ_LOGON}.ca";
+_if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
+
+_var {USER_REQ_LOGON} = "{USER_REQ_LOGON_D}";
+_free {USER_REQ_LOGON_D};
+
+
+//Run as System Execute Path
+_if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
+_var {USER_REQ_LOGON} = "{rs_pathexec}/{USER_REQ_LOGON}";
+
+_if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
+
+_var {USER_REQ_LOGON} = "{USER_REQ_LOGON}.ca";
+_if(_file_exist "{USER_REQ_LOGON}") | _goto :Exec_Script;
+
+
+
+_file_write "[%time%][RootShell][Error] Callback -->  {ROOTSHELL_CALLBACK}";
+_file_write "[%time%][RootShell] Origin Type  -->  "{UEL_OriginType}"  ";
+_cout " --> "{UEL_OriginType}" is not a command or execute program. ";
+_cout "use "help" to list command";
+_goto :RESET SHELL MODE;
+
+
+:Exec_Script;
+_file_write "[%time%][RootShell] User Execute Script -->  {USER_REQ_LOGON}";
+_var {ROOTSHELL_CALLBACK} = _script <"{USER_REQ_LOGON}"> "{RunArgs}";
+_file_write "[%time%][RootShell] Root Shell Return -->  {ROOTSHELL_CALLBACK}";
+_if(_cp("{ROOTSHELL_CALLBACK}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{ROOTSHELL_CALLBACK}","user_restart"))|_return "user_restart";
+_if(_cp("{ROOTSHELL_CALLBACK}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ROOTSHELL_CALLBACK}","shutdown"))|_return "user_shutdown";
+_if(_cp("{ROOTSHELL_CALLBACK}","restart"))|_return "user_restart";
+_if(_cp("{ROOTSHELL_CALLBACK}","logoff"))|_return "user_logoff";
+
+_if(_cp("{ROOTSHELL_CALLBACK}","notworkonusermode"))|_cout "This Application cannot running on User Mode";
+_if(_cp("{ROOTSHELL_CALLBACK}","noauth"))|_cout "This Application cannot running in current user";
+_if(_cp("{ROOTSHELL_CALLBACK}","failuserauth"))|_cout "This Application cannot running in current user";
+
+_goto :RESET SHELL MODE;
+
+:PathSet;
+_cout "Set Shell RunPath";
+_prts "Path>";
+_var {rs_pathexec_cache} = _getline;
+
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :TryAdvancedSet;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :RESET SHELL MODE;
+
+
+:TryAdvancedSet;
+_var {rs_pathexec_cache} = "{rs_pathexec}/{rs_pathexec_cache}";
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :NULLPATHSET;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :RESET SHELL MODE;
+
+
+:NULLPATHSET;
+_cout "this directory is not exist or unable access";
+_cout "Could not set this path";
+_goto :RESET SHELL MODE;
+
+
+:TestMNAWork;
+//_file_write "MNA DETECT OK "{USER_REQ_LOGON}" ";
+_if(!_file_exist "{SYS_NROOT}/mnacore/quickload.ca")|_goto :SKIP_TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{USER_REQ_LOGON}";
+_if(_cp("{mna_Result}","noapp"))|_goto :MNABACK;
+//_file_write "mna service report :  {mna_Result}";
+_return "{mna_Result}";
+//RunOKStatus
+:SKIP_TestMNAWork;
+_goto :MNABACK;
+
+
+
+//ERRPAGE
+:NE_ERR_NOAUTH;
+_file_write "[%time%][RootShell][Error] Not allowed";
+_clear;
+_cout "NATVC ROOT SHELL";
+_cout "This User is not allowed run this service";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Please try to reboot and restart";
+_pause;
+_if(_cp("{NATVC_WHOIS}","SYSTEM"))|_return "$shutdown";
+_return "@@appcrash@rootshell@usernotallow@";
+
+:About;
+_clear;
+_typefile "{NATVC_ABOUTS_TEXT}";
+_pause;
+_goto :RESET SHELL MODE;
+
+:return;
+_prts "return >";
+_var {rs_pathexec} = _getline;
+_return "{rs_pathexec}";
+
+:SetArgs;
+_prts "Set Args >";
+_var {RunArgs} = _getline;
+_goto :RESET SHELL MODE;
+
+
+:NewAnalysis;
+_$analysis;
+_cout "The Command is execute Successfully";
+_goto :RESET SHELL MODE;
+
+:ListHelp;
+_cout "╭─────────────────────────── Natvc Shell Help ───────────────────────────╮";
+_cout "│                                                                        │";
+_cout "│  BASIC COMMANDS:                                                       │";
+_cout "│    path      Set script run path                                       │";
+_cout "│    return    Return message for call program                           │";
+_cout "│    args      Run program with arguments                                │";
+_cout "│    about     Show about information                                    │";
+_cout "│    clear     Clear console screen                                      │";
+_cout "│    exit      Exit Natvc Shell                                          │";
+_cout "│    help      Display this help menu                                    │";
+_cout "│                                                                        │";
+_cout "│  SYSTEM COMMANDS:                                                      │";
+_cout "│    shutdown  Shutdown device                                           │";
+_cout "│    restart   Restart device                                            │";
+_cout "│    logoff    Logoff current user                                       │";
+_cout "│                                                                        │";
+_cout "│  Root Shell {SYSNAME}.{SYS_KERNEL_VID}";
+_cout "╰────────────────────────────────────────────────────────────────────────╯";
+_goto :RESET SHELL MODE;
+
+:ClearConsole;
+_clear;
+_goto :RESET SHELL MODE;
+
+
+:bancmd;
+_file_write "[%time%][RootShell] Command is disabled by administrator";
+_cout "This command is disabled by administrator";
+_cout "";
+_goto :RESET SHELL MODE;
+
+
+:List Version Message;
+_cout " Project {SYS_NAME} {SYSNAME}.{SYS_KERNEL_VID}  {SYS_KERNEL_CODENAME}";
+_cout "  {NATVC_EDITION} Edition";
+_cout " OS :  {SYS_RELEASE_Channel} ";
+_goto :RESET SHELL MODE;
+
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/rootshell.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/sysfix.ca);
+_$directmode;
+_$nolog;
+
+//Natvc System Fix or Check tools
+
+_var {SYSFIX_DIR} = "{SYS_NROOT}/SystemImage";
+_var {SYSFIX_MAP} = "{SYS_NROOT}/config/SystemImage";
+
+_var {Status} = _getargs;
+
+_if(_cp("{Status}","check"))|_goto :SystemFixMode;
+_if(_cp("{Status}","new"))|_goto :SystemFixNew;
+_if(_cp("{Status}","remove"))|_goto :SystemRemove;
+
+_cout "Do you want recreate a new system image";
+_cout "If your device update. but system image not update";
+_cout "you can use this tool recreate a new system image";
+
+_prts "Execute Now ? (y/n) >"
+
+_var {makeusersure} = _getline;
+_if(_cp("{makeusersure}","y"))| _goto :ReCreateImage;
+
+_return "Status Fail";
+
+
+
+//Need System load Var {SYS_NROOT}
+:SystemFixMode;
+_file_write "[%time%][SysFix] Task :  Check All System files";
+_clear;
+
+_file_write "[%time%][SysFix] From {SYSFIX_DIR}";
+
+_file_open "{SYS_NROOT}/SysRepairLogfile.log";
+
+_if(_file_exist "{SYS_NROOT}/SysRepairLogfile.log")|_file_del "{SYS_NROOT}/SysRepairLogfile.log";
+
+_file_write "System Repiar Log File Start on %time%";
+
+_var {update_title} = "Preparing Automatic Repair";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
+_sleep 2;
+_clear;
+_var {Int_Total_BreakFile} = "0";
+_var {update_title} = "Automatic Repair is trying to repair your device";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
+_var {IntLoad} = "1";
+
+:SYSFIXRESCAN;
+_var {ReadCache} = _file_read ("{SYSFIX_MAP}","{IntLoad}");
+
+_if(_cp("{ReadCache}","FileNotExist"))|_goto :FailRepairRecFMissing;
+
+_if(_cp("{ReadCache}","overline")) | _goto :SYSFIXRESCAN_OK;
+
+//Verify
+_file_write "[INFO] Checking File :  {ReadCache}";
+_prts "\r                                                           \r Verifying: {SYS_ROOT}/{ReadCache}";
+_if(!_file_cp("{SYS_ROOT}/{ReadCache}","{SYSFIX_DIR}/{ReadCache}"))|_goto :FixFiles;
+:Back_FixFiles;
+
+_var {IntLoad} = _+("{IntLoad}","1");   
+_goto :SYSFIXRESCAN;
+
+
+:FixFiles;
+_if(!_file_exist "{SYSFIX_DIR}/{ReadCache}")|_goto :FailFix;
+_prts "\r                                                           \r Fixed: {SYS_ROOT}/{ReadCache}";
+_var {Int_Total_BreakFile} = _+("{Int_Total_BreakFile}","1");
+_ms_sleep 300;
+_file_copy("{SYSFIX_DIR}/{ReadCache}","{SYS_ROOT}/{ReadCache}");
+_file_write "[ERROR] {ReadCache} :  There is corruption in this file and attempts to repair it";
+_file_write "[ERROR] Fix File :  {ReadCache}";
+_goto :Back_FixFiles;
+
+
+:SYSFIXRESCAN_OK;
+
+_clear;
+
+_file_write "[INFO] Check Complete. total file corruption {Int_Total_BreakFile}";
+_file_write "[INFO] All File is Verified";
+
+_var {update_title} = "    Complete";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
+_if(_cp("{Int_Total_BreakFile}","0"))|_cout "Scan Complete. No file was corruption";
+_if(!_cp("{Int_Total_BreakFile}","0"))|_cout "Scan Complete. Total {Int_Total_BreakFile} files was fixed";
+_free {Int_Total_BreakFile};
+_ms_sleep 6500;
+
+_return "$reboot";
+
+
+//Fix Complete
+
+
+
+//Create New
+:SystemFixNew;
+
+//Add RE
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(!_file_exist "{BootVolume}/nbf/recovery") | _goto :SkipCreateRE;
+
+_sipcfg SystemRE_Status = "true";
+
+_sipcfg.open "{BootVolume}/nbf/recovery";
+_var {GETREDIR} = _sipcfg osvol;
+
+_script<"{SYS_ROOT}/refix.ca"> "{GETREDIR}";
+
+//Complete
+:SkipCreateRE;
+
+//Delete Old Bootmgr
+_if(_file_exist "{BootVolume}/ReplaceLoader.nbf")|_file_del "{BootVolume}/ReplaceLoader.nbf";
+
+//Anti Create Image too many
+_var {ReCreateImage} = "false";
+
+_clear;
+
+_var {update_title} = "Setup is preparing systemimage";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
+
+
+_if(_dir_exist "{SYSFIX_DIR}")|_dir_remove "{SYSFIX_DIR}";
+_if(_file_exist "{SYSFIX_MAP}")|_file_del "{SYSFIX_MAP}";
+
+_dir_make "{SYSFIX_DIR}";
+//New Map
+_dir_list ("{SYSFIX_MAP}","{SYS_ROOT}");
+_file_replace "{SYSFIX_MAP}" ("{SYS_ROOT}/","");
+
+
+_var {IntLoad} = "1";
+
+:WHILEHEAD_NEW;
+
+_var {ReadCache} = _file_read ("{SYSFIX_MAP}","{IntLoad}");
+
+_if(_cp("{ReadCache}","overline")) | _goto :COMPLETE;
+
+//CopyFile
+_if(!_file_exist "{SYS_ROOT}/{ReadCache}")|_goto :SetupFailDirectory;
+_file_copy("{SYS_ROOT}/{ReadCache}","{SYSFIX_DIR}/{ReadCache}");
+_prts "\r                                                           \r Copying: {SYS_ROOT}/{ReadCache}";
+
+_var {IntLoad} = _+("{IntLoad}","1");
+
+_goto :WHILEHEAD_NEW;
+
+
+:COMPLETE;
+
+//Complete
+
+//System Fix Create Complete
+
+_return "true";
+
+
+
+//Remove All Fix cache
+:SystemRemove;
+_if(_dir_exist "{SYSFIX_DIR}")|_dir_remove "{SYSFIX_DIR}";
+_file_del "{SYSFIX_MAP}";
+_return "true";
+
+
+:ReCreateImage;
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_clear;
+_cout "Restart your device to continue";
+_return "restart";
+
+
+
+:FailFix;
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-fail-repair.txt";
+_file_write "[ERROR] {ReadCache} :  There is corruption in this file";
+_file_write "[ERROR] SystemImage not found this file. please use setup media fix this file";
+_pause;
+_goto :Back_FixFiles;
+
+
+:SetupFailDirectory;
+
+//Remove old files
+_file_del "{SYSFIX_MAP}";
+_dir_remove "{SYSFIX_DIR}";
+
+//Type data
+_clear;
+_cout "Setup Could not Continue. System Boot Config not Correct.";
+_cout "Try use setup media to rewrite bootloader";
+_pause;
+_return "restart";
+
+
+:FailRepairRecFMissing;
+_clear;
+_cout "========================================================";
+_cout "Automatic Repair Could not repair your system";
+_cout "File :  config/SystemImage is missing. ";
+_cout "use sysfix.ca to recreate new system image";
+_cout "";
+_cout "Press Enter to Reboot";
+_cout "========================================================";
+_pause;
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/sysfix.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/textreader.ca);
+_$directmode;
+_$nolog;
+
+_clear;
+_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "----------------------------------------------------------------";
+_cout "@FILE DIR   | > <Not Open>";
+_cout "----------------------------------------------------------------";
+
+_cout "Open files";
+_prts "File >";
+_var {ACCESS_URL} = _getline;
+_if(_cp("{ACCESS_URL}",".exit"))|_return "close";
+_goto :NEXPLORER MAIN;
+
+
+
+:NEXPLORER MAIN;
+_clear;
+_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "----------------------------------------------------------------";
+_cout "@FILE DIR   | >{ACCESS_URL}";
+_cout "----------------------------------------------------------------";
+
+_prts "Loading Pages ...";
+
+_if(!_file_exist "{ACCESS_URL}")|_goto :FailLoad;
+
+_prts "\r                                              \r";
+_textprint "{ACCESS_URL}";
+
+:EndloadPage;
+_cout "----------------------------------------------------------------";
+_prts "File >";
+_var {ACCESS_URL} = _getline;
+_if(_cp("{ACCESS_URL}",".exit"))|_return "close";
+_goto :NEXPLORER MAIN;  
+
+//Get Main
+
+
+//ERROR PAGE
+:FailLoad;
+_cout "   Error Load page";
+_cout "   File Not Exist";
+_cout "";
+_cout "";
+_cout "";
+_goto :EndloadPage;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/textreader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usersvc.ca);
+//NATVC SYSTEM
+//User Services
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(_cp("{UserSVCBUFFER}","KernelModeDetect")) | _goto :SkipAuthCheck;
+
+_if(!_cp("{NATVC_isAdmin}","2"))|_return "noauth";
+
+:SkipAuthCheck;
+_var {UserSVCBUFFER} = "Unknown";
+
+
+:RELOADAPI;
+
+//Load Pre
+_var {NATVC_REQ_LOGIN} = _getargs;
+
+_file_write "[%time%][UserService] Service Load";
+_file_write "[%time%][UserService] Request Login :  {NATVC_REQ_LOGIN}";
+
+:RELOAD2API;
+
+_if(!_file_exist "{NATVC_CONFIG_USERS}") | _return "{NATVC_CONFIG_USERS}";
+
+//Load Users
+_file_write "[%time%][UserService] Load from config/USERS";
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_var {NATVC_WHOIS} = "{NATVC_REQ_LOGIN}";
+_var {NATVC_USERPROFILE} = _sipcfg {NATVC_REQ_LOGIN};
+
+_if(_cp("{NATVC_USERPROFILE}",'{varspace.null}')) | _goto :USERFAIL_NOUSER;
+
+_var {NATVC_USERPROFILE} = "{NATVC_DISK}/{NATVC_USERPROFILE}";
+
+
+_var {temp} = "{NATVC_USERPROFILE}/Temp";
+_if(!_dir_exist "{temp}")|_dir_make "{temp}";
+
+
+_var {NATVC_USERPROFILE_CONFIG} = "{NATVC_USERPROFILE}/userconfig";
+
+_if(!_file_exist "{NATVC_USERPROFILE_CONFIG}") | _goto :USERFAIL_NOCONFIG;
+
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Load User Profile";
+
+_file_write "[%time%][UserService] Load User Profile";
+
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "User Service is trying verify your credentials";
+
+_sipcfg.open "{NATVC_USERPROFILE_CONFIG}";
+_var {NATVC_USERNAME} = _sipcfg UserName;
+
+_var {NATVC_isAdmin} = _sipcfg isAdmin;
+
+_var {NATVC_UserAutoRun} = _sipcfg AutoRun;
+
+_var {NATVC_DisableUser} = _sipcfg DisableUser;
+_if(_cp("{NATVC_DisableUser}","1")) | _goto :USERFAIL_DISABLED;
+
+_file_write "[%time%][UserService] Verify User Login Login credentials";
+
+_var {NATVC_USER_PASSWORD} = _sipcfg UserPassword;
+_if(!_cp("{NATVC_USER_PASSWORD}","@nopswd")) | _goto :REQ_PASSWORD;
+
+:PASS_VERIFED;
+
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Loggin your user";
+
+_file_write "[%time%][UserService] All User credentials is Verified";
+_file_write "[%time%][UserService] Load User Data ... ";
+
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Load User Data";
+
+_file_write "[%time%][UserService] User Name : {NATVC_USERNAME} ";
+_file_write "[%time%][UserService] User ID :  {NATVC_WHOIS}";
+_file_write "[%time%][UserService] User Profile on : {NATVC_USERPROFILE}";
+_file_write "[%time%][UserService] User Authority Level :  {NATVC_isAdmin}";
+_file_write "[%time%][UserService] All User data is load Complete";
+
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting user main service startup";
+
+//Execute User Auto Run
+_file_write "[%time%][UserService] Start service :  {NATVC_UserAutoRun}";
+_if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
+  //_cout "Waitting User Auto Run ...";
+_ms_sleep 600;
+:RESTART_USER_MAIN_SERVICE;
+_var {NATVC_USERSVC_CALLBACK} = _script<"{NATVC_UserAutoRun}">;
+
+_file_write "[%time%][UserService] User Service is Closed with argument :  {NATVC_USERSVC_CALLBACK}";
+
+_if(_cp("{NATVC_USERSVC_CALLBACK}","logoff")) | _return "reload_SYSTEM";
+_if(_cp("{NATVC_USERSVC_CALLBACK}","user_logoff")) | _return "reload_SYSTEM";
+_if(_cp("{NATVC_USERSVC_CALLBACK}","relogin")) | _goto :RELOADAPI;
+_if(_cp("{NATVC_USERSVC_CALLBACK}","runid.exit")) | _goto :RESTART_USER_MAIN_SERVICE;
+_if(_cp("{NATVC_USERSVC_CALLBACK}","ok")) | _goto :RESTART_USER_MAIN_SERVICE;
+_return "{NATVC_USERSVC_CALLBACK}";
+_exit;
+
+
+
+
+:REQ_PASSWORD;
+_file_write "[%time%][UserService] This User need credentials to login";
+_if(!_cp("{PRE_AUTOENTRY_PASSWORD}","@EMPTY"))|_goto :REQ_autopassword;
+:REQ_REALPSWD;
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-req-passwd.txt";
+_prt "{NATVC_USERNAME} | Password >";
+_var {NATVC_LOGIN_USERPSWD} = _getline;
+_if(_cp("{NATVC_LOGIN_USERPSWD}","{NATVC_USER_PASSWORD}")) | _goto :PASS_VERIFED;
+_file_write "[%time%][UserService][Warning] Failed verify user credentials. login fail";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-req-wrong-passwd.txt"
+_pause;
+_return "loginfail";
+
+:REQ_autopassword;
+_file_write "[%time%][UserService] This user use Pre-Password login";
+_var {NATVC_LOGIN_USERPSWD} = "{PRE_AUTOENTRY_PASSWORD}";
+_var {PRE_AUTOENTRY_PASSWORD} = "@EMPTY";
+_if(_cp("{NATVC_LOGIN_USERPSWD}","{NATVC_USER_PASSWORD}")) | _goto :PASS_VERIFED;
+_file_write "[%time%][UserService][Warning] Pre-Password is Invalid";
+_goto :REQ_REALPSWD;
+
+//ERRPAGE
+:USERFAIL_NOCONFIG;
+_file_write "[%time%][UserService][Error] Fail load user profile {NATVC_USERPROFILE_CONFIG}";
+_clear;
+_cout "--NATVC User Service";
+_cout "Fail Load User Profile :  {NATVC_REQ_LOGIN}";
+_cout "Path on {NATVC_USERPROFILE_CONFIG}";
+_cout "_Press Enter to Logoff";
+_pause;
+_return "logoff";
+
+:USERFAIL_NOAR;
+_clear;
+_file_write "[%time%][UserService][Error] Fail load user autorun {NATVC_UserAutoRun}";
+_cout "Failed to initialize user login service";
+_cout "File :  {NATVC_UserAutoRun}";
+_cout "User auto run is NULL";
+_cout "_Press Enter to Logoff";
+_pause;
+_return "user_logoff";
+
+:USERFAIL_NOUSER;
+_file_write "[%time%][UserService][Error] Fail load user. user not exist -->  {NATVC_REQ_LOGIN}";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-nouser.txt";
+_pause;
+_return "loginfail";
+
+:USERFAIL_DISABLED;
+_clear;
+_file_write "[%time%][UserService][Error] Fail load user. this user is Disabled by admin --> {NATVC_REQ_LOGIN}";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-userban.txt";
+_pause;
+_return "logoff";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usersvc.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/xcopy.ca);
+_$directmode;
+_$nolog;
+
+//Natvc System Copy Tools
+//Example Copy {XCOPY_A} to {XCOPY_B}
+
+_var {TempListFiles} = "{temp}/filexcopy.txt";
+
+_if(_file_exist "{TempListFiles}")|_file_del "{TempListFiles}";
+
+_if(_cp("{XCOPY_A}",'{XCOPY_A}'))|_goto :ListHelp;
+_if(_cp("{XCOPY_B}",'{XCOPY_B}'))|_goto :ListHelp;
+
+//Create New List
+
+_dir_list ("{TempListFiles}","{XCOPY_A}");
+_file_replace "{TempListFiles}" ("{XCOPY_A}","");
+
+_if(!_file_exist "{TempListFiles}")|_goto :listfileError;
+
+_var {IntLoad} = "1";
+
+:XCOPY_START;
+
+_var {ReadCache} = _file_read ("{TempListFiles}","{IntLoad}");
+
+_if(_cp("{ReadCache}","overline")) | _goto :XCOPY_START_OK;
+
+//CopyFiles
+_dir_full "{XCOPY_B}/{ReadCache}";
+_file_copy("{XCOPY_A}/{ReadCache}","{XCOPY_B}/{ReadCache}");
+
+_var {IntLoad} = _+("{IntLoad}","1");   
+_goto :XCOPY_START;
+
+
+
+:XCOPY_START_OK;
+_file_del "{TempListFiles}";
+_return "OK";
+
+
+
+
+
+
+
+
+:ListHelp;
+_cout "Xcopy tools";
+_cout 'Copy dir {XCOPY_A} to {XCOPY_B}';
+_cout "Support Single file execute";
+_return "ok";
+
+:listfileError;
+_cout "Xcopy Error";
+_cout "Create file map error";
+_return "fail";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemImage/SystemImageDir.txt);
+A 
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemImage/SystemImageDir.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemLogFile.log);
+A 
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemLogFile.log);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/LogonUI.txt);
+This file is the login verification file for the Natvc system
+Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/LogonUI.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/userconfig);
+//NATVC USER CONFIG
+$UserName=SYSTEM;//User ID
+$isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
+$AutoRun={OriginDisk}/{REAutoExec};
+$DisableUser=0; // User is Disabled 0/1
+$UserPassword=%sysKerneluserPSWD; // UserPassword
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
+//User Ban Operation
+$useroptban=false;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/useroptban);
+$CSTP_FILE_RECORD_MARK_ID_START(/Program/programdir.txt);
+A 
+$CSTP_FILE_RECORD_MARK_ID_END(/Program/programdir.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Users/default/autorun);
+//Auto Run Tasks
+$task=;
+$CSTP_FILE_RECORD_MARK_ID_END(/Users/default/autorun);
+$CSTP_FILE_RECORD_MARK_ID_START(/Users/default/userconfig);
+//NATVC USER CONFIG
+$UserName=;//User ID
+$isAdmin=;//Admin Auther 0-User 1-Admin 2-System User
+$AutoRun={NATVC_EXPLORER};
+$DisableUser=0; // User is Disabled 0/1
+$UserPassword=; // UserPassword
+$CSTP_FILE_RECORD_MARK_ID_END(/Users/default/userconfig);
+$CSTP_FILE_RECORD_MARK_ID_START(/Users/default/userindex);
+//User Index Link
+//Config Link File address
+$aboutsys={SYS_ROOT}/aboutsys.ca;
+$devinfo={SYS_ROOT}/devinfo.ca;
+$update={SYS_ROOT}/ntvupd.ca;
+$filemgr={SYS_ROOT}/filemgr.ca;
+$filecstp={SYS_ROOT}/filecstp.ca;
+$confedit={SYS_ROOT}/confedit.ca;
+$usersettings={SYS_ROOT}/usersettings.ca;
+$nbfmgr={SYS_ROOT}/nbfmgr.ca;
+$textread={SYS_ROOT}/textreader.ca;
+$whoami={SYS_ROOT}/whoami.ca;
+$diskclean={SYS_ROOT}/diskclean.ca;
+$run={SYS_ROOT}/runexec.ca;
+$explorer={SYS_ROOT}/explorer.ca;
+$devtool=natvc_fdl.dev_toolkit.mna;
+$nexp=natvc_fdl.nexplorer.mna;
+$softmgr=mnacore.pkgmanager.mna;
+$CSTP_FILE_RECORD_MARK_ID_END(/Users/default/userindex);
+$CSTP_FILE_RECORD_MARK_ID_START(/Users/default/usermenu);
+//USERMENU
+//SETTINGS
+
+$MENU_TYPE={SYS_NROOT}/res/natvc-UserMenu.txt;
+$CSTP_FILE_RECORD_MARK_ID_END(/Users/default/usermenu);
+$CSTP_FILE_RECORD_MARK_ID_START(/Users/default/useroptban);
+//User Ban Operation
+$useroptban=false;
+$CSTP_FILE_RECORD_MARK_ID_END(/Users/default/useroptban);
+$CSTP_FILE_RECORD_MARK_ID_END(/ntvre.cstp);
+$CSTP_FILE_RECORD_MARK_ID_START(/OSRepair/osr.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(!_cp("{RE_ENV}","true"))|_return "fail";
+
+//OS Repair
+
+_var {RAMOLD_SYS_ROOT} = {SYS_ROOT};
+_var {RAMOLD_SYS_NROOT} = {SYS_NROOT};
+_var {RAMOLD_NATVC_DISK} = {NATVC_DISK};
+
+_if(!_file_exist "{OriginDisk}/Recovery/bindos")|_goto :OSREPAIRSELECT;
+
+_sipcfg.open "{OriginDisk}/Recovery/bindos";
+
+_var {NATVC_DISK} = _sipcfg OSDIR;
+
+:BACKREADER;
+
+_if(!_file_exist "{NATVC_DISK}/Natvc/SystemImage/sysfix.ca")|_goto :FailRepairNotSupport;
+
+_var {SYS_ROOT} = "{NATVC_DISK}/Natvc/System";
+
+_var {SYS_NROOT} = "{NATVC_DISK}/Natvc";
+
+_if(!_file_exist "{SYS_ROOT}/sysfix.ca")|_goto :FixFromSI;
+:NEXTFIX;
+_var {CALLSYSFIX} = _script<"{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca"> "check";
+_file_open "{SYS_LOG}";
+
+_goto :RECOVERY_ENVOS;
+
+
+
+:FixFromSI;
+_if(!_file_exist "{SYS_NROOT}/SystemImage/sysfix.ca")|_goto :CANNOT FIX;
+_file_copy("{SYS_NROOT}/SystemImage/sysfix.ca","{SYS_ROOT}/sysfix.ca");
+_goto :NEXTFIX;
+
+
+
+:CANNOT FIX;
+_clear;
+_cout "System Automatic Repair cannot fix your device";
+_cout "some important file is missing";
+_cout "You need contact advanced Technical Support";
+_cout "";
+_cout " OS :  {NATVC_DISK}";
+_cout " SYSROOT :  {SYS_ROOT}";
+_cout "";
+_cout " Press any key to back";
+_pause;
+_goto :RECOVERY_ENVOS;
+
+
+
+:RECOVERY_ENVOS;
+_free {NATVC_DISK};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+
+_var {SYS_ROOT} = "{RAMOLD_SYS_ROOT}";
+_var {SYS_NROOT} = "{RAMOLD_SYS_NROOT}";
+_var {NATVC_DISK} = "{RAMOLD_NATVC_DISK}";
+
+_free {RAMOLD_NATVC_DISK};
+_free {RAMOLD_SYS_NROOT};
+_free {RAMOLD_SYS_ROOT};
+
+_return "ok";
+
+
+
+
+:OSREPAIRSELECT;
+//SELECT VOLUME
+_clear;
+_cout "OS Repair";
+_cout "This Recovery Environment not bind os path";
+_cout "type os volume to start";
+_cout "Example :   script/vdisk/myOS";
+_prts "OSVolume >";
+_var {NATVC_DISK} = _getline;
+_clear;
+_goto :BACKREADER;
+
+
+:FailRepairNotSupport;
+_clear;
+_cout "System Automatic Repair could not fix your device";
+_cout "some important file is missing";
+_cout "You need contact advanced Technical Support";
+_cout "";
+_cout " OS :  {NATVC_DISK}";
+_cout " FILE :  {NATVC_DISK}/Natvc/SystemImage/sysfix.ca";
+_cout "";
+_cout " Press any key to back";
+_pause;
+_goto :RECOVERY_ENVOS;
+$CSTP_FILE_RECORD_MARK_ID_END(/OSRepair/osr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/re.nbf);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc RE System Loader
+//Anti rootshell load
+
+//SignLoad
+//$signload=ntvre_osloader_sign;
+
+_clear;
+
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
+
+_var {TempLoadRE} = _sipcfg RollBackLoad;
+_if(!_cp(_sipcfg DefaultOption,"recovery"))|_goto :SkipRollBackRE;
+_sipcfg DefaultOption = "{TempLoadRE}";
+_sipcfg RollBackLoad = "";
+
+:SkipRollBackRE;
+
+
+//Load main
+//GET REDATA
+_if(!_file_exist "{NATVC_DISK}/{Boot_OSPATH}/bootdat")|_goto :loadfail_nodat;
+
+_sipcfg.open "{NATVC_DISK}/{Boot_OSPATH}/bootdat";
+_var {tempdisk} = _sipcfg tempdisk;
+_var {tempdisk} = "script/{tempdisk}";
+_var {ospack} = _sipcfg ospack;
+_var {REAutoExec} = _sipcfg REAutoExec;
+
+_var {ospack} = "{NATVC_DISK}/{Boot_OSPATH}/{ospack}";
+
+_if(!_file_exist "{ospack}")|_goto :loadfail_nocstp;
+
+_var {OriginDisk} = "{NATVC_DISK}";
+_var {NATVC_DISK} = "{tempdisk}";
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_clear;
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "    {BootUIA}";
+_cout "    {BootUIB}";
+_cout "    {BootUIC}";
+_cout "";
+_cout "";
+_cout "";
+_cout "  Please wait.  Natvc is loading files";
+_cout "";
+
+//Extract to TempDisk
+_if(_dir_exist "{tempdisk}")|_dir_remove "{tempdisk}";
+
+_file_uncstp("{ospack}","{tempdisk}");
+
+//Boot System
+_var {osvolume} = "{tempdisk}";
+_var {NATVC_DISK} = "{osvolume}";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+_var {RE_ENV} = "true";
+_clear;
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_dir_remove "{tempdisk}";
+
+_free {OriginDisk};
+_free {NATVC_DISK};
+_free {Boot_OSPATH};
+_free {NATVC_SYSLDR};
+_free {BootSign};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+_free {REAutoExec};
+_free {BL_Verify_F};
+
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_goto :NATVC_MS_FL;
+
+
+
+//ERRPAGE
+:loadfail_nodat;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {NATVC_DISK}/{Boot_OSPATH}/bootdat   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+:loadfail_nocstp;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {ospack}   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+
+
+:NATVC_MS_SL;
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+:NATVC_MS_FL;
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/re.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/Recovery.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(!_cp("{RE_ENV}","true"))|_return "fail";
+
+_cout "Loading Recovery .. ";
+_ms_sleep 600;
+
+_if(_cp("{NTV_AutoRepair}","true"))|_goto :OSRepair;
+
+//NATVC Recovery Loader
+:ReloadREMain;
+_clear;
+_typefile "{OriginDisk}/Recovery/text/ReMain.txt";
+_prts "select tools >";
+_var {useropt} = _getline;
+
+_if(_cp("{useropt}","1"))|_goto :OSRepair;
+_if(_cp("{useropt}","2"))|_goto :LoadRootShell;
+_if(_cp("{useropt}","3"))|_goto :LoadAdvancedOpt;
+_if(_cp("{useropt}","4"))|_return "user_restart";
+
+_if(_cp("{useropt}","debug"))|_$analysis;
+
+_goto :ReloadREMain;
+
+
+
+
+//Tools Main
+
+:OSRepair;
+_var {NTV_AutoRepair} = "false";
+_if(!_file_exist "{OriginDisk}/Recovery/OSRepair/osr.ca")|_goto :FileMissing;
+
+_var {CALLOSR} = _script <"{OriginDisk}/Recovery/OSRepair/osr.ca">;
+
+_clear;
+_cout "Automatic Repair is Complete repair your system";
+_cout "Please try to restart";
+_pause;
+
+_goto :ReloadREMain;
+
+
+:LoadAdvancedOpt;
+_var {NATVC_A_RE} = "true";
+_return "user_restart";
+
+
+:LoadRootShell;
+_clear;
+_var {rs_pathexec} = "{SYS_ROOT}";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script <"{SYS_ROOT}/rootshell.ca">;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_shutdown")) |_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_restart"))  |_return "user_restart";
+_clear;
+_goto :ReloadREMain;
+
+
+:FileMissing;
+_cout "OS Repair file missing";
+_cout "{OriginDisk}/Recovery/OSRepair/osr.ca";
+_cout "Run setup media and copy new files";
+_pause;
+_goto :ReloadREMain;
+$CSTP_FILE_RECORD_MARK_ID_END(/Recovery.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/text/ReMain.txt);
+╔══════════════════════════════════════════════════╗
+║          Natvc Recovery Environment              ║
+║            RE {SYSNAME}.{SYS_KERNEL_VID}
+╚══════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────┐
+│  1. Run OS Repair Tool                           │
+│  2. Open Root Shell                              │
+│  3. Advanced Boot Options                        │
+│  4. Exit to System                               │
+└──────────────────────────────────────────────────┘
+
+  Enter selection
+$CSTP_FILE_RECORD_MARK_ID_END(/text/ReMain.txt);
