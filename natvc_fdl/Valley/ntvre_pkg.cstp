@@ -1,5 +1,20 @@
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/bootdat);
+//NATVC RE OSLOADER
+$tempdisk=tempreos;
+$ospack=ntvre.cstp;
+
+//REBOOT
+$ospath=Natvc;
+$osload=Natvc/System/ntvload.nbf;
+$bootsign=nvkrnl_universal_bootsignal_fullcore_natvc;
+
+$REAutoExec=Recovery/Recovery.ca;
+$CSTP_FILE_RECORD_MARK_ID_END(/bootdat);
+$CSTP_FILE_RECORD_MARK_ID_START(/ntvre.cstp);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -74,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5126;
+$SYS_KERNEL_VID=5128;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U1;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3237,3 +3252,321 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Users/default/useroptban);
 //User Ban Operation
 $useroptban=false;
 $CSTP_FILE_RECORD_MARK_ID_END(/Users/default/useroptban);
+$CSTP_FILE_RECORD_MARK_ID_END(/ntvre.cstp);
+$CSTP_FILE_RECORD_MARK_ID_START(/OSRepair/osr.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(!_cp("{RE_ENV}","true"))|_return "fail";
+
+//OS Repair
+
+_var {RAMOLD_SYS_ROOT} = {SYS_ROOT};
+_var {RAMOLD_SYS_NROOT} = {SYS_NROOT};
+_var {RAMOLD_NATVC_DISK} = {NATVC_DISK};
+
+_if(!_file_exist "{OriginDisk}/Recovery/bindos")|_goto :OSREPAIRSELECT;
+
+_sipcfg.open "{OriginDisk}/Recovery/bindos";
+
+_var {NATVC_DISK} = _sipcfg OSDIR;
+
+:BACKREADER;
+
+_if(!_file_exist "{NATVC_DISK}/Natvc/SystemImage/sysfix.ca")|_goto :FailRepairNotSupport;
+
+_var {SYS_ROOT} = "{NATVC_DISK}/Natvc/System";
+
+_var {SYS_NROOT} = "{NATVC_DISK}/Natvc";
+
+_if(!_file_exist "{SYS_ROOT}/sysfix.ca")|_goto :FixFromSI;
+:NEXTFIX;
+_var {CALLSYSFIX} = _script<"{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca"> "check";
+_file_open "{SYS_LOG}";
+
+_goto :RECOVERY_ENVOS;
+
+
+
+:FixFromSI;
+_if(!_file_exist "{SYS_NROOT}/SystemImage/sysfix.ca")|_goto :CANNOT FIX;
+_file_copy("{SYS_NROOT}/SystemImage/sysfix.ca","{SYS_ROOT}/sysfix.ca");
+_goto :NEXTFIX;
+
+
+
+:CANNOT FIX;
+_clear;
+_cout "System Automatic Repair cannot fix your device";
+_cout "some important file is missing";
+_cout "You need contact advanced Technical Support";
+_cout "";
+_cout " OS :  {NATVC_DISK}";
+_cout " SYSROOT :  {SYS_ROOT}";
+_cout "";
+_cout " Press any key to back";
+_pause;
+_goto :RECOVERY_ENVOS;
+
+
+
+:RECOVERY_ENVOS;
+_free {NATVC_DISK};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+
+_var {SYS_ROOT} = "{RAMOLD_SYS_ROOT}";
+_var {SYS_NROOT} = "{RAMOLD_SYS_NROOT}";
+_var {NATVC_DISK} = "{RAMOLD_NATVC_DISK}";
+
+_free {RAMOLD_NATVC_DISK};
+_free {RAMOLD_SYS_NROOT};
+_free {RAMOLD_SYS_ROOT};
+
+_return "ok";
+
+
+
+
+:OSREPAIRSELECT;
+//SELECT VOLUME
+_clear;
+_cout "OS Repair";
+_cout "This Recovery Environment not bind os path";
+_cout "type os volume to start";
+_cout "Example :   script/vdisk/myOS";
+_prts "OSVolume >";
+_var {NATVC_DISK} = _getline;
+_clear;
+_goto :BACKREADER;
+
+
+:FailRepairNotSupport;
+_clear;
+_cout "System Automatic Repair could not fix your device";
+_cout "some important file is missing";
+_cout "You need contact advanced Technical Support";
+_cout "";
+_cout " OS :  {NATVC_DISK}";
+_cout " FILE :  {NATVC_DISK}/Natvc/SystemImage/sysfix.ca";
+_cout "";
+_cout " Press any key to back";
+_pause;
+_goto :RECOVERY_ENVOS;
+$CSTP_FILE_RECORD_MARK_ID_END(/OSRepair/osr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/re.nbf);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc RE System Loader
+//Anti rootshell load
+
+//SignLoad
+//$signload=ntvre_osloader_sign;
+
+_clear;
+
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
+
+_var {TempLoadRE} = _sipcfg RollBackLoad;
+_if(!_cp(_sipcfg DefaultOption,"recovery"))|_goto :SkipRollBackRE;
+_sipcfg DefaultOption = "{TempLoadRE}";
+_sipcfg RollBackLoad = "";
+
+:SkipRollBackRE;
+
+
+//Load main
+//GET REDATA
+_if(!_file_exist "{NATVC_DISK}/{Boot_OSPATH}/bootdat")|_goto :loadfail_nodat;
+
+_sipcfg.open "{NATVC_DISK}/{Boot_OSPATH}/bootdat";
+_var {tempdisk} = _sipcfg tempdisk;
+_var {tempdisk} = "script/{tempdisk}";
+_var {ospack} = _sipcfg ospack;
+_var {REAutoExec} = _sipcfg REAutoExec;
+
+_var {ospack} = "{NATVC_DISK}/{Boot_OSPATH}/{ospack}";
+
+_if(!_file_exist "{ospack}")|_goto :loadfail_nocstp;
+
+_var {OriginDisk} = "{NATVC_DISK}";
+_var {NATVC_DISK} = "{tempdisk}";
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_clear;
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "    {BootUIA}";
+_cout "    {BootUIB}";
+_cout "    {BootUIC}";
+_cout "";
+_cout "";
+_cout "";
+_cout "  Please wait.  Natvc is loading files";
+_cout "";
+
+//Extract to TempDisk
+_if(_dir_exist "{tempdisk}")|_dir_remove "{tempdisk}";
+
+_file_uncstp("{ospack}","{tempdisk}");
+
+//Boot System
+_var {osvolume} = "{tempdisk}";
+_var {NATVC_DISK} = "{osvolume}";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+_var {RE_ENV} = "true";
+_clear;
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_dir_remove "{tempdisk}";
+
+_free {OriginDisk};
+_free {NATVC_DISK};
+_free {Boot_OSPATH};
+_free {NATVC_SYSLDR};
+_free {BootSign};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+_free {REAutoExec};
+_free {BL_Verify_F};
+
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_goto :NATVC_MS_FL;
+
+
+
+//ERRPAGE
+:loadfail_nodat;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {NATVC_DISK}/{Boot_OSPATH}/bootdat   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+:loadfail_nocstp;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {ospack}   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+
+
+:NATVC_MS_SL;
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+:NATVC_MS_FL;
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/re.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/Recovery.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(!_cp("{RE_ENV}","true"))|_return "fail";
+
+_cout "Loading Recovery .. ";
+_ms_sleep 600;
+
+_if(_cp("{NTV_AutoRepair}","true"))|_goto :OSRepair;
+
+//NATVC Recovery Loader
+:ReloadREMain;
+_clear;
+_typefile "{OriginDisk}/Recovery/text/ReMain.txt";
+_prts "select tools >";
+_var {useropt} = _getline;
+
+_if(_cp("{useropt}","1"))|_goto :OSRepair;
+_if(_cp("{useropt}","2"))|_goto :LoadRootShell;
+_if(_cp("{useropt}","3"))|_goto :LoadAdvancedOpt;
+_if(_cp("{useropt}","4"))|_return "user_restart";
+
+_if(_cp("{useropt}","debug"))|_$analysis;
+
+_goto :ReloadREMain;
+
+
+
+
+//Tools Main
+
+:OSRepair;
+_var {NTV_AutoRepair} = "false";
+_if(!_file_exist "{OriginDisk}/Recovery/OSRepair/osr.ca")|_goto :FileMissing;
+
+_var {CALLOSR} = _script <"{OriginDisk}/Recovery/OSRepair/osr.ca">;
+
+_clear;
+_cout "Automatic Repair is Complete repair your system";
+_cout "Please try to restart";
+_pause;
+
+_goto :ReloadREMain;
+
+
+:LoadAdvancedOpt;
+_var {NATVC_A_RE} = "true";
+_return "user_restart";
+
+
+:LoadRootShell;
+_clear;
+_var {rs_pathexec} = "{SYS_ROOT}";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script <"{SYS_ROOT}/rootshell.ca">;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_shutdown")) |_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_restart"))  |_return "user_restart";
+_clear;
+_goto :ReloadREMain;
+
+
+:FileMissing;
+_cout "OS Repair file missing";
+_cout "{OriginDisk}/Recovery/OSRepair/osr.ca";
+_cout "Run setup media and copy new files";
+_pause;
+_goto :ReloadREMain;
+$CSTP_FILE_RECORD_MARK_ID_END(/Recovery.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/text/ReMain.txt);
+
+          Natvc Recovery Environment              
+            RE {SYSNAME}.{SYS_KERNEL_VID}
+
+
+
+  1. Run OS Repair Tool                           
+  2. Open Root Shell                              
+  3. Advanced Boot Options                        
+  4. Exit to System                               
+
+
+  Enter selection
+$CSTP_FILE_RECORD_MARK_ID_END(/text/ReMain.txt);
