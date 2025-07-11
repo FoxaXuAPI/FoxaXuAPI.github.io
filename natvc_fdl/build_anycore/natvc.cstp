@@ -23,7 +23,7 @@ $oobequick=0;
 $shutdown_record=1;
 $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
-$FastBoot=1;
+$FastBoot=0;
 
 //Shutdown Status
 $shutdown=0;
@@ -31,7 +31,7 @@ $last_startup=0;
 $last_shutdown=0;
 
 //Explorer
-$explorer_title= User Explorer >;
+$explorer_title=User Explorer >;
 
 //NTVANI
 $offani=false;
@@ -86,10 +86,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5102;
-$SYS_REG_NAME=14.0;
+$SYS_KERNEL_VID=5128;
+$SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Preview_System-{SYS_KERNEL_VID}.BUG_TEST_AND_SOFTWARE_MODIFY_1;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3303,19 +3303,25 @@ _if(_<=("{PlayRate}","0"))|_goto :NullRequest;
 _prts "\r                                          \r        ████                         ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r             ████                    ";
+_prts "\r                                          \r        ████████                     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                  ████               ";
+_prts "\r                                          \r            ████████                 ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                        ████         ";
+_prts "\r                                          \r                ████████             ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                            ████     ";
+_prts "\r                                          \r                    ████████         ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                                 ████";
+_prts "\r                                          \r                        ████████     ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                            ████████ ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                                ████ ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                                     ";
@@ -4287,6 +4293,7 @@ _file_write "[%time%][Kernel][Error] NUES Service exit";
 _cout "Failed to initialize the Natvc User Experience Service (NUES).";
 _cout "Press Enter to restart NUES Service";
 _pause;
+_dir_remove "{SYS_NROOT}/SECURITY";
 _goto :LoadSystemMain;
 
 :FAILSYSMODE;
@@ -5397,6 +5404,7 @@ _sipcfg default = "_ARGS_NU_ID";
 //Write Register
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg oobe = "0";
+_sipcfg FastBoot = "1";
 _var {OOBE_PAGE_STATUS} = "oobe_done";
 _clear;
 //Open Endpage..
@@ -6216,6 +6224,7 @@ _script <"{SYS_ROOT}/mnareset.ca"> "uninstallonly";
 
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg oobe = "1";
+_sipcfg FastBoot = "0";
 _sipcfg shutdown = "0";
 _sipcfg last_startup = "0";
 _sipcfg last_shutdown = "0";
@@ -6299,6 +6308,7 @@ _script <"{SYS_ROOT}/mnareset.ca"> "uninstallonly";
 
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg oobe = "1";
+_sipcfg FastBoot = "0";
 _sipcfg shutdown = "0";
 _sipcfg last_startup = "0";
 _sipcfg last_shutdown = "0";
@@ -7060,25 +7070,17 @@ _var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
 _goto :FASTLoginBack;
 
 
-//FOR Edit no Function
- "$USERNAME={NATVC_USERNAME};";
- "$USERID={NATVC_WHOIS}";
- "$USERPROFILE={NATVC_USERPROFILE};";
- "$USERADMIN={NATVC_isAdmin};";
- 
- "$AUTORUN={NATVC_UserAutoRun};";
- "$USERPASSWORD={NATVC_USER_PASSWORD};";
- "$DISABLEUSER={NATVC_DisableUser};";
-
 
 :REQ_PASSWORD_TO_UNLOCKUSER;
 
-_if(_cp("{NATVC_isAdmin}","2"))|_goto :PASSFLB;
+_if(!_cp("{PRE_AUTOENTRY_PASSWORD}","@EMPTY"))|_goto :TryUsePrePasswd;
 
 _clear;
 _cout "Type your password to unlock this user";
 _prt "password>";
 _var {GET_PASSWORD} = _getline;
+
+:MOD_A_UNLOCKER_TRY;
 _if(_cp("{GET_PASSWORD}","{NATVC_USER_PASSWORD}"))|_goto :PASSFLB;
 
 _clear;
@@ -7088,6 +7090,12 @@ _cout "Unlock user failed";
 //_cout "Your type :  {GET_PASSWORD}";
 _pause;
 _return "reload_SYSTEM";
+
+
+:TryUsePrePasswd;
+_var {GET_PASSWORD} = "{PRE_AUTOENTRY_PASSWORD}";
+_var {PRE_AUTOENTRY_PASSWORD} = "@EMPTY";
+_goto :MOD_A_UNLOCKER_TRY;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usersvc.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/whoami.ca);
 _$directmode;
@@ -7548,9 +7556,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=Bad times make a good man. Life is real, life is earnest.;
+$TitleA=The miracle appear in bad luck. Life is real, life is earnest.;
 $TitleB=Welcome to NATVC;
-$TitleC=Natvc Valley Preview {SYS_KERNEL_VID};
+$TitleC=Natvc 14;
 
 //Part 2
 $TitleD=Open Menu type "menu";
@@ -7561,9 +7569,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=Bad times make a good man. Life is real, life is earnest.;
+$TitleA=The miracle appear in bad luck. Life is real, life is earnest.;
 $TitleB=Welcome to NATVC;
-$TitleC=Natvc Valley Preview {SYS_KERNEL_VID};
+$TitleC=Natvc 14;
 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Program/$PROGRAM_ROOT.txt);

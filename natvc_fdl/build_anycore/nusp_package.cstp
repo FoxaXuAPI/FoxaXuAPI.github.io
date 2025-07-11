@@ -61,7 +61,7 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.46; 
+$USV=1.0.56; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
@@ -242,8 +242,12 @@ _sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
 _var {USV_DAT} = _sipcfg USV;
 
 :ReloadMainCLI;
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
 _clear;
 _cout "Natvc Update Service Package";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "An Exist Update is waitting for restart";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "If you want install another update.please restart your device and install later";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout " ";
 _cout "Select Option";
 _cout "          1. Check updates";
 _cout "          2. Run Diskclean";
