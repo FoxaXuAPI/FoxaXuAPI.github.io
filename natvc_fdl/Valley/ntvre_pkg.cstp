@@ -15,6 +15,30 @@ $CSTP_FILE_RECORD_MARK_ID_END(/bootdat);
 $CSTP_FILE_RECORD_MARK_ID_START(/ntvre.cstp);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/DeploySettings);
+//Natvc Deploy Settings For System first startup
+
+//Allow Not System user run this service
+$AllowAdminUserDebug=false;
+
+//Debug system
+$DeployModernNatvcApps=true;
+
+//For Insider Version System Unlock Administrator
+$AutoUnlockAdminUser=false;
+
+//Debug settings
+$CreateUserOOBE=true;
+
+
+//Modify config/SETUP oobe = 0
+$ModifySetupOOBEtoZero=true;
+
+
+//Enable Fast Boot when system complete deploy
+$EnableFastBoot=true;
+
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/DeploySettings);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -89,10 +113,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5128;
+$SYS_KERNEL_VID=5134;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U2;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U3;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;

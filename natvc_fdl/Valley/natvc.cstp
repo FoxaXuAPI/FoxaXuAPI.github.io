@@ -12,6 +12,30 @@ _cout "Invoke App failed. Use sysfix to repair this system";
 
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/confedit.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/DeploySettings);
+//Natvc Deploy Settings For System first startup
+
+//Allow Not System user run this service
+$AllowAdminUserDebug=false;
+
+//Debug system
+$DeployModernNatvcApps=true;
+
+//For Insider Version System Unlock Administrator
+$AutoUnlockAdminUser=false;
+
+//Debug settings
+$CreateUserOOBE=true;
+
+
+//Modify config/SETUP oobe = 0
+$ModifySetupOOBEtoZero=true;
+
+
+//Enable Fast Boot when system complete deploy
+$EnableFastBoot=true;
+
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/DeploySettings);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -86,10 +110,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5128;
+$SYS_KERNEL_VID=5134;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U2;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U3;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3365,13 +3389,37 @@ _$directmode;
 _$nolog;
 
 //Natvc System Deploy Toolkit
+
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+
 _file_write "[%time%][NatvcDeploy] System need load OOBE Service";
 _file_write "[%time%][NatvcDeploy] Prepare OOBE Service";
+
+_var {DepResult} = _sipcfg AllowAdminUserDebug;
+_if(_cp("{DepResult}","true"))|_goto :SkipDetectUserAuth;
+
 _if(!_cp("{NATVC_isAdmin}","2"))|_goto :AuthError;
+:SkipDetectUserAuth;
+
+_var {DepResult} = _sipcfg DeployModernNatvcApps;
+_if(_cp("{DepResult}","false"))|_goto :SkipInstallSystemMNA;
 
 _clear;
 _cout "System is Deploy MNA Apps    Please wait...";
 _script <"{SYS_ROOT}/mnareset.ca"> "installonly";
+
+:SkipInstallSystemMNA;
+
+_var {DepResult} = _sipcfg AutoUnlockAdminUser;
+_if(_cp("{DepResult}","true"))|_sipcfg.open "{SYS_USERPATH}/admin/userconfig";
+_if(_cp("{DepResult}","true"))|_sipcfg DisableUser = "0";
+_if(_cp("{DepResult}","true"))|_sipcfg.open "{NATVC_CONFIG_USERS}";
+_if(_cp("{DepResult}","true"))|_sipcfg default = "admin";
+
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+
+_var {DepResult} = _sipcfg CreateUserOOBE;
+_if(_cp("{DepResult}","false"))|_goto :SkipRunOOBEService;
 
 _clear;
 
@@ -3398,6 +3446,8 @@ _file_copy ("{SYS_USERPATH}/default/autorun","{SYS_USERPATH}/oobe/autorun");
 _sipcfg.open "{SYS_USERPATH}/oobe/autorun";
 _sipcfg task = "{SYS_ROOT}/oobe.ca";
 
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+
 _clear;
 
 _var {PRE_AUTOENTRY_PASSWORD} = "@rtoobe";
@@ -3414,6 +3464,11 @@ _if(_cp("{OOBEDEGBUG}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{OOBEDEGBUG}","user_restart"))|_return "user_restart";
 
 _file_write "[%time%][NatvcDeploy] OOBE Service Closed";
+
+:SkipRunOOBEService;
+_free {DepResult};
+_free {DepResult_A};
+_free {DepResult_B};
 _return "Complete";
 
 :OOBE_CANCEL_PREP;
@@ -5359,19 +5414,23 @@ _pause;
 _var {OOBE_PAGE_STATUS} = "oobe_unknown";
 
 //Create New User
+:CreateUserPage;
 _clear;
 //Open NEW USER.
 _typefile "{SYS_NROOT}/res/natvc-oobe-user.txt";
 
 //WRITE MAIN NAME
+:RESET_FULLNAMETYPE;
 _prt "Write your full name >";
 _var _ARGS_NU_FULLNAME = _getline;
+_if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
 _if(_cp("_ARGS_NU_FULLNAME","@oobereload"))|_goto :ReloadExplorer;
 _if(_cp("_ARGS_NU_FULLNAME","@loaddebug"))|_return "oobeexit";
 _if(_cp("_ARGS_NU_FULLNAME","@oobecancel"))|_goto :ConfigCANCEL;
 _if(_cp("_ARGS_NU_FULLNAME","@restart"))|_return "restart";
 _if(_cp("_ARGS_NU_FULLNAME","@shutdown"))|_return "shutdown";
 _if(_cp("_ARGS_NU_FULLNAME","@skipoobe"))|_goto :EndPageOOBE;
+
 
 //WRITE ID
 :FORBIDDEN;
@@ -5396,15 +5455,21 @@ _if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
 _var _ARGS_NU_ADMIN = "1";
 
 _script<"{SYS_ROOT}/usermgr.ca"> "newuser";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_goto :UserCreateFailed_RETRY;
 _sipcfg.open "{NATVC_CONFIG_USERS}";
 _sipcfg default = "_ARGS_NU_ID";
 
 
 :EndPageOOBE;
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+_var {DepResult_A} = _sipcfg ModifySetupOOBEtoZero;
+_var {DepResult_B} = _sipcfg EnableFastBoot;
+
 //Write Register
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
-_sipcfg oobe = "0";
-_sipcfg FastBoot = "1";
+_if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
+_if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
+
 _var {OOBE_PAGE_STATUS} = "oobe_done";
 _clear;
 //Open Endpage..
@@ -5473,6 +5538,15 @@ _cout "Press Enter to Back";
 _pause;
 _return "fail";
 
+
+:UserCreateFailed_RETRY;
+_clear;
+_cout "   Something went wrong";
+_cout "Your user is create failed";
+_cout "maybe your type is invalid";
+_cout "or type has Illegal Path";
+_pause:
+_goto :CreateUserPage;
 
 //Hidden
 :LoadDebugUser;
@@ -6584,13 +6658,14 @@ _cout "Create New User _ARGS_NU_ID";
 
 _if( _cp ( "_ARGS_NU_ID" , '_ARGS_NU_ID' ))|_goto :COUTNULL;
 
-_if(_dir_exist ""{SYS_USERPATH}/_ARGS_NU_ID")|_return "Create fail. User Exist.";
+_if(_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_return "Create fail. User Exist.";
 _if(_cp("_ARGS_NU_ID","SYSTEM"))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","default"))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","admin"))|_return "Create fail. Forbidden";
 
 //Add User
 _dir_make "{SYS_USERPATH}/_ARGS_NU_ID";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_return "This user id is Illegal";
 _file_copy("{SYS_USERPATH}/default/userconfig","{SYS_USERPATH}/_ARGS_NU_ID/userconfig");
 _file_copy("{SYS_USERPATH}/default/usermenu","{SYS_USERPATH}/_ARGS_NU_ID/usermenu");
 _file_copy("{SYS_USERPATH}/default/useroptban","{SYS_USERPATH}/_ARGS_NU_ID/useroptban");
@@ -6746,6 +6821,7 @@ _goto :ReloadExplorer;
 
 :_exe_newuser;
 //Create New User
+:CreateUserPage;
 _file_write "[%time%][UserSettings] Create new users";
 _clear;
 //Open NEW USER.
@@ -6753,8 +6829,10 @@ _typefile "{NATVC_DISK}/Natvc/res/natvc-oobe-user.txt";
 
 //WRITE MAIN NAME
 _cout "Use .exit cancel";
+:RESET_FULLNAMETYPE;
 _prt "Write your full name >";
 _var _ARGS_NU_FULLNAME = _getline;
+_if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
 _if(_cp("_ARGS_NU_FULLNAME",".exit"))|_return "cancel";
 
 
@@ -6788,6 +6866,7 @@ _file_write "[%time%][UserSettings] Start service "User Manager Service"  ";
 _var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "newuser";
 
 _file_write "[%time%][UserSettings] Service Stop. Result: {umback} ";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_goto :UserCreateFailed_RETRY;
 
 _cout "{umback}";
 _pause;
@@ -6864,6 +6943,16 @@ _return "noauth";
 _file_write "[%time%][UserSettings] Command is Invalid";
 _var {NATVC_USEREXP_GET} = "NOTSET";
 _goto :BACKMAINCONSOLE;
+
+
+:UserCreateFailed_RETRY;
+_clear;
+_cout "   Something went wrong";
+_cout "Your user is create failed";
+_cout "maybe your type is invalid";
+_cout "or type has Illegal Path";
+_pause:
+_goto :CreateUserPage;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usersettings.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usersvc.ca);
 //NATVC SYSTEM
