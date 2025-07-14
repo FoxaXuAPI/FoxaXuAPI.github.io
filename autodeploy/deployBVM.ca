@@ -1,6 +1,8 @@
 _$directmode;
 _$nolog;
 
+//Repair Text Save Format CRLF to LF
+
 _cout "Downloading files";
 _cout "Please wait ";
 
