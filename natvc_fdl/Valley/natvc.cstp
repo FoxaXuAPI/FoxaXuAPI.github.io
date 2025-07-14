@@ -49,6 +49,9 @@ $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 
+//SysRepairService
+$DisableSysRepiar=false;
+
 //Shutdown Status
 $shutdown=0;
 $last_startup=0;
@@ -110,10 +113,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5134;
+$SYS_KERNEL_VID=5136;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U3;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U4;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -6054,6 +6057,10 @@ $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/runexec.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/sysfix.ca);
 _$directmode;
 _$nolog;
+
+_sipcfg.open "{SYS_NROOT}/config/SETUP";
+_if(_cp(_sipcfg DisableSysRepiar,"{varspace.null}"))|_sipcfg DisableSysRepiar = "false";
+_if(_cp(_sipcfg DisableSysRepiar,"true"))|_return "service_disable";
 
 //Natvc System Fix or Check tools
 
