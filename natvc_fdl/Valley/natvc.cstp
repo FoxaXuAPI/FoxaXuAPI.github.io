@@ -113,10 +113,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5136;
+$SYS_KERNEL_VID=5142;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U4;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U5;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -1388,6 +1388,21 @@ https://devlab.foxaxu.com
 
 Press Enter to Start
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/start-read.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/{Template}.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute=<Execute>;
+
+//RUNAS USER
+$UserID=<USERID>;
+$UserPassword=<PASSWORD>;
+
+
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/{Template}.nsv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
 //Volume Loader
 $DefaultLoader={BootVolume}/bootmgr.ca;
@@ -5451,9 +5466,11 @@ _if(_cp("_ARGS_NU_ID",'{varspace.null}'))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID",'@'))|_goto :FORBIDDEN;
 
 //GET PASSWORD
+:invalidPasswordType;
 _prt "Write your user password (If you do not want set password. press enter) >";
 _var _ARGS_NU_PSWD = _getline;
 _if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
+_if(_cp("_ARGS_NU_PSWD",'@servicemode'))|_goto :invalidPasswordType;
 
 _var _ARGS_NU_ADMIN = "1";
 
@@ -6054,6 +6071,91 @@ _goto :ReloadCore;
 _var {NRS_CALLBACK} = _script <"{NATVC_Run_Script}">;
 _return "{NRS_CALLBACK}";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/runexec.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/services.ca);
+_$directmode;
+_$nolog;
+
+//System Service
+
+_var {NSV_DATA} = _getargs;
+
+//Detect Service
+_if(!_file_exist "{NSV_DATA}")|_goto :TryFindOnLocalService;
+_goto :StartLoadService;
+
+:TryFindOnLocalService;
+_if(!_file_exist "{SYS_NROOT}/Service/{NSV_DATA}.nsv")|_goto :FailLoadService;
+
+_var {NSV_DATA} = "{SYS_NROOT}/Service/{NSV_DATA}.nsv";
+
+:StartLoadService;
+
+//Load Config Datas
+_sipcfg.open "{NSV_DATA}";
+_var {NSV_Execute} = _sipcfg Execute;
+
+_var {NSV_UserID} = _sipcfg UserID;
+_var {NSV_UserPassword} = _sipcfg UserPassword;
+
+//Login Current Users
+
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NSV_UserID}.nuslc")|_goto :UserNotAlreadyLogin;
+
+_var {Recovery_SvcUser} = "{NATVC_WHOIS}";
+
+_sipcfg.open "{SYS_NROOT}/SECURITY/{NSV_UserID}.nuslc";
+_var {NATVC_USERNAME}      = _sipcfg USERNAME;
+_var {NATVC_WHOIS}         = _sipcfg USERID;
+_var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_var {NATVC_isAdmin}       = _sipcfg USERADMIN;
+_var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
+_var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
+_var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
+
+_if(!_cp("{NATVC_USER_PASSWORD}","{NSV_UserPassword}"))|_goto :FailPasswordWrong;
+
+_var {NSV_SERVICE_MODE} = "true";
+_var {CALLBACK_NSV} = _script <"{NSV_Execute}">;
+_var {NSV_SERVICE_MODE} = "false";
+
+_sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
+_var {NATVC_USERNAME}      = _sipcfg USERNAME;
+_var {NATVC_WHOIS}         = _sipcfg USERID;
+_var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_var {NATVC_isAdmin}       = _sipcfg USERADMIN;
+_var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
+_var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
+_var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
+
+_return "{CALLBACK_NSV}";
+
+
+
+
+:FailLoadService;
+_clear;
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Configuration File is missing";
+_pause;
+_return "false";
+
+:UserNotAlreadyLogin;
+_clear;
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Require User Not Logged.  Restart your device and try again";
+_pause;
+_return "false";
+
+:FailPasswordWrong;
+_clear;
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Require User Password wrong. ";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/services.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/sysfix.ca);
 _$directmode;
 _$nolog;
@@ -6860,9 +6962,11 @@ _if(_cp("_ARGS_NU_ID",".exit"))|_return "cancel";
 _file_write "[%time%][UserSettings] User Type is :  _ARGS_NU_ID";
 
 //GET PASSWORD
+:invalidPasswordType;
 _prt "Write your user password (If you do not want set password. press enter) >";
 _var _ARGS_NU_PSWD = _getline;
 _if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
+_if(_cp("_ARGS_NU_PSWD",'@servicemode'))|_goto :invalidPasswordType;
 
 _file_write "[%time%][UserSettings] User : _ARGS_NU_ID    Password is : _ARGS_NU_PSWD ";
 
@@ -7050,9 +7154,14 @@ _if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting user main service startup";
 
 //Execute User Auto Run
 _file_write "[%time%][UserService] Start service :  {NATVC_UserAutoRun}";
+
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_goto :SkipCheckautoRunExist;
+
 _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
   //_cout "Waitting User Auto Run ...";
-_ms_sleep 600;
+
+:SkipCheckautoRunExist;
+
 :RESTART_USER_MAIN_SERVICE;
 
 //Create User Dump
@@ -7073,6 +7182,9 @@ _if(!_cp("{NATVC_USER_PASSWORD}","@nopswd")) | _goto :REQ_PASSWORD_TO_UNLOCKUSER
 :PASSFLB;
 
 _file_open "{SYS_LOG}";
+
+//For Pre Login Service
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_return "reload_SYSTEM";
 
 _var {NATVC_USERSVC_CALLBACK} = _script<"{NATVC_UserAutoRun}">;
 
@@ -7589,6 +7701,18 @@ _cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
 _pause;
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/Hardware_Test.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/isServiceMode.ca);
+_$directmode;
+_$nolog;
+
+//Detect Service Mode;
+
+_if(_cp("{NSV_SERVICE_MODE}","true"))|_cout "The program is running on service mode";
+_if(_cp("{NSV_SERVICE_MODE}","true"))|_return "ok";
+
+_cout "The program is running on user mode";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/isServiceMode.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT

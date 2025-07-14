@@ -116,10 +116,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5136;
+$SYS_KERNEL_VID=5142;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U4;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U5;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3012,9 +3012,14 @@ _if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting user main service startup";
 
 //Execute User Auto Run
 _file_write "[%time%][UserService] Start service :  {NATVC_UserAutoRun}";
+
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_goto :SkipCheckautoRunExist;
+
 _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
   //_cout "Waitting User Auto Run ...";
-_ms_sleep 600;
+
+:SkipCheckautoRunExist;
+
 :RESTART_USER_MAIN_SERVICE;
 
 //Create User Dump
@@ -3035,6 +3040,9 @@ _if(!_cp("{NATVC_USER_PASSWORD}","@nopswd")) | _goto :REQ_PASSWORD_TO_UNLOCKUSER
 :PASSFLB;
 
 _file_open "{SYS_LOG}";
+
+//For Pre Login Service
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_return "reload_SYSTEM";
 
 _var {NATVC_USERSVC_CALLBACK} = _script<"{NATVC_UserAutoRun}">;
 
