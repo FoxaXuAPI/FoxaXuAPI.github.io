@@ -15,30 +15,6 @@ $CSTP_FILE_RECORD_MARK_ID_END(/bootdat);
 $CSTP_FILE_RECORD_MARK_ID_START(/ntvre.cstp);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/DeploySettings);
-//Natvc Deploy Settings For System first startup
-
-//Allow Not System user run this service
-$AllowAdminUserDebug=false;
-
-//Debug system
-$DeployModernNatvcApps=true;
-
-//For Insider Version System Unlock Administrator
-$AutoUnlockAdminUser=false;
-
-//Debug settings
-$CreateUserOOBE=true;
-
-
-//Modify config/SETUP oobe = 0
-$ModifySetupOOBEtoZero=true;
-
-
-//Enable Fast Boot when system complete deploy
-$EnableFastBoot=true;
-
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/DeploySettings);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -81,15 +57,6 @@ $startup_exe_title=Prepare Update ;
 
 //ALL DATA
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SETUP);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SOFTWARE);
-//NATVC SOFTWARE PATH BIND
-//NATVC SOFTWARE GET
-
-//Software Register Link
-
-
-//For Support Legacy app
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SOFTWARE);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SYSTEM);
 //NATVC SYSTEM CONFIG
 //Log Record
@@ -116,10 +83,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5143;
+$SYS_KERNEL_VID=5147;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U6;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U7;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -145,14 +112,6 @@ $NATVC_CRASH_TEXT=Natvc/res/natvc-crash.txt;
 
 //End
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SYSTEM);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/UPDATE);
-//NATVC UPDATE SERVICE PROXY
-//SERVER and SETUP CONFIG
-
-$NUSP_GET=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/nusp_package.cstp;
-
-//That`s all
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/UPDATE);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/USERS);
 //PUBLIC USER DATA
 //USERPATH DIR

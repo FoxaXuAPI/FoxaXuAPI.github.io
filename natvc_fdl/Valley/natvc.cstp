@@ -113,10 +113,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5143;
+$SYS_KERNEL_VID=5147;
 $SYS_REG_NAME=14.1;
 $SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U6;
+$SYS_RELEASE_Channel=Release_1.25Y_7M_U7;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3408,6 +3408,10 @@ _$nolog;
 
 //Natvc System Deploy Toolkit
 
+_clear;
+_var {update_title} = "Starting Deploy Service";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
 _sipcfg.open "{SYS_NROOT}/config/DeploySettings";
 
 _file_write "[%time%][NatvcDeploy] System need load OOBE Service";
@@ -3421,6 +3425,11 @@ _if(!_cp("{NATVC_isAdmin}","2"))|_goto :AuthError;
 
 _var {DepResult} = _sipcfg DeployModernNatvcApps;
 _if(_cp("{DepResult}","false"))|_goto :SkipInstallSystemMNA;
+
+_clear;
+_var {update_title} = "Deploy System Apps";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+_ms_sleep "300";
 
 _clear;
 _cout "System is Deploy MNA Apps    Please wait...";
@@ -3440,15 +3449,9 @@ _var {DepResult} = _sipcfg CreateUserOOBE;
 _if(_cp("{DepResult}","false"))|_goto :SkipRunOOBEService;
 
 _clear;
-
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "            Please Wait ....";
-_script <"{SYS_ROOT}/ntvani.ca"> "1";
+_var {update_title} = "Preparing OOBE User";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+_ms_sleep "300";
 
 _file_write "[%time%][NatvcDeploy] Load OOBE Prep";
 _var _ARGS_NU_FULLNAME = "NATVC User Out of box Experience";
@@ -3484,9 +3487,20 @@ _if(_cp("{OOBEDEGBUG}","user_restart"))|_return "user_restart";
 _file_write "[%time%][NatvcDeploy] OOBE Service Closed";
 
 :SkipRunOOBEService;
+
+:EndPageOOBE;
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+_var {DepResult_A} = _sipcfg ModifySetupOOBEtoZero;
+_var {DepResult_B} = _sipcfg EnableFastBoot;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
+_if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
+
 _free {DepResult};
 _free {DepResult_A};
 _free {DepResult_B};
+
 _return "Complete";
 
 :OOBE_CANCEL_PREP;
