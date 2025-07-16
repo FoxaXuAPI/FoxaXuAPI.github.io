@@ -61,7 +61,7 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.52; 
+$USV=1.0.56; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
