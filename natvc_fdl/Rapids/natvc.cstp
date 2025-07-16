@@ -1,5 +1,17 @@
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/confedit.ca);
+_$directmode;
+_$nolog;
+
+_var {COV_ARGS} = _getargs;
+
+_cover <"{SYS_ROOT}/confedit.ca"> "{COV_ARGS}";
+
+_cout "Invoke App failed. Use sysfix to repair this system";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/confedit.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -70,10 +82,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=4229;
+$SYS_KERNEL_VID=4231;
 $SYS_REG_NAME=13.2;
 $SYS_KERNEL_CODENAME=Rapids;
-$SYS_RELEASE_Channel=Release_For_2025.6;
+$SYS_RELEASE_Channel=Release_For_2025.7;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -1401,17 +1413,16 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-UserMenu.txt);
   Use "linkmgr" to manage program links
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-UserMenu.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/start-read.txt);
-Welcome to Natvc.
-Before you begin, please read the EULA
-If you agree to the EULA content, press Enter to continue,
+Welcome to Natvc 13 Rapids
+This Version is latest version of Rapids
+If you want try newest Function on Natvc
+Update to Natvc 14 Valley
 
-Valley has a lot of differences from its predecessor, and you may need to adapt to the new changes
-If you have any questions, you can contact us on social platforms
+If you don`t want update to Natvc 14 Valley
+We also keep update untill the Natvc 14 enters the non-functional maintenance period
 
-Thank you for choosing Natvc, please pay attention to our official website for more information
-https://devlab.foxaxu.com
-
-Press Enter to Start
+Have fun
+Thank you choose Natvc
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/start-read.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
 //Volume Loader
@@ -3367,19 +3378,25 @@ _if(_<=("{PlayRate}","0"))|_goto :NullRequest;
 _prts "\r                                          \r        ████                         ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r             ████                    ";
+_prts "\r                                          \r        ████████                     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                  ████               ";
+_prts "\r                                          \r            ████████                 ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                        ████         ";
+_prts "\r                                          \r                ████████             ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                            ████     ";
+_prts "\r                                          \r                    ████████         ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                                 ████";
+_prts "\r                                          \r                        ████████     ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                            ████████ ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                                ████ ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                                     ";
@@ -6724,6 +6741,7 @@ _goto :ReloadExplorer;
 
 :_exe_newuser;
 //Create New User
+:CreateUserPage;
 _file_write "[%time%][UserSettings] Create new users";
 _clear;
 //Open NEW USER.
@@ -6731,8 +6749,10 @@ _typefile "{NATVC_DISK}/Natvc/res/natvc-oobe-user.txt";
 
 //WRITE MAIN NAME
 _cout "Use .exit cancel";
+:RESET_FULLNAMETYPE;
 _prt "Write your full name >";
 _var _ARGS_NU_FULLNAME = _getline;
+_if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
 _if(_cp("_ARGS_NU_FULLNAME",".exit"))|_return "cancel";
 
 
@@ -6753,9 +6773,11 @@ _if(_cp("_ARGS_NU_ID",".exit"))|_return "cancel";
 _file_write "[%time%][UserSettings] User Type is :  _ARGS_NU_ID";
 
 //GET PASSWORD
+:invalidPasswordType;
 _prt "Write your user password (If you do not want set password. press enter) >";
 _var _ARGS_NU_PSWD = _getline;
 _if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
+_if(_cp("_ARGS_NU_PSWD",'@servicemode'))|_goto :invalidPasswordType;
 
 _file_write "[%time%][UserSettings] User : _ARGS_NU_ID    Password is : _ARGS_NU_PSWD ";
 
@@ -6766,6 +6788,7 @@ _file_write "[%time%][UserSettings] Start service "User Manager Service"  ";
 _var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "newuser";
 
 _file_write "[%time%][UserSettings] Service Stop. Result: {umback} ";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_goto :UserCreateFailed_RETRY;
 
 _cout "{umback}";
 _pause;
@@ -6842,6 +6865,16 @@ _return "noauth";
 _file_write "[%time%][UserSettings] Command is Invalid";
 _var {NATVC_USEREXP_GET} = "NOTSET";
 _goto :BACKMAINCONSOLE;
+
+
+:UserCreateFailed_RETRY;
+_clear;
+_cout "   Something went wrong";
+_cout "Your user is create failed";
+_cout "maybe your type is invalid";
+_cout "or type has Illegal Path";
+_pause:
+_goto :CreateUserPage;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usersettings.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usersvc.ca);
 //NATVC SYSTEM
@@ -7383,14 +7416,26 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
 //User Ban Operation
 $useroptban=false;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/useroptban);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/textread.ca);
+_$directmode;
+_$nolog;
+
+_var {COV_ARGS} = _getargs;
+
+_cover <"{SYS_ROOT}/textreader.ca"> "{COV_ARGS}";
+
+_cout "Invoke App failed. Use sysfix to repair this system";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/textread.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
 //Natvc Explorer Themes
 
 //Copyright FoxaXu
 
-$TitleA=World Best CLI;
-$TitleB=Welcome to Natvc 13;
-$TitleC=White Sand Themes;
+$TitleA=Welcome To Natvc 13 Rapids;
+$TitleB=This release has been discontinued;
+$TitleC=Thank you;
 
 //Part 2
 $TitleD=Open Menu type "menu";
@@ -7401,9 +7446,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=World Best CLI;
-$TitleB=Welcome to Natvc 13;
-$TitleC=White Sand Themes;
+$TitleA=Welcome To Natvc 13 Rapids;
+$TitleB=This release has been discontinued;
+$TitleC=Thank you;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Program/$PROGRAM_ROOT.txt);
 PROGRAM
