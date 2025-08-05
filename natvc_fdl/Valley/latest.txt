@@ -1,2 +1,2 @@
 //Natvc UpdateAPI
-$latestversion=5149;
+$latestversion=5152;
