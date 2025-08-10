@@ -28,6 +28,9 @@ $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 
+//SysRepairService
+$DisableSysRepiar=true;
+
 //Shutdown Status
 $shutdown=0;
 $last_startup=0;
@@ -54,15 +57,6 @@ $startup_exe_title=Prepare Update ;
 
 //ALL DATA
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SETUP);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SOFTWARE);
-//NATVC SOFTWARE PATH BIND
-//NATVC SOFTWARE GET
-
-//Software Register Link
-
-
-//For Support Legacy app
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SOFTWARE);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SYSTEM);
 //NATVC SYSTEM CONFIG
 //Log Record
@@ -89,10 +83,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5128;
-$SYS_REG_NAME=14.1;
-$SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U2;
+$SYS_KERNEL_VID=6005;
+$SYS_REG_NAME=15.0;
+$SYS_KERNEL_CODENAME=Liquid;
+$SYS_RELEASE_Channel=RootBuild:Fix_Kernel_and_deploy_new_Function;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -118,14 +112,6 @@ $NATVC_CRASH_TEXT=Natvc/res/natvc-crash.txt;
 
 //End
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/SYSTEM);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/UPDATE);
-//NATVC UPDATE SERVICE PROXY
-//SERVER and SETUP CONFIG
-
-$NUSP_GET=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CODENAME}/nusp_package.cstp;
-
-//That`s all
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/UPDATE);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/USERS);
 //PUBLIC USER DATA
 //USERPATH DIR
@@ -154,6 +140,7 @@ $hiber=true;
 $shutdown=true;
 $@shutdown=true;
 $restart=true;
+$lock=true;
 $.shell=true;
 $ls=true;
 $clear=true;
@@ -1704,7 +1691,7 @@ _if(_cp(_sipcfg offani,"true"))|_return "ani is disabled";
 
 _var {PlayRate} = _getargs;
 
-_var {PLAYAVGTIME} = "50";
+_var {PLAYAVGTIME} = "70";
 
 _if(_cp("{PlayRate}","empty"))|_var {PlayRate} = "1";
 
@@ -1715,33 +1702,45 @@ _var {PlayRate} = _-("{PlayRate}","1");
 _if(_<=("{PlayRate}","0"))|_goto :NullRequest;
 
 //Play Again
+_prts "\r                                          \r        █                            ";
+_ms_sleep {PLAYAVGTIME};
+
 _prts "\r                                          \r        ████                         ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r        ████████                     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r            ████████                 ";
+_prts "\r                                          \r        ████████████                 ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                ████████             ";
+_prts "\r                                          \r        ████████████████             ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                    ████████         ";
+_prts "\r                                          \r        ████████████████████         ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r            ████████████████████     ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                ████████████████     ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                    ████████████     ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                        ████████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                            ████████ ";
+_prts "\r                                          \r                            ████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                                ████ ";
+_prts "\r                                          \r                               █     ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                                     ";
 _prts "\r";
-_ms_sleep "1";
+_ms_sleep "200";
 
 _if(_cp("{PlayRate}","0"))|_goto :END PLAY ANI;
 
@@ -2985,9 +2984,14 @@ _if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting user main service startup";
 
 //Execute User Auto Run
 _file_write "[%time%][UserService] Start service :  {NATVC_UserAutoRun}";
+
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_goto :SkipCheckautoRunExist;
+
 _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
   //_cout "Waitting User Auto Run ...";
-_ms_sleep 600;
+
+:SkipCheckautoRunExist;
+
 :RESTART_USER_MAIN_SERVICE;
 
 //Create User Dump
@@ -3008,6 +3012,9 @@ _if(!_cp("{NATVC_USER_PASSWORD}","@nopswd")) | _goto :REQ_PASSWORD_TO_UNLOCKUSER
 :PASSFLB;
 
 _file_open "{SYS_LOG}";
+
+//For Pre Login Service
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_return "reload_SYSTEM";
 
 _var {NATVC_USERSVC_CALLBACK} = _script<"{NATVC_UserAutoRun}">;
 
@@ -3230,6 +3237,7 @@ $devinfo={SYS_ROOT}/devinfo.ca;
 $update={SYS_ROOT}/ntvupd.ca;
 $filemgr={SYS_ROOT}/filemgr.ca;
 $filecstp={SYS_ROOT}/filecstp.ca;
+$ntsh={SYS_ROOT}/ntsh.ca;
 $confedit={SYS_ROOT}/confedit.ca;
 $usersettings={SYS_ROOT}/usersettings.ca;
 $nbfmgr={SYS_ROOT}/nbfmgr.ca;

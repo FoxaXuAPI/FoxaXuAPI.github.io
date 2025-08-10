@@ -12,6 +12,30 @@ _cout "Invoke App failed. Use sysfix to repair this system";
 
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/confedit.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/DeploySettings);
+//Natvc Deploy Settings For System first startup
+
+//Allow Not System user run this service
+$AllowAdminUserDebug=false;
+
+//Debug system
+$DeployModernNatvcApps=true;
+
+//For Insider Version System Unlock Administrator
+$AutoUnlockAdminUser=true;
+
+//Debug settings
+$CreateUserOOBE=false;
+
+
+//Modify config/SETUP oobe = 0
+$ModifySetupOOBEtoZero=true;
+
+
+//Enable Fast Boot when system complete deploy
+$EnableFastBoot=true;
+
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/DeploySettings);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -24,6 +48,9 @@ $shutdown_record=1;
 $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
+
+//SysRepairService
+$DisableSysRepiar=true;
 
 //Shutdown Status
 $shutdown=0;
@@ -86,10 +113,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=5128;
-$SYS_REG_NAME=14.1;
-$SYS_KERNEL_CODENAME=Valley;
-$SYS_RELEASE_Channel=Release_1.25Y_7M_U2;
+$SYS_KERNEL_VID=6005;
+$SYS_REG_NAME=15.0;
+$SYS_KERNEL_CODENAME=Liquid;
+$SYS_RELEASE_Channel=RootBuild:Fix_Kernel_and_deploy_new_Function;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -151,6 +178,7 @@ $hiber=true;
 $shutdown=true;
 $@shutdown=true;
 $restart=true;
+$lock=true;
 $.shell=true;
 $ls=true;
 $clear=true;
@@ -1349,18 +1377,33 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-UserMenu.txt);
   Use "linkmgr" to manage program links
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-UserMenu.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/start-read.txt);
-Welcome to Natvc.
-Before you begin, please read the EULA
-If you agree to the EULA content, press Enter to continue,
+Welcome to Natvc 14 Valley
+Natvc 14 has lots of new variation
+Keep update to latest version of Natvc
 
-Valley has a lot of differences from its predecessor, and you may need to adapt to the new changes
-If you have any questions, you can contact us on social platforms
+We will Keep Natvc Latest and Security. We recommand you check update every week
+if you need help. please visit https://devlab.foxaxu.com
 
-Thank you for choosing Natvc, please pay attention to our official website for more information
-https://devlab.foxaxu.com
+Origin File Directory :  {SYS_NROOT}/res/start-read.txt
 
-Press Enter to Start
+Thank you
+Have Fun
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/start-read.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/{Template}.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute=<Execute>;
+
+//RUNAS USER
+$UserID=<USERID>;
+$UserPassword=<PASSWORD>;
+
+
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/{Template}.nsv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
 //Volume Loader
 $DefaultLoader={BootVolume}/bootmgr.ca;
@@ -3001,6 +3044,12 @@ _cout "Please run ntvexp.ca first";
 _pause;
 _return "failexp";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/linkmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/logoff.ca);
+_$directmode;
+_$nolog;
+
+_return "logoff";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/logoff.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ls.ca);
 _$directmode;
 _$nolog;
@@ -3280,6 +3329,142 @@ _if(_cp("{DEFW_N}","y"))|_goto :ApplyDeleteBL;
 
 _goto :BACKMAINCONSOLE; 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/nbfmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntsh.ca);
+_$directmode;
+_$nolog;
+
+//Data int
+
+_var {ntsh_version} = "2101";
+_var {ntsh_revision} = "102";
+
+//GET DIRECT 
+
+_var {rs_pathexec} = "{SYS_ROOT}";
+
+_clear;
+
+
+//Main ntsh
+_cout "Natvc NativeShell.";
+_cout "Copyright FoxaXu_Dev_Lab (c).  All Rights Reserved.";
+_cout "";
+_cout "Install latest version of Natvc to get latest function. https://dev.foxaxu.com/Software/P_Natvc/";
+:TypeNewShell;
+_cout "";
+_prt "NS {rs_pathexec}>";
+_var {ns_type} = _getline;
+_if(_cp("{ns_type}","exit"))|_return "ok";
+_if(_cp("{ns_type}","system"))|_goto :exec_system_commander;
+_if(_cp("{ns_type}","help"))|_goto :TypeNTSH_Helper;
+_if(_cp("{ns_type}","cd"))|_goto :PathSet;
+_if(_cp("{ns_type}","version"))|_goto :VersionINFO;
+_if(_cp("{ns_type}",'{varspace.null}'))|_goto :TypeNewShell;
+
+_if(_cp("{ns_type}","clear"))| _clear;
+_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
+
+_if(_cp("{ns_type}","clear"))| _clear;
+_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
+
+//EXECUTE PROGRAM
+_var {ns_fnd_exec} = "{ns_type}";
+_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}")|_goto :TYPESHELL_EXE;
+_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}.ca")|_var {ns_fnd_exec} = "{ns_fnd_exec}.ca";
+_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}")|_goto :TYPESHELL_EXE;
+_cout "";
+_cout "Cannot Explain Command or not found any exist Executable file";
+_cout "{ns_type} : is invaild";
+_goto :TypeNewShell;
+
+
+
+:TYPESHELL_EXE;
+_var {ns_exec_back} = _script <"{rs_pathexec}/{ns_fnd_exec}"> "{RunArgs}";
+_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
+_if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
+_if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ns_exec_back}","shutdown"))|_return "user_shutdown";
+_if(_cp("{ns_exec_back}","restart"))|_return "user_restart";
+_if(_cp("{ns_exec_back}","logoff"))|_return "user_logoff";
+
+_goto :TypeNewShell;
+
+
+:PathSet;
+_prts "Set Directory>";
+_var {rs_pathexec_cache} = _getline;
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :TryAdvancedSet;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :TypeNewShell;
+
+:TryAdvancedSet;
+_var {rs_pathexec_cache} = "{rs_pathexec}/{rs_pathexec_cache}";
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :NULLPATHSET;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :TypeNewShell;
+
+
+:NULLPATHSET;
+_cout "Cannot found directory "{rs_pathexec_cache}" , this directory is not exist or acceess denind";
+_cout "Set Location Failed";
+_goto :TypeNewShell;
+
+
+:SetArgs;
+_prts "Type Execute Arguments >";
+_var {RunArgs} = _getline;
+_goto :TypeNewShell;
+
+
+:exec_system_commander;
+_cout "";
+_prt "{path}>";
+_var {TargetCommand} = _getline;
+_if(_cp("{TargetCommand}","exit"))|_goto :TypeNewShell;
+_system "{TargetCommand}";
+_pause;
+_goto :exec_system_commander;
+
+
+:TypeNTSH_Helper;
+//_cout "";
+_cout "Themes:";
+_cout "Natvc NativeShell Help Center";
+_cout "";
+_cout "What is NativeShell:";
+_cout "NativeShell is a new shell console for Natvc. to improve legacy console rootshell.";
+_cout "NativeShell support much new function. some function is some software was required";
+_cout "Thanks your support";
+_cout "";
+_cout "This Help Center cannot tell you how to use nativeshell. but you can view more info";
+_cout "on internet. open link https://dev.foxaxu.com/Software/P_Natvc/NTSH";
+_cout "NativeShell is new project. if you have some problem. report to us. hello@foxaxu.com";
+_cout "";
+_cout "Online Help";
+_cout "You can find some message on Developer FoxaXu. link:  https://dev.foxaxu.com";
+_cout "Some command need you have administrator. make sure run nativeshell as administrator";
+_cout "";
+_pause;
+_cout "";
+_goto :TypeNewShell;
+
+
+:VersionINFO;
+_cout "";
+_cout "NativeShell Version";
+_cout "NTSH Version :   {ntsh_version}";
+_cout "REVISION:  {ntsh_revision}";
+_cout "";
+_cout "Work System";
+_cout "System :   {SYS_NAME} {SYSNAME}.{SYS_KERNEL_VID}";
+_cout "Code Name:  {SYS_KERNEL_CODENAME}";
+_cout "RC:  {SYS_RELEASE_Channel}";
+_cout "";
+_goto :TypeNewShell;
+
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntsh.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvani.ca);
 _$directmode;
 _$nolog;
@@ -3289,7 +3474,7 @@ _if(_cp(_sipcfg offani,"true"))|_return "ani is disabled";
 
 _var {PlayRate} = _getargs;
 
-_var {PLAYAVGTIME} = "50";
+_var {PLAYAVGTIME} = "70";
 
 _if(_cp("{PlayRate}","empty"))|_var {PlayRate} = "1";
 
@@ -3300,33 +3485,45 @@ _var {PlayRate} = _-("{PlayRate}","1");
 _if(_<=("{PlayRate}","0"))|_goto :NullRequest;
 
 //Play Again
+_prts "\r                                          \r        █                            ";
+_ms_sleep {PLAYAVGTIME};
+
 _prts "\r                                          \r        ████                         ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r        ████████                     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r            ████████                 ";
+_prts "\r                                          \r        ████████████                 ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                ████████             ";
+_prts "\r                                          \r        ████████████████             ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                    ████████         ";
+_prts "\r                                          \r        ████████████████████         ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r            ████████████████████     ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                ████████████████     ";
+_ms_sleep {PLAYAVGTIME};
+
+_prts "\r                                          \r                    ████████████     ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                        ████████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                            ████████ ";
+_prts "\r                                          \r                            ████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                                ████ ";
+_prts "\r                                          \r                               █     ";
 _ms_sleep {PLAYAVGTIME};
 
 _prts "\r                                          \r                                     ";
 _prts "\r";
-_ms_sleep "1";
+_ms_sleep "200";
 
 _if(_cp("{PlayRate}","0"))|_goto :END PLAY ANI;
 
@@ -3365,24 +3562,56 @@ _$directmode;
 _$nolog;
 
 //Natvc System Deploy Toolkit
+
+_clear;
+_var {update_title} = "Starting Deploy Service";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+
 _file_write "[%time%][NatvcDeploy] System need load OOBE Service";
 _file_write "[%time%][NatvcDeploy] Prepare OOBE Service";
+
+_var {DepResult} = _sipcfg AllowAdminUserDebug;
+_if(_cp("{DepResult}","true"))|_goto :SkipDetectUserAuth;
+
 _if(!_cp("{NATVC_isAdmin}","2"))|_goto :AuthError;
+:SkipDetectUserAuth;
+
+_var {DepResult} = _sipcfg DeployModernNatvcApps;
+_if(_cp("{DepResult}","false"))|_goto :SkipInstallSystemMNA;
+
+_clear;
+_var {update_title} = "Deploy System Apps";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+_ms_sleep "300";
 
 _clear;
 _cout "System is Deploy MNA Apps    Please wait...";
 _script <"{SYS_ROOT}/mnareset.ca"> "installonly";
 
-_clear;
+:SkipInstallSystemMNA;
 
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "            Please Wait ....";
-_script <"{SYS_ROOT}/ntvani.ca"> "1";
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+_var {DepResult} = _sipcfg AutoUnlockAdminUser;
+_if(_cp("{DepResult}","true"))|_clear;
+_if(_cp("{DepResult}","true"))|_cout "Unlocker Administrator User...";
+_if(_cp("{DepResult}","true"))|_sipcfg.open "{SYS_USERPATH}/admin/userconfig";
+_if(_cp("{DepResult}","true"))|_sipcfg DisableUser = "0";
+
+_if(_cp("{DepResult}","true"))|_sipcfg.open "{NATVC_CONFIG_USERS}";
+_if(_cp("{DepResult}","true"))|_sipcfg default = "admin";
+_if(_cp("{DepResult}","true"))|_cout "Complete";
+
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+
+_var {DepResult} = _sipcfg CreateUserOOBE;
+_if(_cp("{DepResult}","false"))|_goto :SkipRunOOBEService;
+
+_clear;
+_var {update_title} = "Preparing OOBE User";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+_ms_sleep "300";
 
 _file_write "[%time%][NatvcDeploy] Load OOBE Prep";
 _var _ARGS_NU_FULLNAME = "NATVC User Out of box Experience";
@@ -3397,6 +3626,8 @@ _file_write "[%time%][NatvcDeploy] Creating OOBE User";
 _file_copy ("{SYS_USERPATH}/default/autorun","{SYS_USERPATH}/oobe/autorun");
 _sipcfg.open "{SYS_USERPATH}/oobe/autorun";
 _sipcfg task = "{SYS_ROOT}/oobe.ca";
+
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
 
 _clear;
 
@@ -3414,6 +3645,22 @@ _if(_cp("{OOBEDEGBUG}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{OOBEDEGBUG}","user_restart"))|_return "user_restart";
 
 _file_write "[%time%][NatvcDeploy] OOBE Service Closed";
+
+:SkipRunOOBEService;
+
+:EndPageOOBE;
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+_var {DepResult_A} = _sipcfg ModifySetupOOBEtoZero;
+_var {DepResult_B} = _sipcfg EnableFastBoot;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
+_if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
+
+_free {DepResult};
+_free {DepResult_A};
+_free {DepResult_B};
+
 _return "Complete";
 
 :OOBE_CANCEL_PREP;
@@ -5359,19 +5606,23 @@ _pause;
 _var {OOBE_PAGE_STATUS} = "oobe_unknown";
 
 //Create New User
+:CreateUserPage;
 _clear;
 //Open NEW USER.
 _typefile "{SYS_NROOT}/res/natvc-oobe-user.txt";
 
 //WRITE MAIN NAME
+:RESET_FULLNAMETYPE;
 _prt "Write your full name >";
 _var _ARGS_NU_FULLNAME = _getline;
+_if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
 _if(_cp("_ARGS_NU_FULLNAME","@oobereload"))|_goto :ReloadExplorer;
 _if(_cp("_ARGS_NU_FULLNAME","@loaddebug"))|_return "oobeexit";
 _if(_cp("_ARGS_NU_FULLNAME","@oobecancel"))|_goto :ConfigCANCEL;
 _if(_cp("_ARGS_NU_FULLNAME","@restart"))|_return "restart";
 _if(_cp("_ARGS_NU_FULLNAME","@shutdown"))|_return "shutdown";
 _if(_cp("_ARGS_NU_FULLNAME","@skipoobe"))|_goto :EndPageOOBE;
+
 
 //WRITE ID
 :FORBIDDEN;
@@ -5389,22 +5640,30 @@ _if(_cp("_ARGS_NU_ID",'{varspace.null}'))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID",'@'))|_goto :FORBIDDEN;
 
 //GET PASSWORD
+:invalidPasswordType;
 _prt "Write your user password (If you do not want set password. press enter) >";
 _var _ARGS_NU_PSWD = _getline;
 _if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
+_if(_cp("_ARGS_NU_PSWD",'@servicemode'))|_goto :invalidPasswordType;
 
 _var _ARGS_NU_ADMIN = "1";
 
 _script<"{SYS_ROOT}/usermgr.ca"> "newuser";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_goto :UserCreateFailed_RETRY;
 _sipcfg.open "{NATVC_CONFIG_USERS}";
 _sipcfg default = "_ARGS_NU_ID";
 
 
 :EndPageOOBE;
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+_var {DepResult_A} = _sipcfg ModifySetupOOBEtoZero;
+_var {DepResult_B} = _sipcfg EnableFastBoot;
+
 //Write Register
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
-_sipcfg oobe = "0";
-_sipcfg FastBoot = "1";
+_if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
+_if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
+
 _var {OOBE_PAGE_STATUS} = "oobe_done";
 _clear;
 //Open Endpage..
@@ -5473,6 +5732,15 @@ _cout "Press Enter to Back";
 _pause;
 _return "fail";
 
+
+:UserCreateFailed_RETRY;
+_clear;
+_cout "   Something went wrong";
+_cout "Your user is create failed";
+_cout "maybe your type is invalid";
+_cout "or type has Illegal Path";
+_pause:
+_goto :CreateUserPage;
 
 //Hidden
 :LoadDebugUser;
@@ -5582,6 +5850,12 @@ _cout "args = Re Dir";
 _cout "May be you are not type vaild system recovery path";
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/refix.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/restart.ca);
+_$directmode;
+_$nolog;
+
+_return "restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/restart.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rootshell.ca);
 // NATVC ROOT SHELL
 // Only Running on SYSTEM
@@ -5977,9 +6251,106 @@ _goto :ReloadCore;
 _var {NRS_CALLBACK} = _script <"{NATVC_Run_Script}">;
 _return "{NRS_CALLBACK}";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/runexec.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/services.ca);
+_$directmode;
+_$nolog;
+
+//System Service
+
+_var {NSV_DATA} = _getargs;
+
+//Detect Service
+_if(!_file_exist "{NSV_DATA}")|_goto :TryFindOnLocalService;
+_goto :StartLoadService;
+
+:TryFindOnLocalService;
+_if(!_file_exist "{SYS_NROOT}/Service/{NSV_DATA}.nsv")|_goto :FailLoadService;
+
+_var {NSV_DATA} = "{SYS_NROOT}/Service/{NSV_DATA}.nsv";
+
+:StartLoadService;
+
+//Load Config Datas
+_sipcfg.open "{NSV_DATA}";
+_var {NSV_Execute} = _sipcfg Execute;
+
+_var {NSV_UserID} = _sipcfg UserID;
+_var {NSV_UserPassword} = _sipcfg UserPassword;
+
+//Login Current Users
+
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NSV_UserID}.nuslc")|_goto :UserNotAlreadyLogin;
+
+_var {Recovery_SvcUser} = "{NATVC_WHOIS}";
+
+_sipcfg.open "{SYS_NROOT}/SECURITY/{NSV_UserID}.nuslc";
+_var {PASSWD_VERIFY} = _sipcfg USERPASSWORD;
+_if(!_cp("{PASSWD_VERIFY}","{NSV_UserPassword}"))|_goto :FailPasswordWrong;
+
+_var {NATVC_USERNAME}      = _sipcfg USERNAME;
+_var {NATVC_WHOIS}         = _sipcfg USERID;
+_var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_var {NATVC_isAdmin}       = _sipcfg USERADMIN;
+_var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
+_var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
+_var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
+
+_var {NSV_SERVICE_MODE} = "true";
+_var {CALLBACK_NSV} = _script <"{NSV_Execute}">;
+_var {NSV_SERVICE_MODE} = "false";
+
+_sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
+_var {NATVC_USERNAME}      = _sipcfg USERNAME;
+_var {NATVC_WHOIS}         = _sipcfg USERID;
+_var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_var {NATVC_isAdmin}       = _sipcfg USERADMIN;
+_var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
+_var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
+_var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
+
+_return "{CALLBACK_NSV}";
+
+
+
+
+:FailLoadService;
+_clear;
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Configuration File is missing";
+_pause;
+_return "false";
+
+:UserNotAlreadyLogin;
+_clear;
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Require User Not Logged.  Restart your device and try again";
+_pause;
+_return "false";
+
+:FailPasswordWrong;
+_clear;
+_sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Require User Password wrong. ";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/services.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/shutdown.ca);
+_$directmode;
+_$nolog;
+
+_return "shutdown";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/shutdown.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/sysfix.ca);
 _$directmode;
 _$nolog;
+
+_sipcfg.open "{SYS_NROOT}/config/SETUP";
+_if(_cp(_sipcfg DisableSysRepiar,"{varspace.null}"))|_sipcfg DisableSysRepiar = "false";
+_if(_cp(_sipcfg DisableSysRepiar,"true"))|_return "service_disable";
 
 //Natvc System Fix or Check tools
 
@@ -6584,13 +6955,14 @@ _cout "Create New User _ARGS_NU_ID";
 
 _if( _cp ( "_ARGS_NU_ID" , '_ARGS_NU_ID' ))|_goto :COUTNULL;
 
-_if(_dir_exist ""{SYS_USERPATH}/_ARGS_NU_ID")|_return "Create fail. User Exist.";
+_if(_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_return "Create fail. User Exist.";
 _if(_cp("_ARGS_NU_ID","SYSTEM"))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","default"))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","admin"))|_return "Create fail. Forbidden";
 
 //Add User
 _dir_make "{SYS_USERPATH}/_ARGS_NU_ID";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_return "This user id is Illegal";
 _file_copy("{SYS_USERPATH}/default/userconfig","{SYS_USERPATH}/_ARGS_NU_ID/userconfig");
 _file_copy("{SYS_USERPATH}/default/usermenu","{SYS_USERPATH}/_ARGS_NU_ID/usermenu");
 _file_copy("{SYS_USERPATH}/default/useroptban","{SYS_USERPATH}/_ARGS_NU_ID/useroptban");
@@ -6746,6 +7118,7 @@ _goto :ReloadExplorer;
 
 :_exe_newuser;
 //Create New User
+:CreateUserPage;
 _file_write "[%time%][UserSettings] Create new users";
 _clear;
 //Open NEW USER.
@@ -6753,8 +7126,10 @@ _typefile "{NATVC_DISK}/Natvc/res/natvc-oobe-user.txt";
 
 //WRITE MAIN NAME
 _cout "Use .exit cancel";
+:RESET_FULLNAMETYPE;
 _prt "Write your full name >";
 _var _ARGS_NU_FULLNAME = _getline;
+_if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
 _if(_cp("_ARGS_NU_FULLNAME",".exit"))|_return "cancel";
 
 
@@ -6775,9 +7150,11 @@ _if(_cp("_ARGS_NU_ID",".exit"))|_return "cancel";
 _file_write "[%time%][UserSettings] User Type is :  _ARGS_NU_ID";
 
 //GET PASSWORD
+:invalidPasswordType;
 _prt "Write your user password (If you do not want set password. press enter) >";
 _var _ARGS_NU_PSWD = _getline;
 _if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
+_if(_cp("_ARGS_NU_PSWD",'@servicemode'))|_goto :invalidPasswordType;
 
 _file_write "[%time%][UserSettings] User : _ARGS_NU_ID    Password is : _ARGS_NU_PSWD ";
 
@@ -6788,6 +7165,7 @@ _file_write "[%time%][UserSettings] Start service "User Manager Service"  ";
 _var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "newuser";
 
 _file_write "[%time%][UserSettings] Service Stop. Result: {umback} ";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_goto :UserCreateFailed_RETRY;
 
 _cout "{umback}";
 _pause;
@@ -6864,6 +7242,16 @@ _return "noauth";
 _file_write "[%time%][UserSettings] Command is Invalid";
 _var {NATVC_USEREXP_GET} = "NOTSET";
 _goto :BACKMAINCONSOLE;
+
+
+:UserCreateFailed_RETRY;
+_clear;
+_cout "   Something went wrong";
+_cout "Your user is create failed";
+_cout "maybe your type is invalid";
+_cout "or type has Illegal Path";
+_pause:
+_goto :CreateUserPage;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usersettings.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usersvc.ca);
 //NATVC SYSTEM
@@ -6954,9 +7342,14 @@ _if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting user main service startup";
 
 //Execute User Auto Run
 _file_write "[%time%][UserService] Start service :  {NATVC_UserAutoRun}";
+
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_goto :SkipCheckautoRunExist;
+
 _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
   //_cout "Waitting User Auto Run ...";
-_ms_sleep 600;
+
+:SkipCheckautoRunExist;
+
 :RESTART_USER_MAIN_SERVICE;
 
 //Create User Dump
@@ -6977,6 +7370,9 @@ _if(!_cp("{NATVC_USER_PASSWORD}","@nopswd")) | _goto :REQ_PASSWORD_TO_UNLOCKUSER
 :PASSFLB;
 
 _file_open "{SYS_LOG}";
+
+//For Pre Login Service
+_if(_cp("{NATVC_UserAutoRun}","@servicemode"))|_return "reload_SYSTEM";
 
 _var {NATVC_USERSVC_CALLBACK} = _script<"{NATVC_UserAutoRun}">;
 
@@ -7493,6 +7889,18 @@ _cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
 _pause;
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/Hardware_Test.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/isServiceMode.ca);
+_$directmode;
+_$nolog;
+
+//Detect Service Mode;
+
+_if(_cp("{NSV_SERVICE_MODE}","true"))|_cout "The program is running on service mode";
+_if(_cp("{NSV_SERVICE_MODE}","true"))|_return "ok";
+
+_cout "The program is running on user mode";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/isServiceMode.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -7520,6 +7928,21 @@ $AppVersion=1001;
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/Services/supershell.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute={SYS_ROOT}/rootshell.ca;
+
+//RUNAS USER
+$UserID=SYSTEM;
+$UserPassword=%sysKerneluserPSWD;
+
+
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/Services/supershell.nsv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/SystemResourceNotUsed.txt);
 this folder is collect system old files
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/SystemResourceNotUsed.txt);
@@ -7556,9 +7979,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=The miracle appear in bad luck. Life is real, life is earnest.;
-$TitleB=Welcome to NATVC;
-$TitleC=Natvc 14;
+$TitleA=Testing.;
+$TitleB=Natvc Liquid. (RootBuild);
+$TitleC=Try Access https://dev.foxaxu.com/GithubProject/Natvc;
 
 //Part 2
 $TitleD=Open Menu type "menu";
@@ -7615,6 +8038,7 @@ $devinfo={SYS_ROOT}/devinfo.ca;
 $update={SYS_ROOT}/ntvupd.ca;
 $filemgr={SYS_ROOT}/filemgr.ca;
 $filecstp={SYS_ROOT}/filecstp.ca;
+$ntsh={SYS_ROOT}/ntsh.ca;
 $confedit={SYS_ROOT}/confedit.ca;
 $usersettings={SYS_ROOT}/usersettings.ca;
 $nbfmgr={SYS_ROOT}/nbfmgr.ca;
