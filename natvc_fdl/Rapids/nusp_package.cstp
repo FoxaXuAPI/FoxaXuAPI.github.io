@@ -61,7 +61,7 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.56; 
+$USV=1.0.63; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
@@ -77,6 +77,8 @@ _sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
 _var {Get_Latest} = _sipcfg latest;
 _var {PkgDownloadURL} = _sipcfg package;
 _var {PkgREDownload} = _sipcfg REpackage;
+
+_var {SYS_KERNEL_CDU} = "{SYS_KERNEL_CODENAME}";
 
 _url_get("{PkgREDownload}","{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp");
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp")|_goto :FailReDownload;
