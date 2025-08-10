@@ -1,0 +1,421 @@
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/modernsetup.ca);
+_$directmode;
+_$nolog;
+
+_var {Installer_Args} = _getargs;
+
+_if(_cp("{Installer_Args}","usermode"))|_goto :ConfigSTRun;
+_if(_cp("{Installer_Args}","autoupdate"))|_goto :CopyNewSystemFiles;
+
+_return "NullParameter";
+
+
+:ConfigSTRun;
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg shutdown_execute = "{SYS_NROOT}/SystemUpdate/nusp/modernsetup.ca";
+_script <"{SYS_NROOT}/SystemUpdate/nusp/syspkgmake.ca">;
+_return "ok";
+
+:CopyNewSystemFiles;
+//Installer New Updates
+_clear;
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "      Please wait";
+_cout "      Update Service is installing latest version of Natvc";
+_cout "      After install your Natvc will update to {PackageLatest}";
+_cout "";
+_cout "";
+_cout "";
+_cout "                Do not turn off your device";
+
+_var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/installer/";
+_var {XCOPY_B} = "{NATVC_DISK}";
+
+_if(_dir_exist "script/vdisk/Recovery")|_goto :UpdateRE;
+:BackREOFF;
+
+_script <"{SYS_NROOT}/SystemUpdate/nusp/xcopy.ca">;
+_script <"{SYS_ROOT}/autobl.ca"> "{NATVC_DISK}";
+_script <"{SYS_ROOT}/mnareset.ca">;
+_return "user_restart";
+
+
+:UpdateRE;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp")|_goto :BackREOFF;
+_dir_remove "script/vdisk/Recovery";
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp","script/vdisk/Recovery/Recovery");
+_script <"{SYS_ROOT}/refix.ca"> "script/vdisk/Recovery";
+_goto :BackREOFF;
+$CSTP_FILE_RECORD_MARK_ID_END(/modernsetup.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/OSDAT);
+//Natvc Update Service Package
+//Register File
+$latest=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/latest.txt;
+$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
+$REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
+
+//NUSP DATA
+$USV=1.0.63; 
+
+/DEV VERSION CODENAME
+$codename=build_anycore;
+
+//All
+$CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
+$CSTP_FILE_RECORD_MARK_ID_START(/re_deploy.ca);
+_$directmode;
+_$nolog;
+
+//Download natvc_re
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
+_var {Get_Latest} = _sipcfg latest;
+_var {PkgDownloadURL} = _sipcfg package;
+_var {PkgREDownload} = _sipcfg REpackage;
+
+_var {SYS_KERNEL_CDU} = "{SYS_KERNEL_CODENAME}";
+
+_url_get("{PkgREDownload}","{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp")|_goto :FailReDownload;
+
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp","script/vdisk/Recovery/Recovery");
+_script <"{SYS_ROOT}/refix.ca"> "script/vdisk/Recovery";
+
+_cout "Task Complete";
+_pause;
+_return "ok";
+
+:FailReDownload;
+_clear;
+_cout "Natvc Recovery Element Download Failed";
+_pause;
+_return "netfail";
+$CSTP_FILE_RECORD_MARK_ID_END(/re_deploy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/setuphost.ca);
+_$directmode;
+_$nolog;
+
+//Setup Host
+//Detect Current System
+
+_clear;
+_cout "Natvc Update Service Package    -Setup Host";
+_cout "Running ....     Checking your system";
+
+_var {updatehost_args} = _getargs;
+
+_if(_cp("{updatehost_args}","normal"))|_var {SYS_KERNEL_CDU} = "{SYS_KERNEL_CODENAME}";
+_if(_cp("{updatehost_args}","devupd"))|_var {SYS_KERNEL_CDU} = "build_anycore";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_goto :WaitRestart;
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
+_var {Get_Latest} = _sipcfg latest;
+_var {PkgDownloadURL} = _sipcfg package;
+_var {PkgREDownload} = _sipcfg REpackage;
+
+_if(_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.txt")|_file_del "{SYS_NROOT}/SystemUpdate/downloading/latest.txt";
+
+_url_get ("{Get_Latest}","{SYS_NROOT}/SystemUpdate/downloading/latest.txt");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.txt")|_goto :GetLatestFail;
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/downloading/latest.txt";
+_var {PackageLatest} = _sipcfg latestversion;
+
+_if(!_cp("{PackageLatest}","{SYS_KERNEL_VID}"))|_goto :UpdateDetectStatus;
+
+_clear;
+_cout "Status :  OK Good";
+_cout "You are using latest version of NATVC {PackageLatest}";
+_cout "we are collect your problem and resolve these bug";
+_cout "We Recommand Check Update every week";
+_cout "Version  {SYSNAME}.{SYS_KERNEL_VID}";
+_pause;
+_return "OK_Good";
+
+
+:UpdateDetectStatus;
+//DETECT ANTI ERROR
+_clear;
+_cout "New update found ..";
+_cout "Do you want install ?";
+_cout "Your Version {SYS_KERNEL_VID},  Latest Version :  {PackageLatest}";
+_prt "type Y(y) to install (other type will cancel update)>";
+
+_var {UserMakeSure} = _getline;
+
+_if(_cp("{UserMakeSure}","Y"))|_goto :StartInstallerSure;
+_if(_cp("{UserMakeSure}","y"))|_goto :StartInstallerSure;
+_goto :UserCancelUpdate;
+
+:StartInstallerSure;
+_clear;
+_if(_<("{PackageLatest}","{SYS_KERNEL_VID}"))|_goto :packageNull;
+_cout "Install Update ...  Natvc Latest {PackageLatest}";
+//Auto Install Update
+_file_del "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp";
+_url_get("{PkgDownloadURL}","{SYS_NROOT}/SystemUpdate/downloading/latest.cstp");
+
+_if(_dir_exist "script/vdisk/Recovery")|_url_get("{PkgREDownload}","{SYS_NROOT}/SystemUpdate/downloading/ntvre_pkg.cstp");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp")|_goto :FailDownload;
+_cout "Setup Host is Extracting files";
+_file_uncstp("{SYS_NROOT}/SystemUpdate/downloading/latest.cstp","{SYS_NROOT}/SystemUpdate/installer");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Natvc/System/ntvkernel.ca")|_goto :ExtractError;
+
+//Start Installer
+_script <"{SYS_NROOT}/SystemUpdate/nusp/modernsetup.ca"> "usermode";
+_cout "Restart your device";
+_pause;
+_return "OK_Good";
+
+
+:WaitRestart;
+_cout "Status : Cancel";
+_cout "An Exist Update is waitting for restart";
+_cout "Please try to restart your device and run Update again";
+_pause;
+_return "Cancel";
+
+
+:ExtractError;
+_clear;
+_cout "Status : Installer_Error";
+_cout "Failed.  Extract file no ModernSetup.ca";
+_cout "Maybe extract Unexpected error occurred.";
+_cout "Try to Run diskclean to clean cache and redownload NUSP";
+_pause;
+_return "Installer_Error";
+
+:FailDownload;
+_clear;
+_cout "Status : Network Error";
+_cout "Failed.  Download latest system package fail.";
+_cout "You can try to download this file";
+_cout "Get From URL :  {PkgDownloadURL}";
+_cout "If you can download this file. run diskclean to redownload NUSP";
+_pause;
+_return "Network_Error";
+
+:packageNull;
+_clear;
+_cout "Status :  Not_Compatible";
+_cout "This update version is oldest than your system version";
+_cout "Recommand use online update";
+_cout "";
+_cout "If you are using a package downloaded from the internet, it indicates that you may be using a preview version.";
+_cout "Please use the installer we released to update or use devupd";
+_pause;
+_return "Not_Compatible";
+
+:GetLatestFail;
+_clear;
+_cout "Status : Server_Error";
+_cout "Failed.  Get latest file error";
+_cout "Server is not forward your request";
+_cout "Get From URL :  {Get_Latest}";
+_cout "If you can download this file. run diskclean to redownload NUSP";
+_pause;
+_return "Server_Error";
+
+:UserCancelUpdate;
+_clear;
+_cout "Status : Cancel";
+_cout "The user canceled the update.";
+_cout "You can run the service again to reinstall the updates.";
+_cout "Run diskclean will redownload nusp service";
+_pause;
+_return "Cancel";
+$CSTP_FILE_RECORD_MARK_ID_END(/setuphost.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/setupworker.ca);
+_$directmode;
+_$nolog;
+
+//LIST ALL OPTION
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/nusp/OSDAT";
+_var {USV_DAT} = _sipcfg USV;
+
+:ReloadMainCLI;
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_clear;
+_cout "Natvc Update Service Package";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "An Exist Update is waitting for restart";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "If you want install another update.please restart your device and install later";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout " ";
+_cout "Select Option";
+_cout "          1. Check updates";
+_cout "          2. Run Diskclean";
+_cout "          3. Remove all old Unsupported Element";
+_cout "          4. Deploy Natvc Recovery";
+_cout "          e. Exit";
+_cout "";
+_cout "    Do you want install Preview Version of Natvc ?  use "devupd" command to update";
+_cout " Client Update Services.";
+_cout " Update Service Version :  {USV_DAT}";
+_prt "Type Number >";
+_var {US_GET} = _getline;
+_if(_cp("{US_GET}","1"))|_goto :UpdateCheckMode;
+_if(_cp("{US_GET}","devupd"))|_goto :UpdateCheckMode_DEVMODE;
+_if(_cp("{US_GET}","2"))|_goto :RunDiskclean;
+_if(_cp("{US_GET}","3"))|_goto :RemoveEMT;
+_if(_cp("{US_GET}","4"))|_goto :DEPRE;
+_if(_cp("{US_GET}","e"))|_return "ok";
+_goto :ReloadMainCLI;
+
+:UpdateCheckMode;
+_clear;
+_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/setuphost.ca"> "normal";
+_cout "Setup Host Service is Exit ,  Status :  {Work_CALLBACK}";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+:UpdateCheckMode_DEVMODE;
+_clear;
+_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/setuphost.ca"> "devupd";
+_cout "Setup Host Service is Exit ,  Status :  {Work_CALLBACK}";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+:RunDiskclean;
+_clear;
+_cover <"{SYS_ROOT}/diskclean.ca"> "auto";
+_cout "Fail to run diskclean";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+:RemoveEMT;
+_clear;
+_script <"{SYS_NROOT}/SystemUpdate/nusp/sys_emt_remove.ca">;
+_cout "We recommand restart your device now to keep your system no problem ";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+
+:DEPRE;
+_clear;
+_var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/re_deploy.ca">;
+_cout "RE Deploy Service is Exit ,  Status :  {Work_CALLBACK}";
+_cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+$CSTP_FILE_RECORD_MARK_ID_END(/setupworker.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/syspkgmake.ca);
+_$directmode;
+_$nolog;
+
+//Remove Filiter Files
+
+_dir_remove "{SYS_NROOT}/SystemUpdate/installer/Users/admin";
+_file_del "{SYS_NROOT}/SystemUpdate/installer/Natvc/config/SETUP";
+_file_del "{SYS_NROOT}/SystemUpdate/installer/Natvc/config/USERS";
+_file_del "{SYS_NROOT}/SystemUpdate/installer/Natvc/config/SOFTWARE";
+
+
+_return "PROCESS OK";
+$CSTP_FILE_RECORD_MARK_ID_END(/syspkgmake.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sys_emt_remove.ca);
+_$directmode;
+_$nolog;
+
+//Modern System remove all old system
+
+//Remove Old legacy boot loader
+_if(_<("4141","{SYS_KERNEL_VID}"))|_dir_remove "{SYS_NROOT}/bootres";
+
+//Remove Acient User SystemShell
+_if(_<("4001","{SYS_KERNEL_VID}"))|_goto :RemoveEMT_SYSSHELL;
+:BK_RemoveEMT_SYSSHELL;
+
+
+
+//Complete;
+_cout "Remove Serivce Complete.";
+_return "ok";
+
+
+
+
+
+
+
+
+
+
+:RemoveEMT_SYSSHELL;
+_sipcfg.open "{NATVC_CONFIG}/USERS";
+_sipcfg.remove SystemShell;
+_dir_remove "{SYS_NROOT}/SystemShell";
+_goto :BK_RemoveEMT_SYSSHELL;
+$CSTP_FILE_RECORD_MARK_ID_END(/sys_emt_remove.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/xcopy.ca);
+_$directmode;
+_$nolog;
+
+//Natvc System Copy Tools
+//Example Copy {XCOPY_A} to {XCOPY_B}
+
+_var {TempListFiles} = "{temp}/filexcopy.txt";
+
+_if(_file_exist "{TempListFiles}")|_file_del "{TempListFiles}";
+
+_if(_cp("{XCOPY_A}",'{XCOPY_A}'))|_goto :ListHelp;
+_if(_cp("{XCOPY_B}",'{XCOPY_B}'))|_goto :ListHelp;
+
+//Create New List
+
+_dir_list ("{TempListFiles}","{XCOPY_A}");
+_file_replace "{TempListFiles}" ("{XCOPY_A}","");
+
+_if(!_file_exist "{TempListFiles}")|_goto :listfileError;
+
+_var {IntLoad} = "1";
+
+:XCOPY_START;
+
+_var {ReadCache} = _file_read ("{TempListFiles}","{IntLoad}");
+
+_if(_cp("{ReadCache}","overline")) | _goto :XCOPY_START_OK;
+
+//CopyFiles
+_dir_full "{XCOPY_B}/{ReadCache}";
+_file_copy("{XCOPY_A}/{ReadCache}","{XCOPY_B}/{ReadCache}");
+
+_var {IntLoad} = _+("{IntLoad}","1");   
+_goto :XCOPY_START;
+
+
+
+:XCOPY_START_OK;
+_file_del "{TempListFiles}";
+_return "OK";
+
+
+
+
+
+
+
+
+:ListHelp;
+_cout "Xcopy tools";
+_cout 'Copy dir {XCOPY_A} to {XCOPY_B}';
+_cout "Support Single file execute";
+_return "ok";
+
+:listfileError;
+_cout "Xcopy Error";
+_cout "Create file map error";
+_return "fail";
+$CSTP_FILE_RECORD_MARK_ID_END(/xcopy.ca);
