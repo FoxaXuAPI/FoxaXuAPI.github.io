@@ -15,6 +15,11 @@ $CSTP_FILE_RECORD_MARK_ID_END(/bootdat);
 $CSTP_FILE_RECORD_MARK_ID_START(/ntvre.cstp);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/NativeConf);
+//NativeShell Configuration
+$StartPath={SYS_ROOT};
+$SecondPath={SYS_ROOT};
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/NativeConf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -29,7 +34,7 @@ $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 
 //SysRepairService
-$DisableSysRepiar=true;
+$DisableSysRepiar=false;
 
 //Shutdown Status
 $shutdown=0;
@@ -83,10 +88,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6005;
+$SYS_KERNEL_VID=6019;
 $SYS_REG_NAME=15.0;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=RootBuild:Fix_Kernel_and_deploy_new_Function;
+$SYS_RELEASE_Channel=New_Func:Test_Vol_2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -123,6 +128,7 @@ $default=@;
 //UserData
 //SYSTEM is Kernel User. Do Not Set this user
 $SYSTEM=Natvc/SystemUser;
+
 
 //admin is default system admin user
 $admin=Users/admin;
@@ -484,73 +490,99 @@ _var bvm_bm = "true";
 _return "$reboot";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/RE/re.nbf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/bootfail.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ CRITICAL SYSTEM ERROR DETECTED
 
-     CRITICAL SYSTEM ERROR                    
-           
-   Error Code: {NBF_ErrorCode}
-   Description: Bootloader verification failed
-                                              
-    RECOVERY INSTRUCTIONS                     
-          
-  1. Insert your system recovery media        
-  2. Select 'Repair startup files' option     
-  3. Run boot sector repair tool              
-                                              
-    Without recovery media:                   
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+🔧 Error Code: {NBF_ErrorCode}  
+📄 Description: Bootloader verification failed
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your system recovery media  
+  [2] Select 'Repair startup files' option  
+  [3] Run boot sector repair tool
+
+-------------------------------------------------------
+
+📌 Without recovery media:  
+Please contact your device manufacturer support
+
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/filelost.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ Missing Critical File Detected
 
-     Missing Critical File                    
-   
-     File: {NBF_FILE}
-     Status: Required for system startup      
-                                              
-    Recovery Instructions                     
-          
-  1. Insert your setup media                  
-  2. Choose "Repair system files"             
-  3. Restore or replace the missing file      
-                                              
-    No recovery media?                        
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+📄 File: {NBF_FILE}  
+📌 Status: Required for system startup
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your setup media  
+  [2] Choose "Repair system files"  
+  [3] Restore or replace the missing file
+
+-------------------------------------------------------
+
+📌 No recovery media available?
+
+Please contact your device manufacturer support:  
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/filelost.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/nbfshell.txt);
-=== Natvc BOOTMGR Shell ===
-Location: BootVolume/nbf/*.nbf
-Legacy boot files not supported
+=======================================================
+               🖥️ Natvc BOOTMGR Shell
+=======================================================
 
-Default: {BootSetDefault}
+📂 Location: BootVolume/nbf/*.nbf  
+⚠️ Legacy boot files are not supported
 
-COMMANDS:
-.list - Show available loaders
-.exit - Shutdown system
-=========================
+🔧 Default Boot Loader: {BootSetDefault}
+
+-------------------------------------------------------
+
+🛠️ Available Commands:
+
+  • .list     — Show available boot loaders  
+  • .exit     — Shutdown system  
+
+-------------------------------------------------------
+
+💡 Tip: Use `.list` to view all available loaders  
+🔐 Secure boot is enforced under Liquid Core
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/nbfshell.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-abouts.txt);
-    About {ToolsName}
 =======================================================
+                  About {ToolsName}
+=======================================================
+
       FDL. {SYS_NAME} {SYSNAME}
-      
-   System Version: {SYS_RELEASE_Channel} 
-   [Inside Version: {SYSNAME}.{SYS_KERNEL_VID}]
 
-   (c)FoxaXu Dev Lab. All rights reserved.
+      System Version: {SYS_RELEASE_Channel}
+      [Inside Version: {SYSNAME}.{SYS_KERNEL_VID}]
 
+      (c) FoxaXu Dev Lab. All rights reserved.
 
-      According to the End User License Agreement
-   (EULA), this product is licensed to:  
-            {NATVC_USERNAME} ({NATVC_WHOIS})
+      According to the End User License Agreement (EULA),
+      this product is licensed to:
+          {NATVC_USERNAME} ({NATVC_WHOIS})
+
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-abouts.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootui.txt);
@@ -579,76 +611,93 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootupdate.txt);
      {update_title}
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
+=======================================================
+                 Natvc Recovery
+=======================================================
 
-   Natvc Recovery
    Your Device not support this NATVC Version
 
-     Your Platform CLFMV :   {CalciumL_FMV} 
+     Your Platform CLFMV :   {CalciumL_FMV}
      Requirement CLFMV   :   {NATVC_FMV_REQ} or Later
 
-   
-   type 1 to start Natvc
+-------------------------------------------------------
+
+   type 1 to start Natvc  
    type 2 to shutdown (Default)
-   System Recovery
+
+                 System Recovery
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
+=======================================================
+      System Error - Immediate Restart Required
+=======================================================
 
+   Your device ran into a problem and needs to restart now.
 
+-------------------------------------------------------
 
+     Stop Code: {NATVC_CRASH_CODE}
+     Details   : ({BUG_REPORT})
 
-
-
-     Your Device ran into problem need restart now.
-
-
-
-
-     Stop Code: {NATVC_CRASH_CODE} ({BUG_REPORT})
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-crash.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-repair.txt);
+=======================================================
+                 🔧 Natvc Recovery Utility
+=======================================================
 
-   Natvc Recovery
-   Automatic repair couldn't repair your pc
-   SystemImage is corrupted
+⚠️ Automatic repair couldn't repair your PC  
+🛠️ SystemImage is corrupted
 
-   File :   {SYSFIX_DIR}/{ReadCache}
+-------------------------------------------------------
+   Affected File:
+   {SYSFIX_DIR}/{ReadCache}
+-------------------------------------------------------
 
+💡 Options:
+   • Press Enter to run the System Fix Tool  
+   • Or choose to Shutdown or Reinstall the System
 
-   
-   Press enter to run system fix tool
-   or you can shutdown or reinstall system
-   System Recovery
+=======================================================
+                   🧩 System Recovery
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-repair.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-startup.txt);
+=======================================================
+         ⚙️ Advanced Boot Options Menu
+=======================================================
 
-            Advanced Boot Options Menu            
-  System Boot Menu - {SystemStartupNotification}
+🖥️ System Boot Menu: {SystemStartupNotification}
 
+🔽 Please select an option:
 
+   [1] 🚀 Start up Normal (Default)  
+   [s] 🛠️ Run System Repair  
+   [2] 🔐 Load Safe Mode (Root Shell)  
+   [3] 🔄 Restart & Select Boot Device  
+   [4] ⏻ Shutdown  
+   [5] 🧩 Load Recovery
 
-  Select an option:                               
-                                                  
-    [1] Start up Normal (Default)                 
-    [s] Run System Repair                         
-    [2] Load Safe Mode (Root Shell)               
-    [3] Restart & Select Boot Device              
-    [4] Shutdown                                  
-    [5] Load Recovery                             
-                                                  
-  Type a number/key and press [ENTER] to select   
+💡 Type a number/key and press [ENTER] to select
 
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-startup.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-recovery-error.txt);
+=======================================================
+                   🧩 Recovery Mode
+=======================================================
 
-  Recovery
-  System boot fail
-  file  {REV_Missing_File}
+⚠️ System boot failed  
+🗂️ Missing or corrupted file detected:  
+   {REV_Missing_File}
 
+-------------------------------------------------------
 
+🔁 Press any key to restart  
+💡 Your device needs recovery to continue
 
-
-  Press any key to restart
-  Your device need recovery
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-recovery-error.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
 //Volume Loader
@@ -832,58 +881,82 @@ $osload=;
 $bootsign=;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/NBF-Temple);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/bootfail.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ CRITICAL SYSTEM ERROR DETECTED
 
-     CRITICAL SYSTEM ERROR                    
-           
-   Error Code: {NBF_ErrorCode}
-   Description: Bootloader verification failed
-                                              
-    RECOVERY INSTRUCTIONS                     
-          
-  1. Insert your system recovery media        
-  2. Select 'Repair startup files' option     
-  3. Run boot sector repair tool              
-                                              
-    Without recovery media:                   
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+🔧 Error Code: {NBF_ErrorCode}  
+📄 Description: Bootloader verification failed
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your system recovery media  
+  [2] Select 'Repair startup files' option  
+  [3] Run boot sector repair tool
+
+-------------------------------------------------------
+
+📌 Without recovery media:  
+Please contact your device manufacturer support
+
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/filelost.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ Missing Critical File Detected
 
-     Missing Critical File                    
-   
-     File: {NBF_FILE}
-     Status: Required for system startup      
-                                              
-    Recovery Instructions                     
-          
-  1. Insert your setup media                  
-  2. Choose "Repair system files"             
-  3. Restore or replace the missing file      
-                                              
-    No recovery media?                        
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+📄 File: {NBF_FILE}  
+📌 Status: Required for system startup
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your setup media  
+  [2] Choose "Repair system files"  
+  [3] Restore or replace the missing file
+
+-------------------------------------------------------
+
+📌 No recovery media available?
+
+Please contact your device manufacturer support:  
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/filelost.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/nbfshell.txt);
-=== Natvc BOOTMGR Shell ===
-Location: BootVolume/nbf/*.nbf
-Legacy boot files not supported
+=======================================================
+               🖥️ Natvc BOOTMGR Shell
+=======================================================
 
-Default: {BootSetDefault}
+📂 Location: BootVolume/nbf/*.nbf  
+⚠️ Legacy boot files are not supported
 
-COMMANDS:
-.list - Show available loaders
-.exit - Shutdown system
-=========================
+🔧 Default Boot Loader: {BootSetDefault}
+
+-------------------------------------------------------
+
+🛠️ Available Commands:
+
+  • .list     — Show available boot loaders  
+  • .exit     — Shutdown system  
+
+-------------------------------------------------------
+
+💡 Tip: Use `.list` to view all available loaders  
+🔐 Secure boot is enforced under Liquid Core
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/nbfshell.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysinfo.txt);
 Welcome To Natvc
@@ -952,7 +1025,7 @@ _return "OK";
 //Add New Boot loader Core
 :NewLegBootloader;
 
-_dir_remove "$sys_def_disk/sysboot";
+//_dir_remove "$sys_def_disk/sysboot";
 
 _dir_make "$sys_def_disk/sysboot";
 _dir_make "$sys_def_disk/sysboot/nbf";
@@ -998,7 +1071,7 @@ _return "OK";
 //Add New Boot loader Core
 :NewBootloader;
 
-_dir_remove "$sys_def_disk/nbf";
+//_dir_remove "$sys_def_disk/nbf";
 
 _dir_make "$sys_def_disk/nbf";
 _dir_make "$sys_def_disk/nbf/nbf";
@@ -2046,8 +2119,8 @@ _if(_cp("{NoGUIBootOpt}","1"))| _cout "Start Complete ...";
 
 _file_write "[%time%][Kernel][Boot] System Image Status:  OK";
 
-_file_write "[%time%][Kernel][Boot] SYSTEM Startup Complete";
-_file_write "[%time%][Kernel][Boot] Load Default SystemUser (SYSTEM)";
+_file_write "[%time%][Kernel][Boot] SYSTEM Load Memory is complete";
+_file_write "[%time%][Kernel][Boot] Load Natvc Logon Service";
 
 _if(_cp("{NoGUIBootOpt}","1"))| _ms_sleep 500;
 
@@ -2066,7 +2139,7 @@ _clear;
 _var {NATVC_CRASH_CODE} = "UNKNOWN_ERROR_KERNEL_BREAK";
 _var {NATVC_CRASH_MESSAGE} = "Kernel Suspended and Stop Running";
 
-_file_write "[%time%][Kernel][Boot] Load Anti Crash Service";
+_file_write "[%time%][Kernel][Boot] The Kernel Interrupt Protection Service is loaded";
 
 //Complete
 //Load SYSTEM USER
@@ -2081,10 +2154,10 @@ _var {IsAutoLogin} = true;
 _file_write "[%time%][Kernel][Boot] Load -->  NATVC User Experience Service (NUES)";
 
 _if(!_file_exist "{NATVC_USERSVC}") | _return "{NATVC_USERSVC}";
-_var {PRE_AUTOENTRY_PASSWORD} = "%sysKerneluserPSWD";
+_var {PRE_AUTOENTRY_PASSWORD} = "@nopswd";
 
-_file_write "[%time%][Kernel][Boot] SYSTEM Startup Succeeded";
-_file_write "[%time%][Kernel][Boot] Load User Main Service";
+_file_write "[%time%][Kernel][Boot] Pre Boot complete";
+_file_write "[%time%][Kernel][Boot] Load Natvc Logon Service";
 
 _var {UserSVCBUFFER} = "KernelModeDetect";
 
@@ -2092,25 +2165,29 @@ _if(_cp("{Shutdown_Data}","1")) |_dir_remove "{SYS_NROOT}/SECURITY";
 
 _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "SYSTEM";
 
-_file_write "[%time%][Kernel] NUES Service is Closed";
+_if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","user_restart")) | _goto :RESTART_OK;
+
+_if(!_cp("{K_SERVICE_CALLBACK}","reload_SYSTEM"))|_goto :FAILLOGIN_SYSTEM;
+
+_var {K_SERVICE_CALLBACK} = _script <"{SYS_ROOT}/ntvlogon.ca"> "Kernel_int_load_system";
+
+_file_write "[%time%][Kernel] NUES Service is Closed.  Argument:  {K_SERVICE_CALLBACK}";
 
 _if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_restart")) | _goto :RESTART_OK;
 
 //If nues service crash
-_if(_cp("{K_SERVICE_CALLBACK}","logoff")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","reload_SYSTEM")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","runid.exit")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","failuserauth")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :NUES_EXIT;
 
 //System API
 _if(_cp("{K_SERVICE_CALLBACK}","$shutdown")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","$reboot")) | _goto :RESTART_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","$hiber")) | _return "$shutdown";
 
+_if(_cp("{K_SERVICE_CALLBACK}","shutdown")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","reboot")) | _goto :RESTART_OK;
 
 
 _file_write "[%time%][Kernel][Error] NUES Report a unexpected error on Callback :  {K_SERVICE_CALLBACK}";
@@ -2119,6 +2196,7 @@ _file_write "[%time%][Kernel][Error] An attempt is being made to analyze the iss
 
 //Exception
 _if(_cp("{K_SERVICE_CALLBACK}","failsys")) | _goto :FAILSYSMODE;
+_if(_cp("{K_SERVICE_CALLBACK}","fail_localsvc")) | _goto :FAILSYSLOCALSVC;
 _if(_cp("{K_SERVICE_CALLBACK}","device_crash")) | _goto :BACKLOADCRASH;
 _if(_cp("{K_SERVICE_CALLBACK}","user_hiber")) | _goto :NULLKERNEL_DEBUG;
 _if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :FAILSERVICEBACK;
@@ -2198,7 +2276,19 @@ _var {NATVC_CRASH_CODE} = "KERNEL_SERVICE_ERROR";
 _var {NATVC_CRASH_MESSAGE} = "Kernel service error";
 _goto :BACKLOADCRASH;
 
+:FAILLOGIN_SYSTEM;
+_file_write "[%time%][Kernel][Error][Exception] CID : SYSTEM Module User Initialization failed (unexpected)";
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {NATVC_CRASH_CODE} = "NTVLOGON_FATAL_ERROR";
+_var {NATVC_CRASH_MESSAGE} = "Kernel service error";
+_goto :BACKLOADCRASH;
 
+:FAILSYSLOCALSVC;
+_file_write "[%time%][Kernel][Error][Exception] CID : ntvlogon.ca Module Prepare Service failed (unexpected)";
+_var {BUG_REPORT} = "ntvlogon.ca";
+_var {NATVC_CRASH_CODE} = "LOCAL_SERVICE_FAILED";
+_var {NATVC_CRASH_MESSAGE} = "System Service error";
+_goto :BACKLOADCRASH;
 
 //Load Recovery
 :failbootRecovery;
@@ -2656,6 +2746,7 @@ _if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :RESET SHELL MODE;
 _if(_cp("{USER_REQ_LOGON}","shutdown"))|_return "user_shutdown";
 _if(_cp("{USER_REQ_LOGON}","restart"))|_return "user_restart";
 _if(_cp("{USER_REQ_LOGON}","logoff"))|_return "user_logoff";
+_if(_cp("{USER_REQ_LOGON}","lock"))|_return "lock";
 _if(_cp("{USER_REQ_LOGON}",".shell"))|_goto :RESET SHELL MODE;
 _if(_cp("{USER_REQ_LOGON}","ver"))|_goto :List Version Message;
 _if(_cp("{USER_REQ_LOGON}","version"))|_goto :List Version Message;
@@ -2709,6 +2800,7 @@ _file_write "[%time%][RootShell] Root Shell Return -->  {ROOTSHELL_CALLBACK}";
 _if(_cp("{ROOTSHELL_CALLBACK}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{ROOTSHELL_CALLBACK}","user_restart"))|_return "user_restart";
 _if(_cp("{ROOTSHELL_CALLBACK}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ROOTSHELL_CALLBACK}","lock"))|_return "lock";
 _if(_cp("{ROOTSHELL_CALLBACK}","shutdown"))|_return "user_shutdown";
 _if(_cp("{ROOTSHELL_CALLBACK}","restart"))|_return "user_restart";
 _if(_cp("{ROOTSHELL_CALLBACK}","logoff"))|_return "user_logoff";
@@ -3208,7 +3300,7 @@ $UserName=SYSTEM;//User ID
 $isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
 $AutoRun={OriginDisk}/{REAutoExec};
 $DisableUser=0; // User is Disabled 0/1
-$UserPassword=%sysKerneluserPSWD; // UserPassword
+$UserPassword=@nopswd; // UserPassword
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
 //User Ban Operation
@@ -3232,12 +3324,13 @@ $CSTP_FILE_RECORD_MARK_ID_END(/Users/default/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Users/default/userindex);
 //User Index Link
 //Config Link File address
+$pm={SYS_ROOT}/powermenu.ca;
 $aboutsys={SYS_ROOT}/aboutsys.ca;
 $devinfo={SYS_ROOT}/devinfo.ca;
 $update={SYS_ROOT}/ntvupd.ca;
 $filemgr={SYS_ROOT}/filemgr.ca;
 $filecstp={SYS_ROOT}/filecstp.ca;
-$ntsh={SYS_ROOT}/ntsh.ca;
+$ntsh={SYS_ROOT}/NativeShell.ca;
 $confedit={SYS_ROOT}/confedit.ca;
 $usersettings={SYS_ROOT}/usersettings.ca;
 $nbfmgr={SYS_ROOT}/nbfmgr.ca;
@@ -3564,17 +3657,33 @@ _pause;
 _goto :ReloadREMain;
 $CSTP_FILE_RECORD_MARK_ID_END(/Recovery.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/text/ReMain.txt);
+=======================================================
+              🧩 Natvc Recovery Environment
+=======================================================
 
-          Natvc Recovery Environment              
-            RE {SYSNAME}.{SYS_KERNEL_VID}
+🖥️ Recovery Edition: {SYSNAME}.{SYS_KERNEL_VID}  
+🔧 Status: Recovery Mode Active
 
+-------------------------------------------------------
 
+🔍 Available Options:
 
-  1. Run OS Repair Tool                           
-  2. Open Root Shell                              
-  3. Advanced Boot Options                        
-  4. Exit to System                               
+  [1] 🛠️ Run OS Repair Tool  
+       Diagnose and fix system startup issues
 
+  [2] 🔐 Open Root Shell  
+       Access high-level system commands
 
-  Enter selection
+  [3] ⚙️ Advanced Boot Options  
+       Configure boot settings and recovery paths
+
+  [4] ⏻ Exit to System  
+       Return to normal boot (if available)
+
+-------------------------------------------------------
+
+💡 Tip: Use arrow keys or type the number to select  
+🔒 Recovery is protected under Liquid Core Security
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/text/ReMain.txt);

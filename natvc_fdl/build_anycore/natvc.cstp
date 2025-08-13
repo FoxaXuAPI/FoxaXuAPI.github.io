@@ -33,9 +33,14 @@ $ModifySetupOOBEtoZero=true;
 
 
 //Enable Fast Boot when system complete deploy
-$EnableFastBoot=true;
+$EnableFastBoot=false;
 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/DeploySettings);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/NativeConf);
+//NativeShell Configuration
+$StartPath={SYS_ROOT};
+$SecondPath={SYS_ROOT};
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/NativeConf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -50,7 +55,7 @@ $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 
 //SysRepairService
-$DisableSysRepiar=true;
+$DisableSysRepiar=false;
 
 //Shutdown Status
 $shutdown=0;
@@ -113,10 +118,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6005;
+$SYS_KERNEL_VID=6019;
 $SYS_REG_NAME=15.0;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=RootBuild:Fix_Kernel_and_deploy_new_Function;
+$SYS_RELEASE_Channel=New_Func:Test_Vol_2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -161,6 +166,7 @@ $default=@;
 //UserData
 //SYSTEM is Kernel User. Do Not Set this user
 $SYSTEM=Natvc/SystemUser;
+
 
 //admin is default system admin user
 $admin=Users/admin;
@@ -794,59 +800,95 @@ _var bvm_bm = "true";
 _return "$reboot";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/RE/re.nbf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/bootfail.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ CRITICAL SYSTEM ERROR DETECTED
 
-     CRITICAL SYSTEM ERROR                    
-           
-   Error Code: {NBF_ErrorCode}
-   Description: Bootloader verification failed
-                                              
-    RECOVERY INSTRUCTIONS                     
-          
-  1. Insert your system recovery media        
-  2. Select 'Repair startup files' option     
-  3. Run boot sector repair tool              
-                                              
-    Without recovery media:                   
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+🔧 Error Code: {NBF_ErrorCode}  
+📄 Description: Bootloader verification failed
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your system recovery media  
+  [2] Select 'Repair startup files' option  
+  [3] Run boot sector repair tool
+
+-------------------------------------------------------
+
+📌 Without recovery media:  
+Please contact your device manufacturer support
+
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/filelost.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ Missing Critical File Detected
 
-     Missing Critical File                    
-   
-     File: {NBF_FILE}
-     Status: Required for system startup      
-                                              
-    Recovery Instructions                     
-          
-  1. Insert your setup media                  
-  2. Choose "Repair system files"             
-  3. Restore or replace the missing file      
-                                              
-    No recovery media?                        
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+📄 File: {NBF_FILE}  
+📌 Status: Required for system startup
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your setup media  
+  [2] Choose "Repair system files"  
+  [3] Restore or replace the missing file
+
+-------------------------------------------------------
+
+📌 No recovery media available?
+
+Please contact your device manufacturer support:  
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/filelost.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/nbfshell.txt);
-=== Natvc BOOTMGR Shell ===
-Location: BootVolume/nbf/*.nbf
-Legacy boot files not supported
+=======================================================
+               🖥️ Natvc BOOTMGR Shell
+=======================================================
 
-Default: {BootSetDefault}
+📂 Location: BootVolume/nbf/*.nbf  
+⚠️ Legacy boot files are not supported
 
-COMMANDS:
-.list - Show available loaders
-.exit - Shutdown system
-=========================
+🔧 Default Boot Loader: {BootSetDefault}
+
+-------------------------------------------------------
+
+🛠️ Available Commands:
+
+  • .list     — Show available boot loaders  
+  • .exit     — Shutdown system  
+
+-------------------------------------------------------
+
+💡 Tip: Use `.list` to view all available loaders  
+🔐 Secure boot is enforced under Liquid Core
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/nbfshell.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/ntsh.ca);
+_$directmode;
+_$nolog;
+
+_var {COV_ARGS} = _getargs;
+
+_cover <"{SYS_ROOT}/nativeshell.ca"> "{COV_ARGS}";
+
+_cout "Invoke App failed. Use sysfix to repair this system";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/ntsh.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Personal.txt);
 NATVC PERSONAL LICENSE
 
@@ -880,19 +922,21 @@ By using Natvc, User acknowledges acceptance of these terms.
 © 2025 FoxaXu Dev Lab. All rights reserved.
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Personal.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-abouts.txt);
-    About {ToolsName}
 =======================================================
+                  About {ToolsName}
+=======================================================
+
       FDL. {SYS_NAME} {SYSNAME}
-      
-   System Version: {SYS_RELEASE_Channel} 
-   [Inside Version: {SYSNAME}.{SYS_KERNEL_VID}]
 
-   (c)FoxaXu Dev Lab. All rights reserved.
+      System Version: {SYS_RELEASE_Channel}
+      [Inside Version: {SYSNAME}.{SYS_KERNEL_VID}]
 
+      (c) FoxaXu Dev Lab. All rights reserved.
 
-      According to the End User License Agreement
-   (EULA), this product is licensed to:  
-            {NATVC_USERNAME} ({NATVC_WHOIS})
+      According to the End User License Agreement (EULA),
+      this product is licensed to:
+          {NATVC_USERNAME} ({NATVC_WHOIS})
+
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-abouts.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootui.txt);
@@ -921,31 +965,36 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootupdate.txt);
      {update_title}
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
+=======================================================
+                 Natvc Recovery
+=======================================================
 
-   Natvc Recovery
    Your Device not support this NATVC Version
 
-     Your Platform CLFMV :   {CalciumL_FMV} 
+     Your Platform CLFMV :   {CalciumL_FMV}
      Requirement CLFMV   :   {NATVC_FMV_REQ} or Later
 
-   
-   type 1 to start Natvc
+-------------------------------------------------------
+
+   type 1 to start Natvc  
    type 2 to shutdown (Default)
-   System Recovery
+
+                 System Recovery
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
+=======================================================
+      System Error - Immediate Restart Required
+=======================================================
 
+   Your device ran into a problem and needs to restart now.
 
+-------------------------------------------------------
 
+     Stop Code: {NATVC_CRASH_CODE}
+     Details   : ({BUG_REPORT})
 
-
-
-     Your Device ran into problem need restart now.
-
-
-
-
-     Stop Code: {NATVC_CRASH_CODE} ({BUG_REPORT})
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-crash.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-eula.txt);
 foxaxu_dev_lab Software End User License Agreement (EULA)
@@ -1008,387 +1057,596 @@ Remove any proprietary notices or labels
 BY INSTALLING OR USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT INSTALL OR USE THE SOFTWARE.
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-eula.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-explorer-help.txt);
-System Manager Commands:
+=======================================================
+               System Manager Commands
+=======================================================
 
-Command:            Description                          
- shutdown           Close the system                     
- restart            Restart the system                   
- logoff             Log out current account              
- lock               Lock current account                 
- hiber              Enter Hibernation Mode               
- .re                Restart to Recovery Mode             
- .adv               Restart to advanced boot options     
+Command      : Description
+-------------------------------------------------------
+shutdown     : Close the system
+restart      : Restart the system
+logoff       : Log out current account
+lock         : Lock current account
+hiber        : Enter Hibernation Mode
+.re          : Restart to Recovery Mode
+.adv         : Restart to advanced boot options
 
+=======================================================
+                        Tools
+=======================================================
 
-Tools:
- Command            Description                          
+Command      : Description
+-------------------------------------------------------
+linkmgr      : Open link manager
+help         : Display help information
+reload       : Reload explorer
+menu         : Open user menu
 
- linkmgr            Open link manager                    
- help               Display help information             
- reload             Reload explorer                      
- menu               Open user menu                       
-
-
+=======================================================
 Website: https://www.foxaxu.com/fwlink?linkid=ntvsys
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-explorer-help.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-explorer.txt);
-====================================================
-Hi {NATVC_USERNAME}. Welcome to natvc
+=======================================================
+              👋 Welcome to Natvc System
+=======================================================
 
-Now is 
-                {ntvue.logondate}
-                {ntvue.logontime}
+   Hello, {NATVC_USERNAME}  
+   We're glad to have you back.
 
-{NTVEXP_AD_4}
-{NTVEXP_AD_5}
-====================================================
+-------------------------------------------------------
 
-{NTVEXP_AD_1}
-{NTVEXP_AD_2}
-{NTVEXP_AD_3}
-====================================================
+   📅 Date: {ntvue.logondate}  
+   🕒 Time: {ntvue.logontime}
+
+-------------------------------------------------------
+
+   🔔 System Notices:
+   {NTVEXP_AD_4}  
+   {NTVEXP_AD_5}
+
+=======================================================
+   📢 Additional Information:
+   {NTVEXP_AD_1}  
+   {NTVEXP_AD_2}  
+   {NTVEXP_AD_3}
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-explorer.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-repair.txt);
+=======================================================
+                 🔧 Natvc Recovery Utility
+=======================================================
 
-   Natvc Recovery
-   Automatic repair couldn't repair your pc
-   SystemImage is corrupted
+⚠️ Automatic repair couldn't repair your PC  
+🛠️ SystemImage is corrupted
 
-   File :   {SYSFIX_DIR}/{ReadCache}
+-------------------------------------------------------
+   Affected File:
+   {SYSFIX_DIR}/{ReadCache}
+-------------------------------------------------------
 
+💡 Options:
+   • Press Enter to run the System Fix Tool  
+   • Or choose to Shutdown or Reinstall the System
 
-   
-   Press enter to run system fix tool
-   or you can shutdown or reinstall system
-   System Recovery
+=======================================================
+                   🧩 System Recovery
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-repair.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-startup.txt);
+=======================================================
+         ⚙️ Advanced Boot Options Menu
+=======================================================
 
-            Advanced Boot Options Menu            
-  System Boot Menu - {SystemStartupNotification}
+🖥️ System Boot Menu: {SystemStartupNotification}
 
+🔽 Please select an option:
 
+   [1] 🚀 Start up Normal (Default)  
+   [s] 🛠️ Run System Repair  
+   [2] 🔐 Load Safe Mode (Root Shell)  
+   [3] 🔄 Restart & Select Boot Device  
+   [4] ⏻ Shutdown  
+   [5] 🧩 Load Recovery
 
-  Select an option:                               
-                                                  
-    [1] Start up Normal (Default)                 
-    [s] Run System Repair                         
-    [2] Load Safe Mode (Root Shell)               
-    [3] Restart & Select Boot Device              
-    [4] Shutdown                                  
-    [5] Load Recovery                             
-                                                  
-  Type a number/key and press [ENTER] to select   
+💡 Type a number/key and press [ENTER] to select
 
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-startup.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-loggin.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-    
-                                              
-                       
-              {USER_REQ_LOGON}
-                        
-                                  
-                 Welcome                    
+=======================================================
+                  🎉 Welcome to Natvc
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+👤 {USER_REQ_LOGON}
+
+-------------------------------------------------------
+
+✨ System Ready — Enjoy your session!
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-loggin.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-logoff.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-    
-                                              
-                      
-              {USER_REQ_LOGON}
-                        
-                                  
-                 Logoff                     
+=======================================================
+                  👋 Goodbye from Natvc
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+👤 {USER_REQ_LOGON}
+
+-------------------------------------------------------
+
+⏻ Logoff in progress — See you next time!
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-logoff.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-notype.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-             
-                                              
-                                              
-                                              
-                                              
-                                              
-                                              
-   You need type a vailed user id to login    
-            Natvc Logon Interface             
+=======================================================
+                 🔐 Natvc Logon Interface
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+⚠️ You need to type a valid user ID to login
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-notype.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-nouser.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                                              
-                                              
-                 
-                                              
-                                              
-                                              
-                                              
-            This use is not exist             
-            Natvc Logon Interface             
+=======================================================
+                 ❌ Natvc Logon Interface
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+⚠️ This user is not exist  
+🔐 Please check your ID and try again
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-nouser.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-req-passwd.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                    
-                                              
-                                              
-                                              
-            {NATVC_WHOIS}
-                                              
-                                              
-             Type your password               
-            Natvc Logon Interface             
+=======================================================
+                 🔐 Natvc Logon Interface
+=======================================================
 
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+👤 {NATVC_WHOIS}  
+🔑 Type your password to continue
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-req-passwd.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-req-wrong-passwd.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                                              
-                 
-                                              
-                                              
-            {NATVC_WHOIS}
-                                              
-                                              
-              Password Wrong..                
-            Natvc Logon Interface             
+=======================================================
+                 🔐 Natvc Logon Interface
+=======================================================
 
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+👤 {NATVC_WHOIS}  
+❌ Password Wrong...
+
+🔁 Please try again or login another user
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-req-wrong-passwd.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-restart.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
+=======================================================
+                 🔄 System Restarting...
+=======================================================
 
-                                              
-                       
-            Restarting ...                  
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+⏳ Please wait while the system restarts...
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-restart.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-shutdown.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                           
-                                              
-                       
-            Shutting Down ...               
+=======================================================
+                 ⏻ Natvc System Shutdown
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+🛑 Shutting Down ...
+
+💤 Please wait while the system powers off
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-shutdown.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-updater.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                 
-                                              
-                        
-            {update_title}
+=======================================================
+                 🔄 System Update Notification
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+📝 Update Title: {update_title}
+
+⚙️ Preparing system update... Please wait
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-userban.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                                              
-                 
-                                              
-                                              
-            {NATVC_WHOIS}
-                                              
-          This user can't log in              
-   because the account is currently disabled  
-            Natvc Logon Interface             
+=======================================================
+                 🔐 Natvc Logon Interface
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+👤 {NATVC_WHOIS}  
+🚫 This user can't log in  
+🔒 Reason: The account is currently disabled
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-userban.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue-wait.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                  
-                                              
-                       
-            Please wait ...                 
+=======================================================
+                 ⏳ Natvc System Status
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+⌛ Please wait ...
+
+🔄 System is processing your request
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue-wait.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-ntvue.txt);
-{NTVUE_AD_1}
-{NTVUE_AD_2}
-{NTVUE_AD_3}
-                    
-                                              
-                                              
-            {ntvue.logontime}
-            {ntvue.logondate}
-                                              
-                                              
-    login your user or shutdown your device   
-            Natvc Logon Interface             
+=======================================================
+                 🔐 Natvc Logon Interface
+=======================================================
+
+📢 {NTVUE_AD_1}  
+📢 {NTVUE_AD_2}  
+📢 {NTVUE_AD_3}
+
+-------------------------------------------------------
+
+🕒 {ntvue.logontime}  
+📅 {ntvue.logondate}
+
+-------------------------------------------------------
+
+💡 Please log in with your user credentials  
+🔘 Or choose to shut down your device
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-ntvue.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-oobe-end.txt);
+=======================================================
+                  ✅ Setup Complete!
+=======================================================
 
-            SETUP COMPLETE!                   
-                                              
-     All system configurations finalized      
-     Your device is ready for use             
-                                              
-    Thank you for choosing NATVC              
-    We hope you enjoy the experience          
-                                              
-     
-                                            
-      Press [ENTER] to finish OOBE          
-      and begin using your system           
-                                            
- 
-                                              
+🎉 All system configurations have been finalized  
+🖥️ Your device is now ready for use
+
+-------------------------------------------------------
+
+🙏 Thank you for choosing NATVC  
+✨ We hope you enjoy the experience ahead
+
+-------------------------------------------------------
+
+📌 Next Step:  
+Press [ENTER] to finish OOBE  
+and begin using your system
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-oobe-end.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-oobe-start.txt);
+=======================================================
+                    ⏳ Please Wait...
+=======================================================
 
+📢 We are very happy to show you our work.  
+✨ Preparing your experience with care and precision
 
+-------------------------------------------------------
 
+🔧 System is initializing...  
+🖥️ Loading modules and resources...
 
+🚀 This won't take long — thank you for your patience!
 
-
-            Please Wait ....
-    We are very happy to show you our work.
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-oobe-start.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-oobe-user.txt);
+=======================================================
+               👤 USER ACCOUNT SETUP
+=======================================================
 
-            USER ACCOUNT SETUP                
+🛠️ Let's create your administrator account
 
-  Let's create your administrator account     
-           
-   This will be your primary login for the   
-    system with full administrative rights    
-                                              
+This will be your primary login for the system,  
+with full administrative rights and access privileges.
 
+-------------------------------------------------------
+
+🔐 Account Type: Administrator  
+✅ Permissions: System Control  
+📌 Purpose: Personal or Professional Use
+
+-------------------------------------------------------
+
+💡 Tip: Choose a secure username and password  
+to protect your system and data.
+
+=======================================================
+Create your Own User to begin setup
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-oobe-user.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-oobe-welcome.txt);
+=======================================================
+                   🎉 WELCOME TO
+                     N  A  T  V  C
+=======================================================
 
-                WELCOME TO                    
-               N  A  T  V  C
-  It's an honor to welcome you to the system  
-  we've dedicated ourselves to perfecting.    
-                                              
-  We'll guide you through configuration to    
-  ensure you get the most from this           
-  cutting-edge platform.                      
-                                              
-  Copyright foxaxu_dev_lab                    
+✨ It's an honor to welcome you to the system  
+we've dedicated ourselves to perfecting.
 
+🛠️ We'll guide you through configuration  
+to ensure you get the most from this  
+cutting-edge platform.
+
+-------------------------------------------------------
+
+© Copyright FoxaXu Dev Lab  
+All rights reserved.
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-oobe-welcome.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-recovery-error.txt);
+=======================================================
+                   🧩 Recovery Mode
+=======================================================
 
-  Recovery
-  System boot fail
-  file  {REV_Missing_File}
+⚠️ System boot failed  
+🗂️ Missing or corrupted file detected:  
+   {REV_Missing_File}
 
+-------------------------------------------------------
 
+🔁 Press any key to restart  
+💡 Your device needs recovery to continue
 
-
-  Press any key to restart
-  Your device need recovery
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-recovery-error.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-system-detail.txt);
 =======================================================
- OEM: {MAF_OEM}      Calcium:  {VersionID}({CalciumL_FMV})
- Virtual Hardware: {Hardware}
+              ████   ████   ████   ████   ████
+              ████   ████   ████   ████   ████
+                   W E L C O M E   T O   N A T V C
+=======================================================
 
+💧 Natvc 15 Liquid Edition  
+Lightweight • AI-Enhanced • Secure • Fast
 
- Device Info :
+-------------------------------------------------------
 
-   Firmware:           {BootMethod}
-   Platform:           {Platform}
-   OS Directory:       {NATVC_DISK}
-            More info type "devinfo" to get
+🔧 System Summary:
+• OEM: {MAF_OEM}  
+• Calcium Version: {VersionID} ({CalciumL_FMV})  
+• Platform: {Platform}  
+• Firmware: {BootMethod}  
+• Kernel: {SYS_KERNEL_VID}  
+• OS: {SYS_NAME} {SYSNAME} {NATVC_EDITION}  
+• Startup: {last_startup}  
+• User: {NATVC_USERNAME} ({NATVC_WHOIS})
 
- System Detail:
+-------------------------------------------------------
 
-   Version :           {SYS_NAME} {SYSNAME} {NATVC_EDITION}
-   Version Detail :    {SYS_RELEASE_Channel}
-   Startup Time :      {last_startup}
-   OS Version :        {SYS_KERNEL_VID}
-   Logon User :        {NATVC_USERNAME}({NATVC_WHOIS})
-          Read EULA: {SYS_NROOT}/res/natvc-eula.txt  
+📂 OS Directory: {NATVC_DISK}  
+📘 EULA: {SYS_NROOT}/res/natvc-eula.txt
 
-Copyright FDL. Natvc_FDL
-Project NATVC.   Based Calcium Script    BVM PROJECT
-
-Aboutsys
+=======================================================
+Powered by Calcium Script · Project BVM · Natvc_FDL
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-system-detail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-user-settings-main.txt);
+=======================================================
+                 👤 NATVC USER SETTINGS
+=======================================================
 
-              NATVC USER SETTINGS                  
+⚠️ WARNING:  
+Ensure you have an active administrator account  
+before making changes. Proceed with caution.
 
+-------------------------------------------------------
 
-  WARNING: Ensure you have an active administrator
-  account before making changes. Proceed with caution.
+🔧 USER MANAGEMENT OPTIONS:
 
-          USER MANAGEMENT OPTIONS              
+  [1] ➕ Create New User  
+  [2] ❌ Delete User  
+  [3] 🚫 Ban User Account  
+  [4] 🛡️ Set Admin Privileges  
+  [5] 🔁 Configure Auto-Login  [@ = Disable]
 
-  1 - Create New User                             
-  2 - Delete User                                 
-  3 - Ban User Account                            
-  4 - Set Admin Privileges                        
-  5 - Configure Auto-Login [@ = Disable]          
+-------------------------------------------------------
 
+💡 Usage Tip:  
+Type "autorun" to configure user auto-run settings  
+or select an option above.
 
-   Usage Tip: Type "autorun" to configure user auto-run
-   settings or select an option above.
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-user-settings-main.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-UserMenu.txt);
+══════════════════════════════════════════════════════
+👤 Welcome, {NATVC_USERNAME} ({NATVC_WHOIS})  
+🖥️ System: {SYS_NAME} {SYSNAME}
+══════════════════════════════════════════════════════
 
-  Welcome, {NATVC_USERNAME} ({NATVC_WHOIS})
-  System: {SYS_NAME} {SYSNAME}
+📂 EXPLORER COMMANDS
+──────────────────────────────────────────────────────
+• reload      → Refresh Explorer  
+• logoff      → Logout current user  
+• shutdown    → Shutdown device  
+• restart     → Restart device  
+• hiber       → Hibernate system  
+• software    → Open software manager  
 
+🛠️ SYSTEM COMMANDS
+──────────────────────────────────────────────────────
+• .rs         → Restart to Safe Mode  
+• .re         → Restart to Recovery Mode  
+• .bm         → Restart to Boot Menu  
+• .adv        → Restart to Advanced Options  
+• .shell      → Open Root Shell  
+• linkmgr     → Manage Explorer Links  
 
- Explorer 
-  reload       Refresh Explorer                 
-  logoff       Logout current user              
-  shutdown     Shutdown device                  
-  restart      Restart device                   
-  hiber        Hibernate system                 
-  software     Open software manager            
+🧰 TOOLS & UTILITIES
+──────────────────────────────────────────────────────
+• aboutsys    → View system information  
+• update      → Check for updates  
+• confedit    → Edit system configuration  
+• usersetting → Manage user settings  
+• sysfix      → Run system repair  
+• filemgr     → Launch file manager  
+• filepack    → Open file archive tool  
 
-
- System 
-  .rs         Restart to Safe Mode              
-  .re         Restart to Recovery Mode          
-  .bm         Restart to Boot Menu              
-  .adv        Restart to Advanced Options       
-  .shell      Open Root Shell                   
-  linkmgr     Explorer Link Manager             
-
-
- Tools 
-  aboutsys    System information                
-  update      Check for updates                 
-  confedit    Configuration editor              
-  usersetting User settings                     
-  sysfix      Run system repair                 
-  filemgr     File manager                      
-  filepack    File archive tool                 
-
-
-  Use "linkmgr" to manage program links
+💡 Tip: Use `linkmgr` to manage program shortcuts and launcher links
+══════════════════════════════════════════════════════
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-UserMenu.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/start-read.txt);
-Welcome to Natvc 14 Valley
-Natvc 14 has lots of new variation
-Keep update to latest version of Natvc
+=======================================================
+               💧 Welcome to Natvc 15 Liquid
+=======================================================
 
-We will Keep Natvc Latest and Security. We recommand you check update every week
-if you need help. please visit https://devlab.foxaxu.com
+🚀 Natvc 15 introduces the new **Liquid** experience —  
+a smoother, faster, and more secure system environment  
+designed for modern performance and reliability.
 
-Origin File Directory :  {SYS_NROOT}/res/start-read.txt
+-------------------------------------------------------
 
-Thank you
-Have Fun
+🔒 Key Features of Liquid:
+• Enhanced system fluidity and responsiveness  
+• Reinforced security architecture  
+• Optimized for real-time updates and low-latency tasks  
+• Seamless integration with virtual hardware platforms
+
+-------------------------------------------------------
+
+🔄 Stay Updated:
+We recommend checking for updates weekly  
+to keep your system secure and up to date.
+
+📘 Need help? Visit: https://devlab.foxaxu.com  
+📂 Origin File Directory: {SYS_NROOT}/res/start-read.txt
+
+-------------------------------------------------------
+
+🙏 Thank you for choosing Natvc  
+🎉 Enjoy the Liquid experience!
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/start-read.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/local_ntsh.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute={SYS_ROOT}/nativeshell.ca;
+
+//RUNAS USER
+$UserID={NATVC_WHOIS};
+$UserPassword={NATVC_USER_PASSWORD};
+
+//Name ntvue_user_logon_interface
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/local_ntsh.nsv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/ntvue_user_logon_interface.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute={SYS_ROOT}/ntvue.ca;
+
+//RUNAS USER
+$UserID=SYSTEM;
+$UserPassword=@nopswd;
+
+//Name ntvue_user_logon_interface
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/ntvue_user_logon_interface.nsv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/power_ntsh.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute={SYS_ROOT}/nativeshell.ca;
+
+//RUNAS USER
+$UserID=SYSTEM;
+$UserPassword=@nopswd;
+
+//Name ntvue_user_logon_interface
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/power_ntsh.nsv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/user_local_explorer.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute={SYS_ROOT}/explorer.ca;
+
+//RUNAS USER
+$UserID={NATVC_WHOIS};
+$UserPassword={NATVC_USER_PASSWORD};
+
+//Name ntvue_user_logon_interface
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/user_local_explorer.nsv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/{Template}.nsv);
 //Natvc Service Config
 
@@ -1586,58 +1844,82 @@ $osload=;
 $bootsign=;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/NBF-Temple);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/bootfail.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ CRITICAL SYSTEM ERROR DETECTED
 
-     CRITICAL SYSTEM ERROR                    
-           
-   Error Code: {NBF_ErrorCode}
-   Description: Bootloader verification failed
-                                              
-    RECOVERY INSTRUCTIONS                     
-          
-  1. Insert your system recovery media        
-  2. Select 'Repair startup files' option     
-  3. Run boot sector repair tool              
-                                              
-    Without recovery media:                   
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+🔧 Error Code: {NBF_ErrorCode}  
+📄 Description: Bootloader verification failed
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your system recovery media  
+  [2] Select 'Repair startup files' option  
+  [3] Run boot sector repair tool
+
+-------------------------------------------------------
+
+📌 Without recovery media:  
+Please contact your device manufacturer support
+
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/bootfail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/filelost.txt);
+=======================================================
+                 🧩 NATVC BOOT RECOVERY
+=======================================================
 
-         NATVC BOOT RECOVERY                  
+❗ Missing Critical File Detected
 
-     Missing Critical File                    
-   
-     File: {NBF_FILE}
-     Status: Required for system startup      
-                                              
-    Recovery Instructions                     
-          
-  1. Insert your setup media                  
-  2. Choose "Repair system files"             
-  3. Restore or replace the missing file      
-                                              
-    No recovery media?                        
-  Contact device manufacturer support:        
-  - OEM: {MAF_OEM}
-                                              
+📄 File: {NBF_FILE}  
+📌 Status: Required for system startup
 
+-------------------------------------------------------
+
+🛠️ Recovery Instructions:
+
+  [1] Insert your setup media  
+  [2] Choose "Repair system files"  
+  [3] Restore or replace the missing file
+
+-------------------------------------------------------
+
+📌 No recovery media available?
+
+Please contact your device manufacturer support:  
+   • OEM: {MAF_OEM}
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/filelost.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/res/nbfshell.txt);
-=== Natvc BOOTMGR Shell ===
-Location: BootVolume/nbf/*.nbf
-Legacy boot files not supported
+=======================================================
+               🖥️ Natvc BOOTMGR Shell
+=======================================================
 
-Default: {BootSetDefault}
+📂 Location: BootVolume/nbf/*.nbf  
+⚠️ Legacy boot files are not supported
 
-COMMANDS:
-.list - Show available loaders
-.exit - Shutdown system
-=========================
+🔧 Default Boot Loader: {BootSetDefault}
+
+-------------------------------------------------------
+
+🛠️ Available Commands:
+
+  • .list     — Show available boot loaders  
+  • .exit     — Shutdown system  
+
+-------------------------------------------------------
+
+💡 Tip: Use `.list` to view all available loaders  
+🔐 Secure boot is enforced under Liquid Core
+
+=======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/sysboot/res/nbfshell.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysinfo.txt);
 Welcome To Natvc
@@ -1719,7 +2001,7 @@ _return "OK";
 //Add New Boot loader Core
 :NewLegBootloader;
 
-_dir_remove "$sys_def_disk/sysboot";
+//_dir_remove "$sys_def_disk/sysboot";
 
 _dir_make "$sys_def_disk/sysboot";
 _dir_make "$sys_def_disk/sysboot/nbf";
@@ -1765,7 +2047,7 @@ _return "OK";
 //Add New Boot loader Core
 :NewBootloader;
 
-_dir_remove "$sys_def_disk/nbf";
+//_dir_remove "$sys_def_disk/nbf";
 
 _dir_make "$sys_def_disk/nbf";
 _dir_make "$sys_def_disk/nbf/nbf";
@@ -3166,6 +3448,182 @@ _goto :BACKCTRESTORE;
 
 //LL
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/mnareset.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/nativeshell.ca);
+_$directmode;
+_$nolog;
+
+//Data int
+
+_var {ntsh_version} = "2103";
+_var {ntsh_revision} = "102";
+
+//GET DIRECT 
+
+//Load Config
+_if(!_file_exist "{NATVC_CONFIG}/NativeConf") | _goto :FailConfig;
+_sipcfg.open "{NATVC_CONFIG}/NativeConf";
+_var {StartPath} = _sipcfg StartPath;
+_var {SecondPath} = _sipcfg SecondPath;
+_clear;
+
+_var {rs_pathexec} = "{StartPath}";
+_if (!_dir_exist "{rs_pathexec}")|_cout "Config Error:  StartPath is not accessable. Reset to SYS_ROOT";
+_if (!_dir_exist "{rs_pathexec}")|_sipcfg StartPath = '{SYS_ROOT}';
+_if (!_dir_exist "{rs_pathexec}")|_var {rs_pathexec} = "{SYS_ROOT}";
+
+_if (!_dir_exist "{SecondPath}")|_cout "Config Error:  SecondPath is not accessable. Reset to SYS_ROOT";
+_if (!_dir_exist "{SecondPath}")|_sipcfg SecondPath = '{SYS_ROOT}';
+_if (!_dir_exist "{SecondPath}")|_var {SecondPath} = "{SYS_ROOT}";
+
+
+//Main ntsh
+_cout "Natvc NativeShell.  User:{NATVC_WHOIS} ({NATVC_isAdmin})  Profile: {NATVC_USERPROFILE}";
+_cout "Copyright FoxaXu_Dev_Lab (c).  All Rights Reserved.";
+_cout "";
+_cout "Install latest version of Natvc to get latest function. https://dev.foxaxu.com/Software/P_Natvc/";
+_cout "NativeShell Config file :   {NATVC_CONFIG}/NativeConf";
+:TypeNewShell;
+_cout "";
+_prt "NS {rs_pathexec}>";
+_var {ns_type} = _getline;
+_if(_cp("{ns_type}","exit"))|_return "ok";
+_if(_cp("{ns_type}","system"))|_goto :exec_system_commander;
+_if(_cp("{ns_type}","help"))|_goto :TypeNTSH_Helper;
+_if(_cp("{ns_type}","cd"))|_goto :PathSet;
+_if(_cp("{ns_type}","args"))|_goto :SetArgs;
+_if(_cp("{ns_type}","version"))|_goto :VersionINFO;
+_if(_cp("{ns_type}",'{varspace.null}'))|_goto :TypeNewShell;
+
+_if(_cp("{ns_type}","clear"))| _clear;
+_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
+
+_if(_cp("{ns_type}","clear"))| _clear;
+_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
+
+//EXECUTE PROGRAM
+_var {ns_fnd_exec} = "{ns_type}";
+_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}")|_goto :TYPESHELL_EXE;
+_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}.ca")|_var {ns_fnd_exec} = "{ns_fnd_exec}.ca";
+_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}")|_goto :TYPESHELL_EXE;
+
+_var {ns_fnd_exec} = "{ns_type}";
+_if(_file_exist "{SecondPath}/{ns_fnd_exec}")|_goto :S_TYPESHELL_EXE;
+_if(_file_exist "{SecondPath}/{ns_fnd_exec}.ca")|_var {ns_fnd_exec} = "{ns_fnd_exec}.ca";
+_if(_file_exist "{SecondPath}/{ns_fnd_exec}")|_goto :S_TYPESHELL_EXE;
+
+_cout "";
+_cout "Cannot Explain Command or not found any exist Executable file";
+_cout "{ns_type} : is invaild";
+_goto :TypeNewShell;
+
+
+
+:TYPESHELL_EXE;
+_var {ns_exec_back} = _script <"{rs_pathexec}/{ns_fnd_exec}"> "{RunArgs}";
+_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
+_if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
+_if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ns_exec_back}","lock"))|_return "lock";
+_if(_cp("{ns_exec_back}","shutdown"))|_return "user_shutdown";
+_if(_cp("{ns_exec_back}","restart"))|_return "user_restart";
+_if(_cp("{ns_exec_back}","logoff"))|_return "user_logoff";
+
+_goto :TypeNewShell;
+
+:S_TYPESHELL_EXE;
+_var {ns_exec_back} = _script <"{SecondPath}/{ns_fnd_exec}"> "{RunArgs}";
+_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
+_if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
+_if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ns_exec_back}","lock"))|_return "lock";
+_if(_cp("{ns_exec_back}","shutdown"))|_return "user_shutdown";
+_if(_cp("{ns_exec_back}","restart"))|_return "user_restart";
+_if(_cp("{ns_exec_back}","logoff"))|_return "user_logoff";
+
+_goto :TypeNewShell;
+
+
+:PathSet;
+_prts "Set Directory>";
+_var {rs_pathexec_cache} = _getline;
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :TryAdvancedSet;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :TypeNewShell;
+
+:TryAdvancedSet;
+_var {rs_pathexec_cache} = "{rs_pathexec}/{rs_pathexec_cache}";
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :NULLPATHSET;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :TypeNewShell;
+
+
+:NULLPATHSET;
+_cout "Cannot found directory "{rs_pathexec_cache}" , this directory is not exist or acceess denind";
+_cout "Set Location Failed";
+_goto :TypeNewShell;
+
+
+:SetArgs;
+_prts "Type Execute Arguments >";
+_var {RunArgs} = _getline;
+_goto :TypeNewShell;
+
+
+:exec_system_commander;
+_cout "";
+_prt "{path}>";
+_var {TargetCommand} = _getline;
+_if(_cp("{TargetCommand}","exit"))|_goto :TypeNewShell;
+_system "{TargetCommand}";
+_pause;
+_goto :exec_system_commander;
+
+
+:TypeNTSH_Helper;
+//_cout "";
+_cout "Themes:";
+_cout "Natvc NativeShell Help Center";
+_cout "";
+_cout "What is NativeShell:";
+_cout "NativeShell is a new shell console for Natvc. to improve legacy console rootshell.";
+_cout "NativeShell support much new function. some function is some software was required";
+_cout "Thanks your support";
+_cout "";
+_cout "This Help Center cannot tell you how to use nativeshell. but you can view more info";
+_cout "on internet. open link https://dev.foxaxu.com/Software/P_Natvc/NTSH";
+_cout "NativeShell is new project. if you have some problem. report to us. hello@foxaxu.com";
+_cout "";
+_cout "Online Help";
+_cout "You can find some message on Developer FoxaXu. link:  https://dev.foxaxu.com";
+_cout "Some command need you have administrator. make sure run nativeshell as administrator";
+_cout "";
+_pause;
+_cout "";
+_goto :TypeNewShell;
+
+
+:VersionINFO;
+_cout "";
+_cout "NativeShell Version";
+_cout "NTSH Version :   {ntsh_version}";
+_cout "REVISION:  {ntsh_revision}";
+_cout "";
+_cout "Work System";
+_cout "System :   {SYS_NAME} {SYSNAME}.{SYS_KERNEL_VID}";
+_cout "Code Name:  {SYS_KERNEL_CODENAME}";
+_cout "RC:  {SYS_RELEASE_Channel}";
+_cout "";
+_goto :TypeNewShell;
+
+
+:FailConfig;
+_cout "Native Shell could not start";
+_cout "Your Config file is missing";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/nativeshell.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/nbfmgr.ca);
 //Natvc Boot Manager Tools
 //Design By FoxaXu
@@ -3329,142 +3787,6 @@ _if(_cp("{DEFW_N}","y"))|_goto :ApplyDeleteBL;
 
 _goto :BACKMAINCONSOLE; 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/nbfmgr.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntsh.ca);
-_$directmode;
-_$nolog;
-
-//Data int
-
-_var {ntsh_version} = "2101";
-_var {ntsh_revision} = "102";
-
-//GET DIRECT 
-
-_var {rs_pathexec} = "{SYS_ROOT}";
-
-_clear;
-
-
-//Main ntsh
-_cout "Natvc NativeShell.";
-_cout "Copyright FoxaXu_Dev_Lab (c).  All Rights Reserved.";
-_cout "";
-_cout "Install latest version of Natvc to get latest function. https://dev.foxaxu.com/Software/P_Natvc/";
-:TypeNewShell;
-_cout "";
-_prt "NS {rs_pathexec}>";
-_var {ns_type} = _getline;
-_if(_cp("{ns_type}","exit"))|_return "ok";
-_if(_cp("{ns_type}","system"))|_goto :exec_system_commander;
-_if(_cp("{ns_type}","help"))|_goto :TypeNTSH_Helper;
-_if(_cp("{ns_type}","cd"))|_goto :PathSet;
-_if(_cp("{ns_type}","version"))|_goto :VersionINFO;
-_if(_cp("{ns_type}",'{varspace.null}'))|_goto :TypeNewShell;
-
-_if(_cp("{ns_type}","clear"))| _clear;
-_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
-
-_if(_cp("{ns_type}","clear"))| _clear;
-_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
-
-//EXECUTE PROGRAM
-_var {ns_fnd_exec} = "{ns_type}";
-_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}")|_goto :TYPESHELL_EXE;
-_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}.ca")|_var {ns_fnd_exec} = "{ns_fnd_exec}.ca";
-_if(_file_exist "{rs_pathexec}/{ns_fnd_exec}")|_goto :TYPESHELL_EXE;
-_cout "";
-_cout "Cannot Explain Command or not found any exist Executable file";
-_cout "{ns_type} : is invaild";
-_goto :TypeNewShell;
-
-
-
-:TYPESHELL_EXE;
-_var {ns_exec_back} = _script <"{rs_pathexec}/{ns_fnd_exec}"> "{RunArgs}";
-_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
-_if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
-_if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
-_if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
-_if(_cp("{ns_exec_back}","shutdown"))|_return "user_shutdown";
-_if(_cp("{ns_exec_back}","restart"))|_return "user_restart";
-_if(_cp("{ns_exec_back}","logoff"))|_return "user_logoff";
-
-_goto :TypeNewShell;
-
-
-:PathSet;
-_prts "Set Directory>";
-_var {rs_pathexec_cache} = _getline;
-_if(!_dir_exist "{rs_pathexec_cache}")|_goto :TryAdvancedSet;
-_var {rs_pathexec} = "{rs_pathexec_cache}";
-_goto :TypeNewShell;
-
-:TryAdvancedSet;
-_var {rs_pathexec_cache} = "{rs_pathexec}/{rs_pathexec_cache}";
-_if(!_dir_exist "{rs_pathexec_cache}")|_goto :NULLPATHSET;
-_var {rs_pathexec} = "{rs_pathexec_cache}";
-_goto :TypeNewShell;
-
-
-:NULLPATHSET;
-_cout "Cannot found directory "{rs_pathexec_cache}" , this directory is not exist or acceess denind";
-_cout "Set Location Failed";
-_goto :TypeNewShell;
-
-
-:SetArgs;
-_prts "Type Execute Arguments >";
-_var {RunArgs} = _getline;
-_goto :TypeNewShell;
-
-
-:exec_system_commander;
-_cout "";
-_prt "{path}>";
-_var {TargetCommand} = _getline;
-_if(_cp("{TargetCommand}","exit"))|_goto :TypeNewShell;
-_system "{TargetCommand}";
-_pause;
-_goto :exec_system_commander;
-
-
-:TypeNTSH_Helper;
-//_cout "";
-_cout "Themes:";
-_cout "Natvc NativeShell Help Center";
-_cout "";
-_cout "What is NativeShell:";
-_cout "NativeShell is a new shell console for Natvc. to improve legacy console rootshell.";
-_cout "NativeShell support much new function. some function is some software was required";
-_cout "Thanks your support";
-_cout "";
-_cout "This Help Center cannot tell you how to use nativeshell. but you can view more info";
-_cout "on internet. open link https://dev.foxaxu.com/Software/P_Natvc/NTSH";
-_cout "NativeShell is new project. if you have some problem. report to us. hello@foxaxu.com";
-_cout "";
-_cout "Online Help";
-_cout "You can find some message on Developer FoxaXu. link:  https://dev.foxaxu.com";
-_cout "Some command need you have administrator. make sure run nativeshell as administrator";
-_cout "";
-_pause;
-_cout "";
-_goto :TypeNewShell;
-
-
-:VersionINFO;
-_cout "";
-_cout "NativeShell Version";
-_cout "NTSH Version :   {ntsh_version}";
-_cout "REVISION:  {ntsh_revision}";
-_cout "";
-_cout "Work System";
-_cout "System :   {SYS_NAME} {SYSNAME}.{SYS_KERNEL_VID}";
-_cout "Code Name:  {SYS_KERNEL_CODENAME}";
-_cout "RC:  {SYS_RELEASE_Channel}";
-_cout "";
-_goto :TypeNewShell;
-
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntsh.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvani.ca);
 _$directmode;
 _$nolog;
@@ -3922,6 +4244,7 @@ _if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","logoff"))|_return "user_logoff";
 _if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown"))|_return "user_shutdown";
 _if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))|_return "user_restart";
 
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","lock"))|_return "user_lock";
 _if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_logoff"))|_return "user_logoff";
 _if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_restart"))|_return "user_restart";
@@ -4412,8 +4735,8 @@ _if(_cp("{NoGUIBootOpt}","1"))| _cout "Start Complete ...";
 
 _file_write "[%time%][Kernel][Boot] System Image Status:  OK";
 
-_file_write "[%time%][Kernel][Boot] SYSTEM Startup Complete";
-_file_write "[%time%][Kernel][Boot] Load Default SystemUser (SYSTEM)";
+_file_write "[%time%][Kernel][Boot] SYSTEM Load Memory is complete";
+_file_write "[%time%][Kernel][Boot] Load Natvc Logon Service";
 
 _if(_cp("{NoGUIBootOpt}","1"))| _ms_sleep 500;
 
@@ -4432,7 +4755,7 @@ _clear;
 _var {NATVC_CRASH_CODE} = "UNKNOWN_ERROR_KERNEL_BREAK";
 _var {NATVC_CRASH_MESSAGE} = "Kernel Suspended and Stop Running";
 
-_file_write "[%time%][Kernel][Boot] Load Anti Crash Service";
+_file_write "[%time%][Kernel][Boot] The Kernel Interrupt Protection Service is loaded";
 
 //Complete
 //Load SYSTEM USER
@@ -4447,10 +4770,10 @@ _var {IsAutoLogin} = true;
 _file_write "[%time%][Kernel][Boot] Load -->  NATVC User Experience Service (NUES)";
 
 _if(!_file_exist "{NATVC_USERSVC}") | _return "{NATVC_USERSVC}";
-_var {PRE_AUTOENTRY_PASSWORD} = "%sysKerneluserPSWD";
+_var {PRE_AUTOENTRY_PASSWORD} = "@nopswd";
 
-_file_write "[%time%][Kernel][Boot] SYSTEM Startup Succeeded";
-_file_write "[%time%][Kernel][Boot] Load User Main Service";
+_file_write "[%time%][Kernel][Boot] Pre Boot complete";
+_file_write "[%time%][Kernel][Boot] Load Natvc Logon Service";
 
 _var {UserSVCBUFFER} = "KernelModeDetect";
 
@@ -4458,25 +4781,29 @@ _if(_cp("{Shutdown_Data}","1")) |_dir_remove "{SYS_NROOT}/SECURITY";
 
 _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "SYSTEM";
 
-_file_write "[%time%][Kernel] NUES Service is Closed";
+_if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","user_restart")) | _goto :RESTART_OK;
+
+_if(!_cp("{K_SERVICE_CALLBACK}","reload_SYSTEM"))|_goto :FAILLOGIN_SYSTEM;
+
+_var {K_SERVICE_CALLBACK} = _script <"{SYS_ROOT}/ntvlogon.ca"> "Kernel_int_load_system";
+
+_file_write "[%time%][Kernel] NUES Service is Closed.  Argument:  {K_SERVICE_CALLBACK}";
 
 _if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_restart")) | _goto :RESTART_OK;
 
 //If nues service crash
-_if(_cp("{K_SERVICE_CALLBACK}","logoff")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","reload_SYSTEM")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","runid.exit")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","failuserauth")) | _goto :NUES_EXIT;
-_if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :NUES_EXIT;
 
 //System API
 _if(_cp("{K_SERVICE_CALLBACK}","$shutdown")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","$reboot")) | _goto :RESTART_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","$hiber")) | _return "$shutdown";
 
+_if(_cp("{K_SERVICE_CALLBACK}","shutdown")) | _goto :SHUTDOWN_OK;
+_if(_cp("{K_SERVICE_CALLBACK}","reboot")) | _goto :RESTART_OK;
 
 
 _file_write "[%time%][Kernel][Error] NUES Report a unexpected error on Callback :  {K_SERVICE_CALLBACK}";
@@ -4485,6 +4812,7 @@ _file_write "[%time%][Kernel][Error] An attempt is being made to analyze the iss
 
 //Exception
 _if(_cp("{K_SERVICE_CALLBACK}","failsys")) | _goto :FAILSYSMODE;
+_if(_cp("{K_SERVICE_CALLBACK}","fail_localsvc")) | _goto :FAILSYSLOCALSVC;
 _if(_cp("{K_SERVICE_CALLBACK}","device_crash")) | _goto :BACKLOADCRASH;
 _if(_cp("{K_SERVICE_CALLBACK}","user_hiber")) | _goto :NULLKERNEL_DEBUG;
 _if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :FAILSERVICEBACK;
@@ -4564,7 +4892,19 @@ _var {NATVC_CRASH_CODE} = "KERNEL_SERVICE_ERROR";
 _var {NATVC_CRASH_MESSAGE} = "Kernel service error";
 _goto :BACKLOADCRASH;
 
+:FAILLOGIN_SYSTEM;
+_file_write "[%time%][Kernel][Error][Exception] CID : SYSTEM Module User Initialization failed (unexpected)";
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {NATVC_CRASH_CODE} = "NTVLOGON_FATAL_ERROR";
+_var {NATVC_CRASH_MESSAGE} = "Kernel service error";
+_goto :BACKLOADCRASH;
 
+:FAILSYSLOCALSVC;
+_file_write "[%time%][Kernel][Error][Exception] CID : ntvlogon.ca Module Prepare Service failed (unexpected)";
+_var {BUG_REPORT} = "ntvlogon.ca";
+_var {NATVC_CRASH_CODE} = "LOCAL_SERVICE_FAILED";
+_var {NATVC_CRASH_MESSAGE} = "System Service error";
+_goto :BACKLOADCRASH;
 
 //Load Recovery
 :failbootRecovery;
@@ -5050,6 +5390,53 @@ _typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-recovery-error.txt";
 _pause;
 _return "$reboot";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvload.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvlogon.ca);
+_$directmode;
+_$nolog;
+
+_var {ntvl_temp} = _getargs;
+
+_if(!_cp("{ntvl_temp}","Kernel_int_load_system"))|_return "failuserauth";
+
+//SYSTEM New Logon Service
+_file_open "{SYS_LOG}";
+_file_write "[%time%][Natvc Logon] The system logon service is start";
+
+
+//Load User Logon Interface
+:ReinitService;
+_file_write "[%time%][Natvc Logon] Attempt Load User Logon Service";
+_var {ntvl_process} = _script <"{SYS_ROOT}/services.ca"> "ntvue_user_logon_interface";
+//Process NULI Result
+_file_write "[%time%][Natvc Logon] User Logon Service is stop. code:  {ntvl_process}";
+
+//Break Result
+_if(_cp("{ntvl_process}","relogin")) | _goto :ReinitService;
+_if(_cp("{ntvl_process}","noauth")) | _goto :ReinitService;
+
+//BadResult;
+_if(_cp("{ntvl_process}","logoff")) | _goto :NUES_EXIT;
+_if(_cp("{ntvl_process}","user_logoff")) | _goto :NUES_EXIT;
+_if(_cp("{ntvl_process}","reload_SYSTEM")) | _goto :NUES_EXIT;
+_if(_cp("{ntvl_process}","runid.exit")) | _goto :NUES_EXIT;
+_if(_cp("{ntvl_process}","failuserauth")) | _goto :NUES_EXIT;
+_if(_cp("{ntvl_process}","ok")) | _goto :NUES_EXIT;
+_return "{ntvl_process}";
+
+:NUES_EXIT;
+_file_write "[%time%][Natvc Logon] User Logon Service Initialization failed";
+_file_write "[%time%][Natvc Logon] Status Error :  {ntvl_process}";
+_file_write "[%time%][Natvc Logon] last program :  {ToolsName}";
+_clear;
+_cout "Natvc User Logon Interface  Initialization failed";
+_cout " ";
+_cout "  ERROR:  Logon Interface Initialization failed."
+_cout "          Check the Log for details";
+_cout " ";
+_cout "   Press Enter to Restart Logon Interface";
+_pause;
+_goto :ReinitService;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvlogon.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvperf.ca);
 _$directmode;
 _$nolog;
@@ -5218,6 +5605,7 @@ _if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :NE_ERR_NOTTYPE;
 //BLOCK Illegal Request
 _if(_cp("{USER_REQ_LOGON}","SYSTEM"))|_goto :USERFAIL_NOUSER;
 _if(_cp("{USER_REQ_LOGON}","default"))|_goto :USERFAIL_NOUSER;
+_if(_cp("{USER_REQ_LOGON}","LOCAL_SERVICE"))|_goto :USERFAIL_NOUSER;
 //END
 
 _file_write "[%time%][Logon Interface] Run User Service...";
@@ -5307,6 +5695,7 @@ _cout "Please use normal boot to login";
 _pause;
 _if(_cp("{NATVC_WHOIS}","SYSTEM"))|_return "$shutdown";
 _if(_cp("{NATVC_WHOIS}","SystemShell"))|_return "$shutdown";
+_if(_cp("{NATVC_WHOIS}","LOCAL_SERVICE"))|_return "$shutdown";
 _file_write "[%time%][Logon Interface] System Closed";
 _return "$shutdown";
 
@@ -5801,6 +6190,26 @@ _cout "This user is system manager";
 _pause;
 _goto :Server Page;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/oobe.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/powermenu.ca);
+_$directmode;
+_$nolog;
+
+_clear;
+_cout "What do you want to do";
+_cout "    1. Shutdown Device";
+_cout "    2. Restart Device";
+_cout "    3. Switch User";
+_cout "    4. Logoff User";
+_cout "    Press [Enter] to Back";
+_cout "";
+_cout "Advanced User Menu";
+_var {pwMenu} = _getline;
+_if(_cp("{pwMenu}","1"))|_return "user_shutdown";
+_if(_cp("{pwMenu}","2"))|_return "user_restart";
+_if(_cp("{pwMenu}","3"))|_return "lock";
+_if(_cp("{pwMenu}","4"))|_return "user_logoff";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/powermenu.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/refix.ca);
 _$directmode;
 _$nolog;
@@ -5914,6 +6323,7 @@ _if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :RESET SHELL MODE;
 _if(_cp("{USER_REQ_LOGON}","shutdown"))|_return "user_shutdown";
 _if(_cp("{USER_REQ_LOGON}","restart"))|_return "user_restart";
 _if(_cp("{USER_REQ_LOGON}","logoff"))|_return "user_logoff";
+_if(_cp("{USER_REQ_LOGON}","lock"))|_return "lock";
 _if(_cp("{USER_REQ_LOGON}",".shell"))|_goto :RESET SHELL MODE;
 _if(_cp("{USER_REQ_LOGON}","ver"))|_goto :List Version Message;
 _if(_cp("{USER_REQ_LOGON}","version"))|_goto :List Version Message;
@@ -5967,6 +6377,7 @@ _file_write "[%time%][RootShell] Root Shell Return -->  {ROOTSHELL_CALLBACK}";
 _if(_cp("{ROOTSHELL_CALLBACK}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{ROOTSHELL_CALLBACK}","user_restart"))|_return "user_restart";
 _if(_cp("{ROOTSHELL_CALLBACK}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ROOTSHELL_CALLBACK}","lock"))|_return "lock";
 _if(_cp("{ROOTSHELL_CALLBACK}","shutdown"))|_return "user_shutdown";
 _if(_cp("{ROOTSHELL_CALLBACK}","restart"))|_return "user_restart";
 _if(_cp("{ROOTSHELL_CALLBACK}","logoff"))|_return "user_logoff";
@@ -6296,7 +6707,9 @@ _var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
 _var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
 
 _var {NSV_SERVICE_MODE} = "true";
+_file_write "[%time%][Services] Start Service :  {NSV_DATA}  User :  {NATVC_WHOIS}  Auth :  {NATVC_isAdmin} .";
 _var {CALLBACK_NSV} = _script <"{NSV_Execute}">;
+_file_write "[%time%][Services] Stop Service :  {NSV_DATA}  .";
 _var {NSV_SERVICE_MODE} = "false";
 
 _sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
@@ -6619,6 +7032,9 @@ _file_write "This is New System Mark Record";
 _dir_remove "{SYS_NROOT}/SystemUser/Temp";
 _file_del "{SYS_NROOT}/SystemUser/userindex";
 
+_dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
+_file_del "{SYS_NROOT}/LOCAL_SERVICE/userindex";
+
 _dir_remove "{NATVC_DISK}/Users/admin/Temp";
 _file_del "{NATVC_DISK}/Users/admin/userindex";
 _file_del "{NATVC_DISK}/Users/admin/startcomplete";
@@ -6703,9 +7119,12 @@ _file_write "This is New System Mark Record";
 _dir_remove "{SYS_NROOT}/SystemUser/Temp";
 _file_del "{SYS_NROOT}/SystemUser/userindex";
 
+_dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
+_file_del "{SYS_NROOT}/LOCAL_SERVICE/userindex";
+
 _dir_remove "{NATVC_DISK}/Users/admin/Temp";
 _file_del "{NATVC_DISK}/Users/admin/userindex";
-
+_file_del "{NATVC_DISK}/Users/admin/startcomplete";
 
 _sipcfg.open "{NATVC_CONFIG_USERS}";
 _sipcfg default = '@';
@@ -7564,165 +7983,6 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
-Calcium_Text_Pack_File  New Format
-//START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
-_$directmode;
-_$nolog;
-
-//ok
-_cover <"{AppDir}/pkm.ca">;
-_return "FailLoadUserInterface";
-$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
-//SIPCFG Package Data
-$AppName=Natvc mna Package Manager;
-$Setup=mnacore.pkgmanager.mna;
-$AppProperties=systemapps; // systemapps or userapps
-
-$AppVersion=1006;
-
-//Copyright FoxaXu 2025
-//Default Package
-$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
-$CSTP_FILE_RECORD_MARK_ID_START(/pkm.ca);
-_$directmode;
-_$nolog;
-
-//Modern Natvc application   -Package manager
-//mna manager
-
-_clear;
-:BACKMAINCONSOLE;
-_clear;
-_cout "-----------------------------------------------";
-_cout " Modern Natvc Application";
-_cout " Package Manager";
-_cout " ";
-_cout "       1. Install App";
-_cout "       2. Uninstall App";
-_cout "       3. Save Package";
-_cout "       4. Get Package Version";
-_cout "       5. List All installed apps";
-_cout "       e. Exit";
-_cout " ";
-_cout " PKM Version";
-_cout "-----------------------------------------------";
-_prt "Type number: >";
-_var {UserReq} = _getline;
-_if(_cp("{UserReq}","1"))|_goto :Pkm_InstallApp;
-_if(_cp("{UserReq}","2"))|_goto :Pkm_UninstallApp;
-_if(_cp("{UserReq}","3"))|_goto :Pkm_SavePkgApp;
-_if(_cp("{UserReq}","4"))|_goto :Pkm_GetPkmData;
-_if(_cp("{UserReq}","5"))|_goto :Pkm_GetAllApps;
-_if(_cp("{UserReq}","e"))|_return "ok";
-
-_goto :BACKMAINCONSOLE;
-
-
-
-
-:Pkm_InstallApp;
-//Install Apps
-_clear;
-_cout "Type software package file";
-_prt "Type Package>";
-_var {UserTypeSetup} = _getline;
-_script<"{SYS_NROOT}/mnacore/install.ca"> "{UserTypeSetup}";
-_pause;
-_goto :BACKMAINCONSOLE;
-
-
-
-
-:Pkm_UninstallApp;
-//Uninstall Apps
-//Install Apps
-_clear;
-_cout "Type software package uninstall";
-_prt "Type Package>";
-_var {UserTypeSetup} = _getline;
-_script<"{SYS_NROOT}/mnacore/uninstall.ca"> "{UserTypeSetup}";
-_pause;
-_goto :BACKMAINCONSOLE;
-
-
-
-
-:Pkm_SavePkgApp;
-//Save Packages File
-//Install Apps
-_clear;
-_cout "Type software package to save";
-_prt "Type Package>";
-_var {UserTypeSetup} = _getline;
-_script<"{SYS_NROOT}/mnacore/pkgSaved.ca"> "{UserTypeSetup}";
-_pause;
-_goto :BACKMAINCONSOLE;
-
-
-
-
-:Pkm_GetPkmData;
-//Get Package Info Data
-//Install Apps
-_clear;
-_cout "Type software package file";
-_prt "Type Package>";
-_var {UserTypeSetup} = _getline;
-//Open Package Data
-_free {pkginfof};
-_if(_file_exist "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna")           |_var {pkginfof} = "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna";
-_if(_file_exist "{SYS_NROOT}/NatvcApps/{UserTypeSetup}/pkgdata.mna") |_var {pkginfof} = "{SYS_NROOT}/NatvcApps/{UserTypeSetup}/pkgdata.mna";
-_if(_cp("{pkginfof}",'{pkginfof}'))|_goto :BACKMAINCONSOLE;
-_sipcfg.open "{pkginfof}";
-_var {AppName_PKMF} = _sipcfg AppName;
-_var {Setup_PKMF} = _sipcfg Setup;
-_var {AppProperties_PKMF} = _sipcfg AppProperties;
-
-_var {AppVersion_PKMF} = _sipcfg AppVersion;
-
-_clear;
-
-_cout "---------------------------------------------";
-_cout " App Name :  {AppName_PKMF}";
-_cout " Setup Name :  {Setup_PKMF}";
-_cout " App Properties :  {AppProperties_PKMF}";
-_cout " App Version :   {AppVersion_PKMF}";
-_cout "";
-_cout " Install Directory :   {pkginfof}";
-_cout "---------------------------------------------";
-_cout " Modern Natvc Application    Pack info";
-_cout "---------------------------------------------";
-_cout "Press Enter to back";
-_pause;
-
-_goto :BACKMAINCONSOLE;
-
-
-
-
-:Pkm_GetAllApps;
-
-_dir_list ("{temp}/mnalist","{SYS_NROOT}/SystemPackage");
-_file_replace "{temp}/mnalist" ("{SYS_NROOT}/SystemPackage/","");
-
-//List All Apps
-_clear;
-_cout "---------------------------------------------";
-_cout "All installed mna apps";
-_cout "---------------------------------------------";
-_textprint "{temp}/mnalist";
-_file_del "{temp}/mnalist";
-_cout "---------------------------------------------";
-
-_pause;
-
-
-_goto :BACKMAINCONSOLE;
-$CSTP_FILE_RECORD_MARK_ID_END(/pkm.ca);
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc_fdl.dev_toolkit.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -7954,9 +8214,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/userconfig);
 //NATVC USER CONFIG
 $UserName=SYSTEM;//User ID
 $isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
-$AutoRun={SYS_ROOT}/ntvue.ca;
+$AutoRun=@servicemode;
 $DisableUser=0; // User is Disabled 0/1
-$UserPassword=%sysKerneluserPSWD; // UserPassword
+$UserPassword=@nopswd; // UserPassword
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
 //User Ban Operation
@@ -7992,9 +8252,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=The miracle appear in bad luck. Life is real, life is earnest.;
-$TitleB=Welcome to NATVC;
-$TitleC=Natvc 14;
+$TitleA=Testing.;
+$TitleB=Natvc Liquid. (RootBuild);
+$TitleC=Try Access https://dev.foxaxu.com/GithubProject/Natvc;
 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Program/$PROGRAM_ROOT.txt);
@@ -8033,12 +8293,13 @@ $CSTP_FILE_RECORD_MARK_ID_END(/Users/default/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Users/default/userindex);
 //User Index Link
 //Config Link File address
+$pm={SYS_ROOT}/powermenu.ca;
 $aboutsys={SYS_ROOT}/aboutsys.ca;
 $devinfo={SYS_ROOT}/devinfo.ca;
 $update={SYS_ROOT}/ntvupd.ca;
 $filemgr={SYS_ROOT}/filemgr.ca;
 $filecstp={SYS_ROOT}/filecstp.ca;
-$ntsh={SYS_ROOT}/ntsh.ca;
+$ntsh={SYS_ROOT}/NativeShell.ca;
 $confedit={SYS_ROOT}/confedit.ca;
 $usersettings={SYS_ROOT}/usersettings.ca;
 $nbfmgr={SYS_ROOT}/nbfmgr.ca;
