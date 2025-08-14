@@ -55,7 +55,7 @@ $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 
 //SysRepairService
-$DisableSysRepiar=false;
+$DisableSysRepiar=true;
 
 //Shutdown Status
 $shutdown=0;
@@ -118,10 +118,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6019;
+$SYS_KERNEL_VID=6025;
 $SYS_REG_NAME=15.0;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=New_Func:Test_Vol_2;
+$SYS_RELEASE_Channel=New_Func:Kernel_Patch_Vol_2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -135,13 +135,6 @@ $NATVC_SHUTDOWN_SECURE=0;  //Set 1 Enabled . 0 Disabled.
 $NATVC_CRASH_EXECUTE=$reboot;  //Set $shutdown or $reboot . 
 
 //Resource File
-$NATVC_LOGON_TEXT=Natvc/res/natvc-ntvue.txt;
-$NATVC_LOGGING_TEXT=Natvc/res/natvc-ntvue-loggin.txt;
-$NATVC_RESTART_TEXT=Natvc/res/natvc-ntvue-restart.txt;
-$NATVC_WAIT_REST_TEXT=Natvc/res/natvc-ntvue-wait.txt;
-$NATVC_SHUTDOWN_TEXT=Natvc/res/natvc-ntvue-shutdown.txt;
-$NATVC_LOGOFF_TEXT=Natvc/res/natvc-ntvue-logoff.txt;
-$NATVC_EXPLORER_TEXT=Natvc/res/natvc-explorer.txt;
 $NATVC_ABOUTS_TEXT={SYS_NROOT}/res/natvc-abouts.txt;
 $NATVC_CRASH_TEXT=Natvc/res/natvc-crash.txt;
 
@@ -2585,6 +2578,34 @@ _typefile "{NATVC_ABOUTS_TEXT}";
 _pause;
 _goto :BACKMAINCONSOLE;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/diskclean.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/envtype.ca);
+_$directmode;
+_$nolog;
+
+//Type Env
+:BackMainET;
+_clear;
+_file_open "{SYS_LOG}";
+_cout "Environment Type Tool":
+_cout "Type you want check System Environment";
+_prt "Type Env>";
+_var {GetEnvTyper} = _getline;
+
+_if(_cp("{GetEnvTyper}","exit"))|_return "ok";
+
+_var {Filiter_Env} = "{GetEnvTyper}";
+
+_file_del "{temp}/envtypeTemp.ca";
+_file_open "{temp}/envtypeTemp.ca";
+_file_write "_return "{GetEnvTyper}";";
+
+_var {GetEnvTyper} = _script <"{temp}/envtypeTemp.ca">;
+_file_del "{temp}/envtypeTemp.ca";
+
+_cout "Env:   {Filiter_Env} = {GetEnvTyper}";
+_pause;
+_goto :BackMainET;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/envtype.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/explorer.ca);
 _$directmode;
 _$nolog;
@@ -3454,8 +3475,8 @@ _$nolog;
 
 //Data int
 
-_var {ntsh_version} = "2103";
-_var {ntsh_revision} = "102";
+_var {ntsh_version} = "2107";
+_var {ntsh_revision} = "103";
 
 //GET DIRECT 
 
@@ -4063,11 +4084,11 @@ _var {NTVEXP_AD_5} = _sipcfg TitleE;
 _file_write "[%time%][SystemExplorer] Load Main";
 
 _clear;
-_if(_file_exist "{NATVC_EXPLORER_TEXT}")|_typefile "{NATVC_EXPLORER_TEXT}";
+_if(_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_typefile "{SYS_NROOT}/res/natvc-explorer.txt";
 
-_if(!_file_exist "{NATVC_EXPLORER_TEXT}")|_cout "Explorer Resources load fail";
-_if(!_file_exist "{NATVC_EXPLORER_TEXT}")|_cout "Fail load user interface {NATVC_EXPLORER_TEXT}";
-_if(!_file_exist "{NATVC_EXPLORER_TEXT}")|_cout "";
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Explorer Resources load fail";
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Fail load user interface {SYS_NROOT}/res/natvc-explorer.txt";
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "";
 
 :BACKMAINCONSOLE;
 _var {ntvue.logontime} = _getclock;
@@ -4683,30 +4704,6 @@ _if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading Base Kernel ... ";
 
 _var {NATVC_CRASH_EXECUTE} = _sipcfg NATVC_CRASH_EXECUTE;
 
-_if(_cp("{NoGUIBootOpt}","1"))| _cout "Register File Map...";
-
-_var {NATVC_LOGON_TEXT} = _sipcfg NATVC_LOGON_TEXT;
-_var {NATVC_LOGON_TEXT} = "{NATVC_DISK}/{NATVC_LOGON_TEXT}";
-
-_var {NATVC_LOGGING_TEXT} = _sipcfg NATVC_LOGGING_TEXT;
-_var {NATVC_LOGGING_TEXT} = "{NATVC_DISK}/{NATVC_LOGGING_TEXT}";
-
-_var {NATVC_LOGOFF_TEXT} = _sipcfg NATVC_LOGOFF_TEXT;
-_var {NATVC_LOGOFF_TEXT} = "{NATVC_DISK}/{NATVC_LOGOFF_TEXT}";
-
-_var {NATVC_SHUTDOWN_TEXT} = _sipcfg NATVC_SHUTDOWN_TEXT;
-_var {NATVC_SHUTDOWN_TEXT} = "{NATVC_DISK}/{NATVC_SHUTDOWN_TEXT}";
-
-
-_var {NATVC_RESTART_TEXT} = _sipcfg NATVC_RESTART_TEXT;
-_var {NATVC_RESTART_TEXT} = "{NATVC_DISK}/{NATVC_RESTART_TEXT}";
-
-_var {NATVC_WAIT_REST_TEXT} = _sipcfg NATVC_WAIT_REST_TEXT;
-_var {NATVC_WAIT_REST_TEXT} = "{NATVC_DISK}/{NATVC_WAIT_REST_TEXT}";
-
-_var {NATVC_EXPLORER_TEXT} = _sipcfg NATVC_EXPLORER_TEXT;
-_var {NATVC_EXPLORER_TEXT} = "{NATVC_DISK}/{NATVC_EXPLORER_TEXT}";
-
 _var {NATVC_ABOUTS_TEXT} = _sipcfg NATVC_ABOUTS_TEXT;
 
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Safe Mode Detect ...";
@@ -5125,10 +5122,11 @@ _$no_err_report;
 
 //Natvc System Loader
 //Anti rootshell load
+//Remove Old Assets
 
 _var {BootUIA} = "     "; 
-_var {BootUIB} = "       N  A  T  V  C";
-_var {BootUIC} = "  Welcome to Natvc System ";
+_var {BootUIB} = "         ████   ████   ████   ████   ████";
+_var {BootUIC} = "         ████   ████   ████   ████   ████";
 
 //SignLoad
 //$signload=nvkrnl_universal_bootsignal_fullcore_natvc;
@@ -5263,6 +5261,7 @@ _$no_err_report;
 
 //Natvc System Loader
 //Anti rootshell load
+//Remove Old Assets
 
 //SignLoad
 //$signload=nvkrnl_universal_bootsignal_fullcore_natvc;
@@ -5589,7 +5588,7 @@ _var {ntvue.logondate} = _getdate;
 
 _var {USER_REQ_LOGON} = "{NULLUSER}";
 _clear
-_typefile "{NATVC_LOGON_TEXT}";
+_typefile "{SYS_NROOT}/res/natvc-ntvue.txt";
 _file_write "[%time%][Logon Interface] Wait User Operation";
 _prt "Type User Name>";
 _var {USER_REQ_LOGON} = _getline;
@@ -5611,7 +5610,7 @@ _if(_cp("{USER_REQ_LOGON}","LOCAL_SERVICE"))|_goto :USERFAIL_NOUSER;
 _file_write "[%time%][Logon Interface] Run User Service...";
 
 _clear;
-_typefile "{NATVC_LOGGING_TEXT}";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-loggin.txt";
 
 //Check user is exist ?
 _sipcfg.open "{NATVC_CONFIG_USERS}";
@@ -5706,7 +5705,7 @@ _var {USER_REQ_LOGON} = "{NATVC_WHOIS}";
 _clear
 _file_write "[%time%][UserExperience] UserSvc Callback : user_logoff";
 _clear;
-_if(!_file_exist "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc")|_typefile "{NATVC_LOGOFF_TEXT}";
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc")|_typefile "{SYS_NROOT}/res/natvc-ntvue-logoff.txt";
 _if(!_file_exist "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc")|_script <"{SYS_ROOT}/ntvani.ca">;
 _clear;
 _goto :ReloadSystemUser;
@@ -5722,7 +5721,7 @@ _if(!_cp(_sipcfg shutdown_execute,"noexec")) | _goto :startUpdater;
 :BackRestartMode;
 
 _clear;
-_typefile "{NATVC_RESTART_TEXT}";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-restart.txt";
 _script <"{SYS_ROOT}/ntvani.ca"> "1";
 _if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_RESTART_API_SECURE;
 _return "$reboot";
@@ -5730,7 +5729,7 @@ _return "$reboot";
 :UE_WAIT_RESTART_API;
 _clear;
 _file_write "[%time%][UserExperience] UserSvc Callback : user_restart / wait_screen";
-_typefile "{NATVC_WAIT_REST_TEXT}";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-wait.txt";
 _sleep 1;
 _if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_RESTART_API_SECURE;
 _return "$reboot";
@@ -5747,7 +5746,7 @@ _return "$reboot";
 :UE_SHUTDOWN_API;
 _file_write "[%time%][UserExperience] UserSvc Callback : user_shutdown";
 _clear;
-_typefile "{NATVC_SHUTDOWN_TEXT}";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-shutdown.txt";
 _if(_cp("{Next_startup_fast_boot}","-1"))|_script <"{SYS_ROOT}/ntvani.ca"> "1";
 _if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_SHUTDOWN_API_SECURE;
 _file_write "[%time%][UserExperience] System Shutdown";
@@ -7983,6 +7982,165 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/pkm.ca">;
+_return "FailLoadUserInterface";
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc mna Package Manager;
+$Setup=mnacore.pkgmanager.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1006;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkm.ca);
+_$directmode;
+_$nolog;
+
+//Modern Natvc application   -Package manager
+//mna manager
+
+_clear;
+:BACKMAINCONSOLE;
+_clear;
+_cout "-----------------------------------------------";
+_cout " Modern Natvc Application";
+_cout " Package Manager";
+_cout " ";
+_cout "       1. Install App";
+_cout "       2. Uninstall App";
+_cout "       3. Save Package";
+_cout "       4. Get Package Version";
+_cout "       5. List All installed apps";
+_cout "       e. Exit";
+_cout " ";
+_cout " PKM Version";
+_cout "-----------------------------------------------";
+_prt "Type number: >";
+_var {UserReq} = _getline;
+_if(_cp("{UserReq}","1"))|_goto :Pkm_InstallApp;
+_if(_cp("{UserReq}","2"))|_goto :Pkm_UninstallApp;
+_if(_cp("{UserReq}","3"))|_goto :Pkm_SavePkgApp;
+_if(_cp("{UserReq}","4"))|_goto :Pkm_GetPkmData;
+_if(_cp("{UserReq}","5"))|_goto :Pkm_GetAllApps;
+_if(_cp("{UserReq}","e"))|_return "ok";
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_InstallApp;
+//Install Apps
+_clear;
+_cout "Type software package file";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/install.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_UninstallApp;
+//Uninstall Apps
+//Install Apps
+_clear;
+_cout "Type software package uninstall";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/uninstall.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_SavePkgApp;
+//Save Packages File
+//Install Apps
+_clear;
+_cout "Type software package to save";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/pkgSaved.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_GetPkmData;
+//Get Package Info Data
+//Install Apps
+_clear;
+_cout "Type software package file";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+//Open Package Data
+_free {pkginfof};
+_if(_file_exist "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna")           |_var {pkginfof} = "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna";
+_if(_file_exist "{SYS_NROOT}/NatvcApps/{UserTypeSetup}/pkgdata.mna") |_var {pkginfof} = "{SYS_NROOT}/NatvcApps/{UserTypeSetup}/pkgdata.mna";
+_if(_cp("{pkginfof}",'{pkginfof}'))|_goto :BACKMAINCONSOLE;
+_sipcfg.open "{pkginfof}";
+_var {AppName_PKMF} = _sipcfg AppName;
+_var {Setup_PKMF} = _sipcfg Setup;
+_var {AppProperties_PKMF} = _sipcfg AppProperties;
+
+_var {AppVersion_PKMF} = _sipcfg AppVersion;
+
+_clear;
+
+_cout "---------------------------------------------";
+_cout " App Name :  {AppName_PKMF}";
+_cout " Setup Name :  {Setup_PKMF}";
+_cout " App Properties :  {AppProperties_PKMF}";
+_cout " App Version :   {AppVersion_PKMF}";
+_cout "";
+_cout " Install Directory :   {pkginfof}";
+_cout "---------------------------------------------";
+_cout " Modern Natvc Application    Pack info";
+_cout "---------------------------------------------";
+_cout "Press Enter to back";
+_pause;
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_GetAllApps;
+
+_dir_list ("{temp}/mnalist","{SYS_NROOT}/SystemPackage");
+_file_replace "{temp}/mnalist" ("{SYS_NROOT}/SystemPackage/","");
+
+//List All Apps
+_clear;
+_cout "---------------------------------------------";
+_cout "All installed mna apps";
+_cout "---------------------------------------------";
+_textprint "{temp}/mnalist";
+_file_del "{temp}/mnalist";
+_cout "---------------------------------------------";
+
+_pause;
+
+
+_goto :BACKMAINCONSOLE;
+$CSTP_FILE_RECORD_MARK_ID_END(/pkm.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc_fdl.dev_toolkit.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT

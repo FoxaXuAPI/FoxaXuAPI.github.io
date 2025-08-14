@@ -34,7 +34,7 @@ $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 
 //SysRepairService
-$DisableSysRepiar=false;
+$DisableSysRepiar=true;
 
 //Shutdown Status
 $shutdown=0;
@@ -88,10 +88,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6019;
+$SYS_KERNEL_VID=6025;
 $SYS_REG_NAME=15.0;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=New_Func:Test_Vol_2;
+$SYS_RELEASE_Channel=New_Func:Kernel_Patch_Vol_2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -105,13 +105,6 @@ $NATVC_SHUTDOWN_SECURE=0;  //Set 1 Enabled . 0 Disabled.
 $NATVC_CRASH_EXECUTE=$reboot;  //Set $shutdown or $reboot . 
 
 //Resource File
-$NATVC_LOGON_TEXT=Natvc/res/natvc-ntvue.txt;
-$NATVC_LOGGING_TEXT=Natvc/res/natvc-ntvue-loggin.txt;
-$NATVC_RESTART_TEXT=Natvc/res/natvc-ntvue-restart.txt;
-$NATVC_WAIT_REST_TEXT=Natvc/res/natvc-ntvue-wait.txt;
-$NATVC_SHUTDOWN_TEXT=Natvc/res/natvc-ntvue-shutdown.txt;
-$NATVC_LOGOFF_TEXT=Natvc/res/natvc-ntvue-logoff.txt;
-$NATVC_EXPLORER_TEXT=Natvc/res/natvc-explorer.txt;
 $NATVC_ABOUTS_TEXT={SYS_NROOT}/res/natvc-abouts.txt;
 $NATVC_CRASH_TEXT=Natvc/res/natvc-crash.txt;
 
@@ -2067,30 +2060,6 @@ _if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading Base Kernel ... ";
 
 _var {NATVC_CRASH_EXECUTE} = _sipcfg NATVC_CRASH_EXECUTE;
 
-_if(_cp("{NoGUIBootOpt}","1"))| _cout "Register File Map...";
-
-_var {NATVC_LOGON_TEXT} = _sipcfg NATVC_LOGON_TEXT;
-_var {NATVC_LOGON_TEXT} = "{NATVC_DISK}/{NATVC_LOGON_TEXT}";
-
-_var {NATVC_LOGGING_TEXT} = _sipcfg NATVC_LOGGING_TEXT;
-_var {NATVC_LOGGING_TEXT} = "{NATVC_DISK}/{NATVC_LOGGING_TEXT}";
-
-_var {NATVC_LOGOFF_TEXT} = _sipcfg NATVC_LOGOFF_TEXT;
-_var {NATVC_LOGOFF_TEXT} = "{NATVC_DISK}/{NATVC_LOGOFF_TEXT}";
-
-_var {NATVC_SHUTDOWN_TEXT} = _sipcfg NATVC_SHUTDOWN_TEXT;
-_var {NATVC_SHUTDOWN_TEXT} = "{NATVC_DISK}/{NATVC_SHUTDOWN_TEXT}";
-
-
-_var {NATVC_RESTART_TEXT} = _sipcfg NATVC_RESTART_TEXT;
-_var {NATVC_RESTART_TEXT} = "{NATVC_DISK}/{NATVC_RESTART_TEXT}";
-
-_var {NATVC_WAIT_REST_TEXT} = _sipcfg NATVC_WAIT_REST_TEXT;
-_var {NATVC_WAIT_REST_TEXT} = "{NATVC_DISK}/{NATVC_WAIT_REST_TEXT}";
-
-_var {NATVC_EXPLORER_TEXT} = _sipcfg NATVC_EXPLORER_TEXT;
-_var {NATVC_EXPLORER_TEXT} = "{NATVC_DISK}/{NATVC_EXPLORER_TEXT}";
-
 _var {NATVC_ABOUTS_TEXT} = _sipcfg NATVC_ABOUTS_TEXT;
 
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Safe Mode Detect ...";
@@ -2509,6 +2478,7 @@ _$no_err_report;
 
 //Natvc System Loader
 //Anti rootshell load
+//Remove Old Assets
 
 //SignLoad
 //$signload=nvkrnl_universal_bootsignal_fullcore_natvc;
