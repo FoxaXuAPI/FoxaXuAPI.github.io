@@ -34,7 +34,7 @@ $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 
 //SysRepairService
-$DisableSysRepiar=true;
+$DisableSysRepiar=false;
 
 //Shutdown Status
 $shutdown=0;
@@ -88,10 +88,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6025;
-$SYS_REG_NAME=15.0;
+$SYS_KERNEL_VID=6104;
+$SYS_REG_NAME=15.1;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=New_Func:Kernel_Patch_Vol_2;
+$SYS_RELEASE_Channel=2025.08.15.Release.GAC_Channel;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -2099,9 +2099,6 @@ _if(_cp("{NoGUIBootOpt}","1"))| _cout "Run User Service ...";
 
 _if(_cp("{NoGUIBootOpt}","1"))| _ms_sleep 700;
 
-_var {PRE_AUTOENTRY_PASSWORD} = "@EMPTY";
-_var {NATVC_isAdmin} = "2";
-
 _clear;
 
 //Restore Default CS
@@ -2123,7 +2120,7 @@ _var {IsAutoLogin} = true;
 _file_write "[%time%][Kernel][Boot] Load -->  NATVC User Experience Service (NUES)";
 
 _if(!_file_exist "{NATVC_USERSVC}") | _return "{NATVC_USERSVC}";
-_var {PRE_AUTOENTRY_PASSWORD} = "@nopswd";
+//_var {PRE_AUTOENTRY_PASSWORD} = "@nopswd";
 
 _file_write "[%time%][Kernel][Boot] Pre Boot complete";
 _file_write "[%time%][Kernel][Boot] Load Natvc Logon Service";
@@ -3108,7 +3105,7 @@ _var {NATVC_LOGIN_USERPSWD} = _getline;
 _if(_cp("{NATVC_LOGIN_USERPSWD}","{NATVC_USER_PASSWORD}")) | _goto :PASS_VERIFED;
 _file_write "[%time%][UserService][Warning] Failed verify user credentials. login fail";
 _clear;
-_typefile "{SYS_NROOT}/res/natvc-ntvue-req-wrong-passwd.txt"
+_typefile "{SYS_NROOT}/res/natvc-ntvue-req-wrong-passwd.txt";
 _pause;
 _return "loginfail";
 
@@ -3172,27 +3169,34 @@ _goto :FASTLoginBack;
 
 
 :REQ_PASSWORD_TO_UNLOCKUSER;
+_file_write "[%time%][UserService] Login with cache Certificates";
 
+_if(_cp("{PRE_AUTOENTRY_PASSWORD}",'{PRE_AUTOENTRY_PASSWORD}'))|_var {PRE_AUTOENTRY_PASSWORD} = "@EMPTY";
 _if(!_cp("{PRE_AUTOENTRY_PASSWORD}","@EMPTY"))|_goto :TryUsePrePasswd;
-
+_var {Logon_Method} = "Logon Interface Input By User";
+_file_write "[%time%][UserService] wait user type password to unlocker login user";
 _clear;
 _cout "Type your password to unlock this user";
 _prt "password>";
 _var {GET_PASSWORD} = _getline;
 
 :MOD_A_UNLOCKER_TRY;
+_file_write "[%time%][UserService] attempt login.  Method :   {Logon_Method}";
 _if(_cp("{GET_PASSWORD}","{NATVC_USER_PASSWORD}"))|_goto :PASSFLB;
 
 _clear;
-_cout "Password wrong";
-_cout "Unlock user failed";
-//_cout "REAL PASSWORD:  {NATVC_USER_PASSWORD}";
-//_cout "Your type :  {GET_PASSWORD}";
+_file_write "[%time%][UserService][Error] Unlock failed:  password wrong";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-req-wrong-passwd.txt"
+//_cout "Logon Method :  {Logon_Method}";
+//_cout "REAL PASSWORD:  "{NATVC_USER_PASSWORD}" TRUE";
+//_cout "Your type :  "{GET_PASSWORD}" FAILED";
 _pause;
 _return "reload_SYSTEM";
 
 
 :TryUsePrePasswd;
+_file_write "[%time%][UserService] Request Pre password login";
+_var {Logon_Method} = "Pre Password Login By Application";
 _var {GET_PASSWORD} = "{PRE_AUTOENTRY_PASSWORD}";
 _var {PRE_AUTOENTRY_PASSWORD} = "@EMPTY";
 _goto :MOD_A_UNLOCKER_TRY;
