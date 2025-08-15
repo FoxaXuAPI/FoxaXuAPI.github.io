@@ -6,7 +6,7 @@ _$nolog;
 _cout "Downloading files";
 _cout "Please wait ";
 
-_url_get ("http://fdl-cds.dev.foxaxu.com/autodeploy/openbvmcore19.3.cstp","script/package.cstp");
+_url_get ("http://fdl-cds.dev.foxaxu.com/autodeploy/openbvm19.7.cstp","script/package.cstp");
 
 _if(!_file_exist "script/package.cstp")|_goto :FailDownloadURL;
 
