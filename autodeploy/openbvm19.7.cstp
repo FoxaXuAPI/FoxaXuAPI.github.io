@@ -1,0 +1,538 @@
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/bootloader);
+// BVM Boot Loader 
+$boot=script/vdisk/sysboot/boot;
+$bootvolume=script/vdisk/sysboot;
+$oem=fdl_openbvmcore;
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/bootloader);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/bootmenu);
+==================================================
+🖥️ BVM Virtual Hardware Manager
+⚙️ Powered by Biato OS | © FoxaXu - Biato Project
+==================================================
+
+🚀 Boot Options:
+  [1] 🔹 Boot from Virtual Disk        → VDISK/SYSBOOT
+  [2] 🔹 Load Boot Shell               → BVM/BOOTSHELL
+  [3] 🔹 Safe Mode + Boot from VDISK   → Status: {boot_rs}
+  [4] 🔹 Shut Down Virtual Machine    
+
+--------------------------------------------------
+
+📋 System Info:
+  • Biato Version: {BiatoVersion}
+  • Copyright: © FDL - Biato Project
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/bootmenu);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/bootui);
+
+
+
+      FDL Build Platform - Open BVM Runtime  
+      🔧Optimized for CLI Environments  
+      💡Powered by Biato Core
+
+
+
+
+Based by Biato Core
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/bootui);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/DefaultDisk);
+//DefaultDIsk
+$defaultdisk={path}/script/vdisk;
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/DefaultDisk);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/bootloader);
+// BVM Boot Loader 
+$boot=script/vdisk/nbf/nbfload;
+$bootvolume=script/vdisk/nbf;
+$oem=fdl_openbvmcore;
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/bootloader);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/bootmenu);
+------------- BVM NBF Main Loader ----------------------
+- 🖥️ Biato Virtual Hardware Interface
+- 📂 Boot Menu System
+- 
+-
+-   (Default) 1. 🟢 Boot from VDISK NBF           [VDISK/NBF]
+-             e. ⚙️ Boot with active {NBFMenu}    [VDISK/NBF]
+-             2. 📁 Select Boot Volume            [BVM/BOOTSHELL]
+-             3. 🛡️ Activate {boot_rs} → SafeMode Boot from VDISK
+-             4. 🔻 Shutdown Virtual Machine
+-
+-   💻 Use `.ns` to launch Native Shell  
+-   🔧 NBF Biato Version: {BiatoVersion}
+-   © Copyright FoxaXu · Biato Project
+--------------------------------------------------------
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/bootmenu);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/bootui);
+
+
+       
+        {BootUIA}
+        {BootUIB}
+        {BootUIC}
+
+
+
+
+
+ Based by Biato Core  
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/bootui);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/nbf/startup.nbf);
+_$directmode;
+_$nolog;
+
+//StartupExecute
+_var {BootVolume} = "script/ShellTemple";
+_var {rs_pathexec} = "script";
+_var bvm_bm = "true";
+
+_dir_remove "{BootVolume}";
+_dir_make "{BootVolume}";
+
+//Startup NBF Shell
+:ReloadMain;
+_clear;
+_cout "Launch file is Startup.nbf";
+_cout "Native NBF Shell";
+_cout "Choose file to startup or operate";
+
+:ShellConsole;
+_cout "";
+_prt "{rs_pathexec}/>" ;
+_var {ShellUserType} = _getline;
+
+//Process
+_if(_cp("{ShellUserType}","ls"))|_goto :ListFiles;
+_if(_cp("{ShellUserType}","reload"))|_goto :ReloadMain;
+_if(_cp("{ShellUserType}","cd"))|_goto :SetDir;
+_if(_cp("{ShellUserType}","exit"))|_return "$BackToBM";
+_if(_cp("{ShellUserType}","reboot"))|_return "$reboot";
+_if(_cp("{ShellUserType}","shutdown"))|_return "$shutdown";
+
+_if(_file_exist "{rs_pathexec}/{ShellUserType}")|_goto :StartupMode;
+
+_cout "{ShellUserType}  is not a file or command";
+_cout "NBF Shell Could not understand your mean";
+_goto :ShellConsole;
+
+
+
+:StartupMode
+_var {BootVolume} = "{rs_pathexec}";
+_var {oppexecute} = _script<"{rs_pathexec}/{ShellUserType}">;
+_return "{oppexecute}";
+
+:ListFiles
+_dir_list ("{BootVolume}/lstool.txt","{rs_pathexec}");
+
+_file_replace "{BootVolume}/lstool.txt" ("{rs_pathexec}","");    
+
+_cout "List tools Shell";
+_cout "";
+
+_textprint "{BootVolume}/lstool.txt";
+
+_file_del "{BootVolume}/lstool.txt";
+
+_cout "";
+_cout "List All File";
+_cout "Native Shell List";
+_cout "";
+
+_goto :ShellConsole;
+
+:SetDir;
+_cout "";
+_cout "Type Directory";
+_prts "{rs_pathexec}/>";
+_var {rs_pathexec_cache} = _getline;
+
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :TryAdvancedSet;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :ShellConsole;
+
+:TryAdvancedSet;
+_var {rs_pathexec_cache} = "{rs_pathexec}/{rs_pathexec_cache}";
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :NULLPATHSET;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :ShellConsole;
+
+:NULLPATHSET;
+_cout "";
+_cout "this directory is not exist or unable access";
+_cout "Could not set this path";
+_goto :ShellConsole;
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/nbf/startup.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/QuickScript/A-BVMStartup.bat);
+@echo off
+"Calcium.exe" -run script/bvm.cah -nolang
+exit
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/QuickScript/A-BVMStartup.bat);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm/QuickScript/A-NBFStartup.bat);
+@echo off
+"Calcium.exe" -run script/nbf -nolang
+exit
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm/QuickScript/A-NBFStartup.bat);
+$CSTP_FILE_RECORD_MARK_ID_START(/bvm.cah);
+// BIATO CORE
+// VIRTUAL MACHINE API
+// SCRIPT API
+_$directmode;
+_$nolog;
+
+_var _$lang.pause = "Press Enter...";
+
+_$req_cl_fmv 1701;
+
+_if(_cp("{SESSION_TOKEN}","TRUE"))| _goto :ERR_StLock;
+_var {SESSION_TOKEN} = "TRUE";
+
+_var {CalciumL_FMV} = _sma "clfmv";
+
+
+:REBOOTAPI;
+_var {cav} = _sma "kvget";
+_var {BiatoVersion} = "R_19.7";
+_var {Hardware} = "BVM Project (virtual hardware.).";
+_var {Platform} = "BiatoCore(Legacy)({BiatoVersion},Calcium:{cav},CLFMV:{CalciumL_FMV})";
+
+//MAINUI
+//Load Resource
+_sipcfg.open "{path}/script/bvm/DefaultDisk";
+_var $sys_def_disk = _sipcfg defaultdisk;
+
+_var $BVM_BOOTUI = "{path}/script/bvm/bootui";
+_var $BVM_BOOTLOADER = "{path}/script/bvm/bootloader";
+_var $BVM_BOOTMENU = "{path}/script/bvm/bootmenu";
+
+_var $BVM_VOL_LOAD = "boot";
+
+_var {HiberMode} = "0";
+_if(_file_exist "script/hiberdata")|_goto :HiberRecovery;
+
+//Load Screen
+_clear;
+_sleep 1;
+_typefile "$BVM_BOOTUI";
+
+//Optimi Boot Device
+_if(_cp ("bvm_bm","true"))| _goto :BootMenu;
+:BackBootMode;
+
+
+_if(!_file_exist "$BVM_BOOTLOADER")| _goto :ERR_NOBL;
+
+//Open bootloader
+_sipcfg.open "$BVM_BOOTLOADER";
+
+_var {BVM_Bootloader} = _sipcfg boot;
+_var {BootVolume} = _sipcfg bootvolume;
+_var {MAF_OEM} = _sipcfg oem;
+:AfterBootVolume;
+
+
+//Check Volume Manager
+_if(!_file_exist "{BVM_Bootloader}")| _goto :ERR_NOVOL;
+
+_sipcfg.open "{BVM_Bootloader}";
+_var {BVM_OSBOOT} = _sipcfg DefaultLoader;
+
+
+//Start Boot to System
+_clear;
+
+_if(!_file_exist "{BVM_OSBOOT}")| _goto :ERR_NOVBL;
+
+:BootStart;
+_var {BVM_PW_REQ} = _script<"{BVM_OSBOOT}">;
+_if(_cp("{BVM_PW_REQ}","$reboot"))|_goto :REBOOTAPI;
+_if(_cp("{BVM_PW_REQ}","$shutdown"))|_goto :ShutdownAPI;
+_cout "Boot Loader is not working. Press Enter to Reboot";
+_pause;
+_goto :REBOOTAPI;
+
+
+:ShutdownAPI;
+//Shutdown
+_var {SESSION_TOKEN} = "FALSE";
+_return "close";
+_exit;
+
+//ERR PAGE
+
+:ERR_NOBL;
+_cout "Error No Boot loader";
+_pause;
+_var bvm_bm = true;
+_goto :REBOOTAPI;
+
+:ERR_NOVOL;
+_cout "Error Fail load Boot Volume :  {BVM_Bootloader}";
+_pause;
+_var bvm_bm = true;
+_goto :REBOOTAPI;
+
+:ERR_NOVBL;
+_cout "Boot Management {BVM_OSBOOT}  is missing on {BVM_OSBOOT}. Select other boot to load";
+_pause;
+_var bvm_bm = true;
+_goto :REBOOTAPI;
+
+:ERR_StLock;
+_cout "Session Lock is Not allowed running this system";
+_return "fall";
+
+:BootMenu;
+_clear;
+_typefile "$BVM_BOOTMENU";
+
+_prt "Select Boot .  Default 1 >";
+_var {boot_set} = _getline;
+_clear;
+
+
+_if( _cp ("{boot_set}" , "2") )| _goto :Boot_Shell;
+_if( _cp ("{boot_set}" , "3") )| _goto :SET_SAFEMODE;
+_if( _cp ("{boot_set}" , "4") )| _goto :ShutdownAPI;
+_var bvm_bm = "false";
+_goto :BackBootMode;
+
+
+:SET_NBFMENU;
+_var {NBFMenu} = "true";
+_goto :BackBootMode;
+
+
+:SET_SAFEMODE;
+_var {boot_rsmode} = "true";
+_goto :BackBootMode;
+
+:Boot_Shell;
+_prt "[BVM _BootShell] Select boot volume >";
+_var {GetUserRequest} = _getline;
+_var {BootVolume} = "{path}/script/{GetUserRequest}"
+_var {BVM_Bootloader} = "{path}/script/{GetUserRequest}/boot";
+_goto :AfterBootVolume;
+
+
+:HiberRecovery;
+_clear;
+_sipcfg.open "script/hiberdata";
+
+
+_if (!_file_exist _sipcfg hiberfile)|_goto :FailRecovery;
+
+_envload _sipcfg hiberfile;
+
+//Clear Old Data
+_file_del _sipcfg hiberfile;
+_file_del "script/hiberdata";
+
+//Setmode
+_var {HiberMode} = "1";
+_goto :BackBootMode;
+
+
+
+:FailRecovery;
+//Clear Old Data
+_file_del _sipcfg hiberfile;
+_file_del "script/hiberdata";
+
+_clear;
+_cout "Fail Wake up from HiberMode";
+_cout "Hiber file is broken";
+_pause;
+_goto :ShutdownAPI;
+$CSTP_FILE_RECORD_MARK_ID_END(/bvm.cah);
+$CSTP_FILE_RECORD_MARK_ID_START(/nbf);
+// BIATO CORE
+
+// New Boot Format
+
+// VIRTUAL MACHINE API
+// SCRIPT API
+_$directmode;
+_$nolog;
+
+_$req_cl_fmv 1701;
+
+_var _$lang.pause = "Press Enter...";
+
+_var {BootUIA} = "           Open BVM Runtime  "; 
+_var {BootUIB} = "             🔧Optimized  ";
+_var {BootUIC} = "       💡Powered by Biato Core";
+
+_if(_cp("{SESSION_TOKEN}","TRUE"))| _goto :ERR_StLock;
+_var {SESSION_TOKEN} = "TRUE";
+
+_var {CalciumL_FMV} = _sma "clfmv";
+
+
+:REBOOTAPI;
+_var {cav} = _sma "kvget";
+_var {BiatoVersion} = "19.7";
+_var {Hardware} = "BVM Project (virtual hardware.).";
+_var {Platform} = "BiatoCore(NBF)({BiatoVersion},Calcium:{cav},CLFMV:{CalciumL_FMV})";
+
+//MAINUI
+//Load Resource
+_sipcfg.open "{path}/script/bvm/DefaultDisk";
+_var $sys_def_disk = _sipcfg defaultdisk;
+
+_var $BVM_BOOTUI = "{path}/script/bvm/nbf/bootui";
+_var $BVM_BOOTLOADER = "{path}/script/bvm/nbf/bootloader";
+_var $BVM_BOOTMENU = "{path}/script/bvm/nbf/bootmenu";
+
+_var $BVM_VOL_LOAD = "nbfload";
+
+_var {HiberMode} = "0";
+_if(_file_exist "script/hiberdata")|_goto :HiberRecovery;
+
+//Load Screen
+_clear;
+_typefile "$BVM_BOOTUI";
+
+_ms_sleep 700;
+
+//Optimi Boot Device
+_if(_cp ("bvm_bm","true"))| _goto :BootMenu;
+:BackBootMode;
+
+
+_if(!_file_exist "$BVM_BOOTLOADER")| _goto :ERR_NOBL;
+
+//Open bootloader
+_sipcfg.open "$BVM_BOOTLOADER";
+
+_var {BVM_Bootloader} = _sipcfg boot;
+_var {BootVolume} = _sipcfg bootvolume;
+_var {MAF_OEM} = _sipcfg oem;
+:AfterBootVolume;
+
+
+//Check Volume Manager
+_if(!_file_exist "{BVM_Bootloader}")| _goto :ERR_NOVOL;
+
+_sipcfg.open "{BVM_Bootloader}";
+_var {BVM_OSBOOT} = _sipcfg DefaultLoader;
+
+
+//Start Boot to System
+_clear;
+
+_if(!_file_exist "{BVM_OSBOOT}")| _goto :ERR_NOVBL;
+
+:BootStart;
+_var {BVM_PW_REQ} = _script<"{BVM_OSBOOT}">;
+_if(_cp("{BVM_PW_REQ}","$BackToBM"))|_goto :BootMenu;
+
+_if(_cp("{BVM_PW_REQ}","$reboot"))|_goto :REBOOTAPI;
+_if(_cp("{BVM_PW_REQ}","$shutdown"))|_goto :ShutdownAPI;
+_cout "Boot Loader is not working. Press Enter to Reboot";
+_pause;
+_goto :REBOOTAPI;
+
+
+:ShutdownAPI;
+//Shutdown
+_var {SESSION_TOKEN} = "FALSE";
+_return "close";
+_exit;
+
+//ERR PAGE
+
+:ERR_NOBL;
+_cout "Error No Boot loader";
+_pause;
+_var bvm_bm = true;
+_goto :REBOOTAPI;
+
+:ERR_NOVOL;
+_clear;
+_cout "No Operation system on local disk. Press Enter to reboot";
+_cout "Select other boot device";
+_pause;
+_var bvm_bm = true;
+_goto :REBOOTAPI;
+
+:ERR_NOVBL;
+_clear;
+_cout "{BVM_OSBOOT} is missing. Press enter to reboot";
+_cout "Select other boot device";
+_pause;
+_var bvm_bm = true;
+_goto :REBOOTAPI;
+
+:ERR_StLock;
+_cout "Session Lock is Not allowed running this system";
+_return "fall";
+
+:BootMenu;
+_clear;
+_typefile "$BVM_BOOTMENU";
+
+_prt "Select Boot .  Default 1 >";
+_var {boot_set} = _getline;
+_clear;
+
+_if( _cp ("{boot_set}" , "e") )| _goto :SET_NBFMENU;
+_if( _cp ("{boot_set}" , "2") )| _goto :Boot_Shell;
+_if( _cp ("{boot_set}" , "3") )| _goto :SET_SAFEMODE;
+_if( _cp ("{boot_set}" , "4") )| _goto :ShutdownAPI;
+_if( _cp ("{boot_set}" , ".ns") )| _goto :LoadNativeShell;
+_var bvm_bm = "false";
+_goto :BackBootMode;
+
+:SET_NBFMENU;
+_var {NBFMenu} = "true";
+_goto :BackBootMode;
+
+:SET_SAFEMODE;
+_var {boot_rsmode} = "true";
+_goto :BackBootMode;
+
+:Boot_Shell;
+_prt "[BVM _BootShell] Select boot volume >";
+_var {GetUserRequest} = _getline;
+_var {BootVolume} = "{path}/script/{GetUserRequest}"
+_var {BVM_Bootloader} = "{path}/script/{GetUserRequest}/nbfload";
+_goto :AfterBootVolume;
+
+
+:HiberRecovery;
+_clear;
+_sipcfg.open "script/hiberdata";
+
+
+_if (!_file_exist _sipcfg hiberfile)|_goto :FailRecovery;
+
+_envload _sipcfg hiberfile;
+
+//Clear Old Data
+_file_del _sipcfg hiberfile;
+_file_del "script/hiberdata";
+
+//Setmode
+_var {HiberMode} = "1";
+_goto :BackBootMode;
+
+
+
+:FailRecovery;
+//Clear Old Data
+_file_del _sipcfg hiberfile;
+_file_del "script/hiberdata";
+
+_clear;
+_cout "Fail Wake up from HiberMode";
+_cout "Hiber file is broken";
+_pause;
+_goto :ShutdownAPI;
+
+
+:LoadNativeShell;
+_var {BVM_OSBOOT} = "script/bvm/nbf/startup.nbf";
+_goto :BootStart;
+$CSTP_FILE_RECORD_MARK_ID_END(/nbf);
