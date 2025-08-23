@@ -118,10 +118,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6107;
+$SYS_KERNEL_VID=6112;
 $SYS_REG_NAME=15.1;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.15.Release.GAC_Channel:Hotfix.Repack_v2;
+$SYS_RELEASE_Channel=2025.08.23.GAC_Channel.funcUpdate;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3984,6 +3984,7 @@ _file_write "[%time%][NatvcDeploy] OOBE User Logoff .  status code :  {OOBEDEGBU
 _file_write "[%time%][NatvcDeploy] OOBE Page Status  : {OOBE_PAGE_STATUS}";
 
 _if(_cp("{OOBE_PAGE_STATUS}","oobe_shutdown"))|_goto :OOBE_CANCEL_PREP;
+_if(_cp("{OOBE_PAGE_STATUS}","oobe_recovery"))|_return "oobe_recovery";
 _if(_cp("{OOBEDEGBUG}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{OOBEDEGBUG}","user_restart"))|_return "user_restart";
 
@@ -5595,6 +5596,10 @@ _if(_cp("{USER_REQ_LOGON}","restart"))|_goto :UE_RESTART_API;
 _if(_cp("{USER_REQ_LOGON}","shutdown"))|_goto :UE_SHUTDOWN_API;
 _if(_cp("{USER_REQ_LOGON}","apiexit"))|_return "$shutdown";
 _if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :NE_ERR_NOTTYPE;
+_if(_cp("{USER_REQ_LOGON}",".re"))|_goto :GORECOVERY;
+
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_var {Next_startup_fast_boot} = "-1";
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_goto :UE_SHUTDOWN_API;
 
 :AutoLoginUserLoadM;
 
@@ -5810,6 +5815,7 @@ _var {Deploy_callback} = _script <"{Natvc_Deploy_Program}">;
 
 
 _if(_cp("{Deploy_callback}","oobe_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{Deploy_callback}","oobe_recovery"))|_goto :GORECOVERY;
 _if(_cp("{Deploy_callback}","user_shutdown"))|_goto :UE_SHUTDOWN_API;
 _if(_cp("{Deploy_callback}","user_restart"))|_goto :UE_RESTART_API;
 
@@ -5881,6 +5887,27 @@ _return "device_crash";
 _file_write "[%time%][UserExperience][Error] Fail load user. user not exist";
 _clear;
 _typefile "{SYS_NROOT}/res/natvc-ntvue-nouser.txt"
+_pause;
+_goto :BACKMAINTEXT;
+
+
+
+
+//Recovery Init
+:GORECOVERY;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :NORENOTICE;
+
+_script <"{SYS_ROOT}/ntvrebl.ca">;
+_clear;
+_cout "Restarting to Recovery";
+_return "user_restart";
+
+:NORENOTICE;
+_clear;
+_cout "System no recovery environment";
+_cout "Please try to use "refix" to repair";
 _pause;
 _goto :BACKMAINTEXT;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvue.ca);
@@ -6004,6 +6031,7 @@ _if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
 _if(_cp("_ARGS_NU_FULLNAME","@oobereload"))|_goto :ReloadExplorer;
 _if(_cp("_ARGS_NU_FULLNAME","@loaddebug"))|_return "oobeexit";
 _if(_cp("_ARGS_NU_FULLNAME","@oobecancel"))|_goto :ConfigCANCEL;
+_if(_cp("_ARGS_NU_FULLNAME","@recovery"))|_goto :ConfigRecovery;
 _if(_cp("_ARGS_NU_FULLNAME","@restart"))|_return "restart";
 _if(_cp("_ARGS_NU_FULLNAME","@shutdown"))|_return "shutdown";
 _if(_cp("_ARGS_NU_FULLNAME","@skipoobe"))|_goto :EndPageOOBE;
@@ -6147,6 +6175,10 @@ _goto :ReloadExplorer;
 :ConfigCANCEL;
 _var {OOBE_PAGE_STATUS} = "oobe_shutdown";
 _return "shutdown";
+
+:ConfigRecovery;
+_var {OOBE_PAGE_STATUS} = "oobe_recovery";
+_return "restart";
 
 
 :Server Page;
