@@ -88,10 +88,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6112;
+$SYS_KERNEL_VID=6114;
 $SYS_REG_NAME=15.1;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.23.GAC_Channel.funcUpdate;
+$SYS_RELEASE_Channel=2025.08.26._Config_Library_Update;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -130,6 +130,8 @@ $admin=Users/admin;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/USERS);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/vaild_command);
 //CONFIG USER ALLOW EXECUTE
+$pm=true;
+${varspace.null}=true;
 $help=true;
 $.exit=true;
 $exit=true;
@@ -140,7 +142,6 @@ $shutdown=true;
 $@shutdown=true;
 $restart=true;
 $lock=true;
-$.shell=true;
 $ls=true;
 $clear=true;
 $path=true;
@@ -153,9 +154,7 @@ $software=true;
 $ok=true;
 $update=true;
 $explorer=true;
-$explorer.ca=true;
 $rootshell=true;
-$rootshell.ca=true;
 $args=true;
 $run=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/vaild_command);
