@@ -88,10 +88,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6114;
-$SYS_REG_NAME=15.1;
+$SYS_KERNEL_VID=6122;
+$SYS_REG_NAME=15.2;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.26._Config_Library_Update;
+$SYS_RELEASE_Channel=2025.08.28.GAC._Security_Update;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -621,18 +621,17 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
-=======================================================
-      System Error - Immediate Restart Required
-=======================================================
 
-   Your device ran into a problem and needs to restart now.
+System Error - Immediate Restart Required
 
--------------------------------------------------------
 
-     Stop Code: {NATVC_CRASH_CODE}
-     Details   : ({BUG_REPORT})
 
-=======================================================
+       Your device ran into a problem and needs to restart now.
+
+       
+
+                  Stop Code : {NATVC_CRASH_CODE}
+                  Details   : ({BUG_REPORT})
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-crash.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-repair.txt);
 =======================================================
@@ -3054,6 +3053,9 @@ _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
 
 //Create User Dump
 _if(!_dir_exist "{SYS_NROOT}/SECURITY")|_dir_make "{SYS_NROOT}/SECURITY";
+
+_if(_cp("{NATVC_WHOIS}","{varspace.null}"))|_goto :PASSFLB;
+
 _file_open "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc";
 _file_write "//Natvc User Secure Login Certificate";
 _file_write "$USERNAME={NATVC_USERNAME};";
@@ -3158,6 +3160,7 @@ _sipcfg.open "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc";
 _var {NATVC_USERNAME}      = _sipcfg USERNAME;
 _var {NATVC_WHOIS}         = _sipcfg USERID;
 _var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_if(_cp("{NATVC_USERPROFILE}","{varspace.null}"))|_goto :ProfileDown;
 _var {NATVC_isAdmin}       = _sipcfg USERADMIN;
 _var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
 _var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
@@ -3165,6 +3168,15 @@ _var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
 
 _goto :FASTLoginBack;
 
+:ProfileDown;
+_clear;
+_cout "User :  {NATVC_REQ_LOGIN}";
+_cout "The user login Certificate failed.";
+_cout "Somethings went wrong.";
+_cout "Press Enter to Reset User Login Certificate.";
+_pause;
+_file_del "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc";
+_return "reload_SYSTEM";
 
 
 :REQ_PASSWORD_TO_UNLOCKUSER;
@@ -3274,6 +3286,9 @@ $isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
 $AutoRun={OriginDisk}/{REAutoExec};
 $DisableUser=0; // User is Disabled 0/1
 $UserPassword=@nopswd; // UserPassword
+
+$noexplorer=true;
+$nouserexplorer=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
 //User Ban Operation

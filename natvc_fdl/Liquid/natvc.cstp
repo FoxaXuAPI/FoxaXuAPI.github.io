@@ -118,10 +118,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6114;
-$SYS_REG_NAME=15.1;
+$SYS_KERNEL_VID=6122;
+$SYS_REG_NAME=15.2;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.26._Config_Library_Update;
+$SYS_RELEASE_Channel=2025.08.28.GAC._Security_Update;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -975,18 +975,17 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
-=======================================================
-      System Error - Immediate Restart Required
-=======================================================
 
-   Your device ran into a problem and needs to restart now.
+System Error - Immediate Restart Required
 
--------------------------------------------------------
 
-     Stop Code: {NATVC_CRASH_CODE}
-     Details   : ({BUG_REPORT})
 
-=======================================================
+       Your device ran into a problem and needs to restart now.
+
+       
+
+                  Stop Code : {NATVC_CRASH_CODE}
+                  Details   : ({BUG_REPORT})
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-crash.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-eula.txt);
 foxaxu_dev_lab Software End User License Agreement (EULA)
@@ -1584,12 +1583,16 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/local_ntsh.nsv);
 
 //PROGRAM
 $Execute={SYS_ROOT}/nativeshell.ca;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID={NATVC_WHOIS};
 $UserPassword={NATVC_USER_PASSWORD};
 
+$SetServiceStatusTrue=true;
+
 //Name ntvue_user_logon_interface
+
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
@@ -1599,10 +1602,13 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/ntvue_user_logon_interface.nsv);
 
 //PROGRAM
 $Execute={SYS_ROOT}/ntvue.ca;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID=SYSTEM;
 $UserPassword=@nopswd;
+
+$SetServiceStatusTrue=false;
 
 //Name ntvue_user_logon_interface
 
@@ -1614,42 +1620,49 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/power_ntsh.nsv);
 
 //PROGRAM
 $Execute={SYS_ROOT}/nativeshell.ca;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID=SYSTEM;
 $UserPassword=@nopswd;
+
+$SetServiceStatusTrue=true;
 
 //Name ntvue_user_logon_interface
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/power_ntsh.nsv);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/user_local_explorer.nsv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/userprofile_explorer.nsv);
 //Natvc Service Config
 
 //PROGRAM
 $Execute={SYS_ROOT}/explorer.ca;
+$Argument={NATVC_USERPROFILE};
 
 //RUNAS USER
 $UserID={NATVC_WHOIS};
 $UserPassword={NATVC_USER_PASSWORD};
 
+$SetServiceStatusTrue=true;
+
 //Name ntvue_user_logon_interface
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/user_local_explorer.nsv);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/userprofile_explorer.nsv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/{Template}.nsv);
 //Natvc Service Config
 
 //PROGRAM
 $Execute=<Execute>;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID=<USERID>;
 $UserPassword=<PASSWORD>;
 
-
+$SetServiceStatusTrue=true;
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
@@ -2611,8 +2624,10 @@ _$nolog;
 
 //Explorer Main
 
-//Load Cache File Map
+_sipcfg.open "{NATVC_USERPROFILE}/userconfig";
+_if(_cp(_sipcfg noexplorer,"true"))|_goto :FailStartupFileExplorer_ConfigBlocked;
 
+//Load Cache File Map
 _var {ToolsName} = "EXPLORER";
 
 _var {EXPLORER_WORK_DIR} = _getargs;
@@ -2670,6 +2685,7 @@ _if(_cp("{UserTypeGet}","FileNotExist"))|_goto :RELOADCONSOLE;
 _if(_cp("{UserTypeGet}","{varspace.null}"))|_cout "Refresh Explorer";
 _if(_cp("{UserTypeGet}","{varspace.null}"))|_ms_sleep "100";
 _if(_cp("{UserTypeGet}","{varspace.null}"))|_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","ntsh"))|_goto :OpenNtshConsole;
 
 _if(_cp("{UserTypeGet}",".."))|_goto :GotoLastDIR;
 _if(_cp("{UserTypeGet}","..."))|_var {EXPLORER_WORK_DIR} = "{NODIR}";
@@ -2920,7 +2936,13 @@ _if(!_file_exist "{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}")|_pause;
 
 _goto :RELOADCONSOLE;
 
-
+:OpenNtshConsole;
+_clear;
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_cout "failed to detect nativeshell core Application";
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_pause;
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_goto :RELOADCONSOLE;
+_script <"{SYS_ROOT}/nativeshell.ca"> "{EXPLORER_WORK_DIR}";
+_goto :RELOADCONSOLE;
 
 :DEBUG_LVPTR;
 _clear;
@@ -2932,6 +2954,15 @@ _cout "Debug Toolkit";
 _pause;
 _goto :RELOADCONSOLE;
 
+
+:FailStartupFileExplorer_ConfigBlocked;
+_clear;
+_cout "File Explorer.  Error";
+_cout "Security Reason.";
+_cout "The Local Security had Blocked File Explorer";
+_cout "Explorer Cannot startup";
+_pause;
+_return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/explorer.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/filecstp.ca);
 //NATVC File Cstp Tools
@@ -3474,8 +3505,8 @@ _$nolog;
 
 //Data int
 
-_var {ntsh_version} = "2107";
-_var {ntsh_revision} = "103";
+_var {ntsh_version} = "2109";
+_var {ntsh_revision} = "104";
 
 //GET DIRECT 
 
@@ -3485,6 +3516,9 @@ _sipcfg.open "{NATVC_CONFIG}/NativeConf";
 _var {StartPath} = _sipcfg StartPath;
 _var {SecondPath} = _sipcfg SecondPath;
 _clear;
+
+_var {CheckPREPath} = _getargs;
+_if(_dir_exist "{CheckPREPath}")|_var {StartPath} = "{CheckPREPath}";
 
 _var {rs_pathexec} = "{StartPath}";
 _if (!_dir_exist "{rs_pathexec}")|_cout "Config Error:  StartPath is not accessable. Reset to SYS_ROOT";
@@ -3539,8 +3573,9 @@ _goto :TypeNewShell;
 
 
 :TYPESHELL_EXE;
+_file_write "[%time%][NativeShell] Execute -->  {rs_pathexec}/{ns_fnd_exec}";
 _var {ns_exec_back} = _script <"{rs_pathexec}/{ns_fnd_exec}"> "{RunArgs}";
-_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
+_file_write "[%time%][NativeShell] Program Return -->  {ns_exec_back}";
 _if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
 _if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
@@ -3552,8 +3587,9 @@ _if(_cp("{ns_exec_back}","logoff"))|_return "user_logoff";
 _goto :TypeNewShell;
 
 :S_TYPESHELL_EXE;
+_file_write "[%time%][NativeShell] Execute -->  {SecondPath}/{ns_fnd_exec}";
 _var {ns_exec_back} = _script <"{SecondPath}/{ns_fnd_exec}"> "{RunArgs}";
-_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
+_file_write "[%time%][NativeShell] Program Return -->  {ns_exec_back}";
 _if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
 _if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
@@ -4040,9 +4076,13 @@ _$directmode;
 _$nolog;
 _$no_err_report;
 
+_sipcfg.open "{NATVC_USERPROFILE}/userconfig";
+_if(_cp(_sipcfg nouserexplorer,"true"))|_goto :FailStartupUserExplorer_ConfigBlocked;
+
 _var {bool_isAutoRunExec} = "0";
 
 _file_write "[%time%][SystemExplorer] Load Explorer";
+
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 
 _var {Explorer_Title} = _sipcfg explorer_title;
@@ -4464,6 +4504,16 @@ _pause;
 _sipcfg.open "{NATVC_USERPROFILE}/startcomplete"
 _sipcfg SNA = "true";
 _goto :ReloadExplorer;
+
+
+:FailStartupUserExplorer_ConfigBlocked;
+_clear;
+_cout "Natvc User Explorer.  Error";
+_cout "Security Reason.";
+_cout "The Local Security had Blocked User Explorer";
+_cout "Explorer Cannot startup";
+_pause;
+_return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvexp.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvkernel.ca);
 _$directmode;
@@ -5589,7 +5639,7 @@ _typefile "{SYS_NROOT}/res/natvc-ntvue.txt";
 _file_write "[%time%][Logon Interface] Wait User Operation";
 _prt "Type User Name>";
 _var {USER_REQ_LOGON} = _getline;
-
+_if(_cp("{USER_REQ_LOGON}","@debug.currentuser"))|_goto :List_CurrentUserStatus;
 _if(_cp("{USER_REQ_LOGON}","{NULLUSER}"))|_goto :NE_ERR_NOTTYPE;
 _if(_cp("{USER_REQ_LOGON}","restart"))|_goto :UE_RESTART_API;
 _if(_cp("{USER_REQ_LOGON}","shutdown"))|_goto :UE_SHUTDOWN_API;
@@ -5907,6 +5957,20 @@ _return "user_restart";
 _clear;
 _cout "System no recovery environment";
 _cout "Please try to use "refix" to repair";
+_pause;
+_goto :BACKMAINTEXT;
+
+:List_CurrentUserStatus;
+_clear;
+_cout "System Login Interface Report";
+_cout "Current Login User";
+_cout "";
+_cout "UserName: {NATVC_USERNAME} ";
+_cout "Whois: {NATVC_WHOIS} ";
+_cout "UserProfile: {NATVC_USERPROFILE}  ";
+_cout "";
+_cout "isAdmin: {NATVC_isAdmin}      ";
+_cout "AutoRun: {NATVC_UserAutoRun}  ";
 _pause;
 _goto :BACKMAINTEXT;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvue.ca);
@@ -6711,9 +6775,11 @@ _var {NSV_DATA} = "{SYS_NROOT}/Service/{NSV_DATA}.nsv";
 //Load Config Datas
 _sipcfg.open "{NSV_DATA}";
 _var {NSV_Execute} = _sipcfg Execute;
+_var {NSV_Argument} = _sipcfg Argument;
 
 _var {NSV_UserID} = _sipcfg UserID;
 _var {NSV_UserPassword} = _sipcfg UserPassword;
+_var {NSV_SET_SST} = _sipcfg SetServiceStatusTrue;
 
 //Login Current Users
 
@@ -6733,11 +6799,13 @@ _var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
 _var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
 _var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
 
-_var {NSV_SERVICE_MODE} = "true";
+_if(_cp("{NSV_SET_SST}","true"))|_var {NSV_SERVICE_MODE} = "true";
 _file_write "[%time%][Services] Start Service :  {NSV_DATA}  User :  {NATVC_WHOIS}  Auth :  {NATVC_isAdmin} .";
-_var {CALLBACK_NSV} = _script <"{NSV_Execute}">;
+_file_write "[%time%][Services] Service Profile :  {NSV_Execute}  Argument : {NSV_Argument}";
+_file_write "[%time%][Services] Service Detect Mark is :  {NSV_SET_SST}";
+_var {CALLBACK_NSV} = _script <"{NSV_Execute}"> "{NSV_Argument}";
 _file_write "[%time%][Services] Stop Service :  {NSV_DATA}  .";
-_var {NSV_SERVICE_MODE} = "false";
+_if(_cp("{NSV_SET_SST}","true"))|_var {NSV_SERVICE_MODE} = "false";
 
 _sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
 _var {NATVC_USERNAME}      = _sipcfg USERNAME;
@@ -7800,6 +7868,9 @@ _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
 
 //Create User Dump
 _if(!_dir_exist "{SYS_NROOT}/SECURITY")|_dir_make "{SYS_NROOT}/SECURITY";
+
+_if(_cp("{NATVC_WHOIS}","{varspace.null}"))|_goto :PASSFLB;
+
 _file_open "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc";
 _file_write "//Natvc User Secure Login Certificate";
 _file_write "$USERNAME={NATVC_USERNAME};";
@@ -7904,6 +7975,7 @@ _sipcfg.open "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc";
 _var {NATVC_USERNAME}      = _sipcfg USERNAME;
 _var {NATVC_WHOIS}         = _sipcfg USERID;
 _var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_if(_cp("{NATVC_USERPROFILE}","{varspace.null}"))|_goto :ProfileDown;
 _var {NATVC_isAdmin}       = _sipcfg USERADMIN;
 _var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
 _var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
@@ -7911,6 +7983,15 @@ _var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
 
 _goto :FASTLoginBack;
 
+:ProfileDown;
+_clear;
+_cout "User :  {NATVC_REQ_LOGIN}";
+_cout "The user login Certificate failed.";
+_cout "Somethings went wrong.";
+_cout "Press Enter to Reset User Login Certificate.";
+_pause;
+_file_del "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc";
+_return "reload_SYSTEM";
 
 
 :REQ_PASSWORD_TO_UNLOCKUSER;
@@ -8410,6 +8491,9 @@ $isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
 $AutoRun=@servicemode;
 $DisableUser=0; // User is Disabled 0/1
 $UserPassword=@nopswd; // UserPassword
+
+$noexplorer=true;
+$nouserexplorer=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
 //User Ban Operation
