@@ -118,10 +118,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6122;
+$SYS_KERNEL_VID=6123;
 $SYS_REG_NAME=15.2;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.28.GAC._Security_Update;
+$SYS_RELEASE_Channel=2025.08.28.GAC._Patch_Update;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -8575,7 +8575,7 @@ $devinfo={SYS_ROOT}/devinfo.ca;
 $update={SYS_ROOT}/ntvupd.ca;
 $filemgr={SYS_ROOT}/filemgr.ca;
 $filecstp={SYS_ROOT}/filecstp.ca;
-$ntsh={SYS_ROOT}/NativeShell.ca;
+$ntsh={SYS_ROOT}/nativeshell.ca;
 $confedit={SYS_ROOT}/confedit.ca;
 $usersettings={SYS_ROOT}/usersettings.ca;
 $nbfmgr={SYS_ROOT}/nbfmgr.ca;
