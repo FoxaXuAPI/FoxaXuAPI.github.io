@@ -15,11 +15,6 @@ $CSTP_FILE_RECORD_MARK_ID_END(/bootdat);
 $CSTP_FILE_RECORD_MARK_ID_START(/ntvre.cstp);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/NativeConf);
-//NativeShell Configuration
-$StartPath={SYS_ROOT};
-$SecondPath={SYS_ROOT};
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/NativeConf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
@@ -88,10 +83,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6123;
-$SYS_REG_NAME=15.2;
+$SYS_KERNEL_VID=6203;
+$SYS_REG_NAME=15.3;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.28.GAC._Patch_Update;
+$SYS_RELEASE_Channel=2025.08.29.Preview._Security_Patch;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -1503,6 +1498,7 @@ _var {UserExplorerConsole} = _getline;
 _if(_cp("{UserExplorerConsole}","1"))|_goto :ExtractMode;
 _if(_cp("{UserExplorerConsole}","2"))|_goto :PackFileMode;
 _if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_if(_cp("{UserExplorerConsole}","exit"))|_return "ok";
 _goto :MainFileExplorer;
 
 
@@ -1583,6 +1579,39 @@ _cout "";
 
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ls.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mkdir.ca);
+_$directmode;
+_$nolog;
+
+_var {temp_mkdir} = _getargs;
+
+_if (_cp("{temp_mkdir}",'{varspace.null}'))  | _goto :SELECTOPT;
+_if (_cp("{temp_mkdir}",'{RunArgs}'))        | _goto :SELECTOPT;
+_if (_cp("{temp_mkdir}",'RootShell'))        | _goto :SELECTOPT;
+
+_goto :DIRMK;
+
+:SELECTOPT;
+_cout "Type Folder you want create:";
+_var {temp_mkdir} = _getline;
+
+:DIRMK;
+_if(_dir_exist "{temp_mkdir}")|_goto :AlreadyExist;
+
+_if(!_dir_exist "{temp_mkdir}")|_dir_make "{temp_mkdir}";
+_if(!_dir_exist "{temp_mkdir}")|_goto :MKFail;
+_cout "Compete.";
+_return "ok";
+
+:MKFail;
+_cout "Make Directory failed. access denied:  {temp_mkdir}";
+_cout "";
+_return "fail";
+
+:AlreadyExist;
+_cout "DIR :  {temp_mkdir} is already exist";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/mkdir.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/nbfmgr.ca);
 //Natvc Boot Manager Tools
 //Design By FoxaXu
@@ -2653,6 +2682,28 @@ _cout "args = Re Dir";
 _cout "May be you are not type vaild system recovery path";
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/refix.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rmdir.ca);
+_$directmode;
+_$nolog;
+
+_var {temp_rmdir} = _getargs;
+
+_if(_dir_exist "{temp_rmdir}")|_goto :DIRDEL;
+
+_cout "Type Folder you want delete:";
+_var {temp_rmdir} = _getline;
+
+:DIRDEL;
+_if(_dir_exist "{temp_rmdir}")|_dir_remove "{temp_rmdir}";
+_if(_dir_exist "{temp_rmdir}")|_goto :RMFail;
+_cout "Compete.";
+_return "ok";
+
+:RMFail;
+_cout "delete fail. access denied:  {temp_rmdir}";
+_cout "";
+_return "fail";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/rmdir.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rootshell.ca);
 // NATVC ROOT SHELL
 // Only Running on SYSTEM

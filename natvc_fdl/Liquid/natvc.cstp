@@ -118,10 +118,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6123;
-$SYS_REG_NAME=15.2;
+$SYS_KERNEL_VID=6203;
+$SYS_REG_NAME=15.3;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.28.GAC._Patch_Update;
+$SYS_RELEASE_Channel=2025.08.29.Preview._Security_Patch;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -2878,8 +2878,7 @@ _if(_cp("{OpenMethod}","1"))|_var {ROOTSHELL_CALLBACK} = _script <"{SYS_ROOT}/ru
 
 _if(_cp("{OpenMethod}","2"))|_script <"{SYS_ROOT}/textreader.ca"> "{EXPLORER_WORK_DIR}/{UserTypeGet}";
 
-_if(_cp("{OpenMethod}","3"))|_var {RegOpenFile} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_if(_cp("{OpenMethod}","3"))|_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_if(_cp("{OpenMethod}","3"))|_goto :RunRegeditProMode;
 
 _if(_cp("{ROOTSHELL_CALLBACK}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{ROOTSHELL_CALLBACK}","user_restart"))|_return "user_restart";
@@ -2903,8 +2902,18 @@ _cout "For System Security. your device is not allowed run this program";
 _pause;
 _goto :RELOADCONSOLE;
 
+:RunRegeditProMode;
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :NotAlloweEdit;
+_var {RegOpenFile} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_goto :RELOADCONSOLE;
 
 
+:NotAlloweEdit;
+_clear;
+_cout "Open Editor Require System Administrator";
+_pause;
+_goto :RELOADCONSOLE;
 
 :PasteFileOrDir;
 _if(!_cp("{CopyDirName_Cache}","{noselect_files}"))|_goto :CopyDirMode;
@@ -2995,6 +3004,7 @@ _var {UserExplorerConsole} = _getline;
 _if(_cp("{UserExplorerConsole}","1"))|_goto :ExtractMode;
 _if(_cp("{UserExplorerConsole}","2"))|_goto :PackFileMode;
 _if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_if(_cp("{UserExplorerConsole}","exit"))|_return "ok";
 _goto :MainFileExplorer;
 
 
@@ -3407,6 +3417,39 @@ _cout "";
 
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ls.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mkdir.ca);
+_$directmode;
+_$nolog;
+
+_var {temp_mkdir} = _getargs;
+
+_if (_cp("{temp_mkdir}",'{varspace.null}'))  | _goto :SELECTOPT;
+_if (_cp("{temp_mkdir}",'{RunArgs}'))        | _goto :SELECTOPT;
+_if (_cp("{temp_mkdir}",'RootShell'))        | _goto :SELECTOPT;
+
+_goto :DIRMK;
+
+:SELECTOPT;
+_cout "Type Folder you want create:";
+_var {temp_mkdir} = _getline;
+
+:DIRMK;
+_if(_dir_exist "{temp_mkdir}")|_goto :AlreadyExist;
+
+_if(!_dir_exist "{temp_mkdir}")|_dir_make "{temp_mkdir}";
+_if(!_dir_exist "{temp_mkdir}")|_goto :MKFail;
+_cout "Compete.";
+_return "ok";
+
+:MKFail;
+_cout "Make Directory failed. access denied:  {temp_mkdir}";
+_cout "";
+_return "fail";
+
+:AlreadyExist;
+_cout "DIR :  {temp_mkdir} is already exist";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/mkdir.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mnaload.ca);
 _$directmode;
 _$nolog;
@@ -6356,6 +6399,28 @@ _$nolog;
 
 _return "restart";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/restart.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rmdir.ca);
+_$directmode;
+_$nolog;
+
+_var {temp_rmdir} = _getargs;
+
+_if(_dir_exist "{temp_rmdir}")|_goto :DIRDEL;
+
+_cout "Type Folder you want delete:";
+_var {temp_rmdir} = _getline;
+
+:DIRDEL;
+_if(_dir_exist "{temp_rmdir}")|_dir_remove "{temp_rmdir}";
+_if(_dir_exist "{temp_rmdir}")|_goto :RMFail;
+_cout "Compete.";
+_return "ok";
+
+:RMFail;
+_cout "delete fail. access denied:  {temp_rmdir}";
+_cout "";
+_return "fail";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/rmdir.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rootshell.ca);
 // NATVC ROOT SHELL
 // Only Running on SYSTEM
