@@ -118,10 +118,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6203;
+$SYS_KERNEL_VID=6211;
 $SYS_REG_NAME=15.3;
 $SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.29.Preview._Security_Patch;
+$SYS_RELEASE_Channel=2025.09.02.GAC.Stable_Release;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
