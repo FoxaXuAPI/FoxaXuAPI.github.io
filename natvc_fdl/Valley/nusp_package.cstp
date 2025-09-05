@@ -21,18 +21,7 @@ _return "ok";
 :CopyNewSystemFiles;
 //Installer New Updates
 _clear;
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "";
-_cout "      Please wait";
-_cout "      Update Service is installing latest version of Natvc";
-_cout "      After install your Natvc will update to {PackageLatest}";
-_cout "";
-_cout "";
-_cout "";
-_cout "                Do not turn off your device";
+_typefile "{SYS_NROOT}/SystemUpdate/nusp/res-installcli.txt";
 
 _var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/installer/";
 _var {XCOPY_B} = "{NATVC_DISK}";
@@ -61,13 +50,37 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.0.63; 
+$USV=1.1.02; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
 
 //All
 $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
+$CSTP_FILE_RECORD_MARK_ID_START(/res-installcli.txt);
+ Please wait...
+   Update Service is installing the latest version of Natvc.
+   After installation, your Natvc will be updated to {PackageLatest}.
+
+ Do not turn off your device during the process.
+ Make sure your device is connected to a stable power source.
+ Keep your internet connection active to ensure a smooth update.
+ This process may take several minutes depending on your system performance.
+
+Thank you for your patience.
+$CSTP_FILE_RECORD_MARK_ID_END(/res-installcli.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/res-maincli.txt);
+ Please select an option:
+  (1) Check for Updates
+  (2) Run Disk Cleanup
+  (3) Remove All Old Unsupported Elements
+  (4) Deploy Natvc Recovery
+  (e) Exit
+
+ Do you want to install the Preview Version of Natvc?  
+   Use the "devupd" command to update the Client Update Services.  
+   Update Service Version: {USV_DAT}
+$CSTP_FILE_RECORD_MARK_ID_END(/res-maincli.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/re_deploy.ca);
 _$directmode;
 _$nolog;
@@ -249,17 +262,9 @@ _clear;
 _cout "Natvc Update Service Package";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "An Exist Update is waitting for restart";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "If you want install another update.please restart your device and install later";
+_if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "   type "c" to cancel update Natvc";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout " ";
-_cout "Select Option";
-_cout "          1. Check updates";
-_cout "          2. Run Diskclean";
-_cout "          3. Remove all old Unsupported Element";
-_cout "          4. Deploy Natvc Recovery";
-_cout "          e. Exit";
-_cout "";
-_cout "    Do you want install Preview Version of Natvc ?  use "devupd" command to update";
-_cout " Client Update Services.";
-_cout " Update Service Version :  {USV_DAT}";
+_typefile "{SYS_NROOT}/SystemUpdate/nusp/res-maincli.txt";
 _prt "Type Number >";
 _var {US_GET} = _getline;
 _if(_cp("{US_GET}","1"))|_goto :UpdateCheckMode;
@@ -268,6 +273,8 @@ _if(_cp("{US_GET}","2"))|_goto :RunDiskclean;
 _if(_cp("{US_GET}","3"))|_goto :RemoveEMT;
 _if(_cp("{US_GET}","4"))|_goto :DEPRE;
 _if(_cp("{US_GET}","e"))|_return "ok";
+_if(_cp("{US_GET}","c"))|_goto :cancelUpdateNatvc;
+_if(_cp("{US_GET}","@debug.installcli"))|_goto :TestInstallCLI;
 _goto :ReloadMainCLI;
 
 :UpdateCheckMode;
@@ -308,6 +315,30 @@ _clear;
 _var {Work_CALLBACK} = _script <"{SYS_NROOT}/SystemUpdate/nusp/re_deploy.ca">;
 _cout "RE Deploy Service is Exit ,  Status :  {Work_CALLBACK}";
 _cout "Press Enter to Back";
+_pause;
+_goto :ReloadMainCLI;
+
+
+:TestInstallCLI;
+_clear;
+_typefile "{SYS_NROOT}/SystemUpdate/nusp/res-installcli.txt";
+_pause;
+_goto :ReloadMainCLI;
+
+:cancelUpdateNatvc;
+_clear;
+_cout "Canceling Update Serivces";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+
+_sipcfg shutdown_execute = "noexec";
+_sipcfg startup_execute = "noexec";
+
+
+_dir_remove "{SYS_NROOT}/SystemUpdate/installer";
+_clear;
+_cout "Update Canceled";
+_cout "The update has been terminated. If you want to reinstall the update, please choose to check for updates again.";
 _pause;
 _goto :ReloadMainCLI;
 $CSTP_FILE_RECORD_MARK_ID_END(/setupworker.ca);
