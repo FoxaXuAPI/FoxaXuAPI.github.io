@@ -31,6 +31,9 @@ $FastBoot=0;
 //SysRepairService
 $DisableSysRepiar=false;
 
+//BootDebug
+$DebugNoGUIBoot=0; //set 1 to print boot message. set 0 to display normal boot screen
+
 //Shutdown Status
 $shutdown=0;
 $last_startup=0;
@@ -66,7 +69,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SYSTEM);
 
 //LogFile
 $NATVC_SYS_LOG=Natvc/LogFile; //This Record IS logfile path
-$DebugNoGUIBoot=0; //set 1 to print boot message
+//Debug Switch is move to SETUP
 
 //MAIN
 //System boot will check bootloader file is credible
@@ -83,10 +86,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6211;
-$SYS_REG_NAME=15.3;
-$SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.09.02.GAC.Stable_Release;
+$SYS_KERNEL_VID=7002;
+$SYS_REG_NAME=15.4;
+$SYS_KERNEL_CODENAME=Quark;
+$SYS_RELEASE_Channel=2025.10.02.Release.NewKernel;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -153,6 +156,11 @@ $rootshell=true;
 $args=true;
 $run=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/vaild_command);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/drivers/cstkrnl.ntvdrv);
+_$directmode;
+_var {CalciumK} = "true";
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/drivers/cstkrnl.ntvdrv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/bootmgr.nbf);
 _$directmode;
 _$nolog;
@@ -617,7 +625,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
 
-System Error - Immediate Restart Required
+
 
 
 
@@ -1467,6 +1475,43 @@ _cout "Press Enter ...";
 _pause;
 _return "user_noauth";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/del.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/drvload.ca);
+_$directmode;
+
+//System Driver Loader
+_var {drv_temp} = _getargs;
+
+_if(!_cp("{drv_temp}","Kernel_Load_Driver"))|_return "failuserauth";
+
+_file_write "[%time%][DriverLoad] Start loading Natvc Driver";
+
+//List All Driver
+_if(_file_exist "{SystemTemp}/drvlist.txt")|_file_del "{SystemTemp}/drvlist.txt";
+_dir_list ("{SystemTemp}/drvlist.txt","{SYS_NROOT}/drivers");
+
+//LIST ALL FILES
+//FilePrint
+_var {_DRVLoad_ReadINT} = "1";
+
+:BackReload;
+_var {DriverFile} = _file_read ("{SystemTemp}/drvlist.txt","{_DRVLoad_ReadINT}");
+_if(_cp("{DriverFile}","overline"))|_return "ok";
+_if(_cp("{DriverFile}","FileNotExist"))|_return "ok";
+_file_write "[%time%][DriverLoad] Loading {DriverFile} ...";
+
+//LoadDRV
+_var {DriverLoadResult} = _script <"{DriverFile}"> "load_driver";
+_file_write "[%time%][DriverLoad] Complete load driver. Result Code: {DriverLoadResult}";
+
+_if(!_cp("{DriverLoadResult}","drv_load_ok"))|_goto :FailedDRVLoad;
+_var {_DRVLoad_ReadINT} = _+("{_DRVLoad_ReadINT}","1");
+_goto :BackReload;
+
+
+
+:FailedDRVLoad;
+_return "DRV_ERROR: {DriverLoadResult}";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/drvload.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/filecstp.ca);
 //NATVC File Cstp Tools
 //Use _file_pack /  _file_unpack / _file_exist / _file_del  Exist API 
@@ -1579,6 +1624,114 @@ _cout "";
 
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ls.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/memreset.ca);
+_$directmode;
+
+//MemClear.NTVDRV
+//For Kernel
+//Swap Memory
+
+//System Driver Loader
+_var {Mem_tmp} = _getargs;
+_if(!_cp("{Mem_tmp}","KernelResetMemory"))|_return "failuserauth";
+
+_free {NTVUE_AD_1};
+_free {NTVUE_AD_2};
+_free {NTVUE_AD_3};
+_free {sys_autologin};
+_free {USER_REQ_LOGON};
+_free {bool_isAutoRunExec};
+_free {Explorer_Title};
+_free {NATVC_USER_MENU_CONFIG};
+_free {NATVC_USER_INDEX};
+_free {NTVEXP_AD_1};
+_free {NTVEXP_AD_2};
+_free {NTVEXP_AD_3};
+_free {NTVEXP_AD_4};
+_free {NTVEXP_AD_5};
+_free {rs_pathexec};
+_free {NATVC_USEREXP_GET};
+_free {CONFGET_FILE};
+_free {CONFGET_WORD};
+_free {ConfGet_CALLBACK_PTR};
+_free {callback_temp};
+_free {FAILSYS_MBU};
+_free {NATVC_USERSVC_CALLBACK};
+_free {USER_UE_CALLBACK};
+_free {CALLBACK_NSV};
+_free {ntvl_process};
+_free {BUG_REPORT};
+_free {args_prep};
+_free {ToolsName};
+_free {NSV_DATA};
+_free {NSV_Execute};
+_free {NSV_Argument};
+_free {NSV_UserID};
+_free {NSV_UserPassword};
+_free {NSV_SET_SST};
+_free {NATVC_BOOT_DLOAD};
+_free {NATVC_SHUTDOWN_SECURE};
+_free {NATVC_CRASH_EXECUTE};
+_free {NATVC_ABOUTS_TEXT};
+_free {NATVC_CRASH_TEXT};
+_free {PlayRate};
+_free {PLAYAVGTIME};
+_free {NATVC_CRASH_CODE};
+_free {NATVC_CRASH_MESSAGE};
+_free {IsAutoLogin};
+_free {UserSVCBUFFER};
+_free {NATVC_REQ_LOGIN};
+_free {NATVC_WHOIS};
+_free {NATVC_USERPROFILE};
+_free {temp};
+_free {NATVC_USERPROFILE_CONFIG};
+_free {NATVC_USERNAME};
+_free {NATVC_isAdmin};
+_free {NATVC_UserAutoRun};
+_free {NATVC_DisableUser};
+_free {NATVC_USER_PASSWORD};
+_free {K_SERVICE_CALLBACK};
+_free {ntvl_temp};
+_free {StopStartup};
+_free {NoGUIBootOpt};
+_free {GET_SYSTIMEL};
+_free {SYS_LOG_PATH};
+_free {LOG_TIMESTR};
+_free {SYS_LOG};
+_free {last_startup};
+_free {last_shutdown};
+_free {Shutdown_Data};
+_free {temp_record_time};
+_free {SYS_ROOT};
+_free {SYS_NROOT};
+_free {PROG_PATH};
+_free {SYS_USERDIR};
+_free {SYS_USERPATH};
+_free {BL_Verify_F};
+_free {NATVC_EDITION};
+_free {DEF_Title};
+_free {SYS_NAME};
+_free {SYS_KERNEL_VID};
+_free {SYSNAME};
+_free {SYS_KERNEL_CODENAME};
+_free {SYS_RELEASE_Channel};
+_free {_NATVC_SYSID};
+_free {NATVC_USERSVC};
+_free {NATVC_USERMENU};
+_free {NATVC_ROOTSHELL};
+_free {NATVC_EXPLORER};
+_free {SysLocker};
+_free {NATVC_BOOTUI};
+_free {NATVC_Compiler_Warning};
+_free {NATVC_Fail_Startup};
+_free {NATVC_FMV_REQ};
+_free {drv_temp};
+_free {drvload_callback};
+_cout "Reset Memory Succeed";
+_file_write "[Memory Reset] Memory Reset succeed";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/memreset.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mkdir.ca);
 _$directmode;
 _$nolog;
@@ -1886,6 +2039,9 @@ _if(!_file_exist "{NATVC_CONFIG_USERS}") | _goto :SysBootFallbackConfig;
 _if(!_file_exist "{NATVC_CONFIG_SETUP}") | _goto :SysBootFallbackConfig;
 _var {StopStartup} = "false";
 
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {NoGUIBootOpt} = _sipcfg DebugNoGUIBoot;
+
 _sipcfg.open "{NATVC_CONFIG_SYS}";
 
 _var {GET_SYSTIMEL} = _getdate;
@@ -1901,8 +2057,6 @@ _var {LOG_TIMESTR} = _getclock;
 _var {LOG_TIMESTR} = _str_replace "{LOG_TIMESTR}" (":","_");
 
 _var {SYS_LOG} = "{NATVC_DISK}/{SYS_LOG_PATH}/{GET_SYSTIMEL}/StartupTime-{LOG_TIMESTR}.log";
-
-_var {NoGUIBootOpt} = _sipcfg DebugNoGUIBoot;
 
 _if(_cp("{NoGUIBootOpt}","1"))|_clear;
 
@@ -2095,6 +2249,8 @@ _file_write "[%time%][Kernel][Boot] Boot Safe Mode :  {boot_rsmode}";
 
 _var {NATVC_CRASH_TEXT} = _sipcfg NATVC_CRASH_TEXT;
 _var {NATVC_CRASH_TEXT} = "{NATVC_DISK}/{NATVC_CRASH_TEXT}";
+_var {SystemTemp} = "{SYS_NROOT}/Temp";
+_if(!_dir_exist "{SystemTemp}")|_dir_make "{SystemTemp}";
 
 _if(_cp("{NoGUIBootOpt}","1"))|_goto :SkipLoadUIBoot2;
 _if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadUIBoot2;
@@ -2102,7 +2258,14 @@ _script <"{SYS_ROOT}/ntvani.ca">;
 :SkipLoadUIBoot2;
 
 //END
+//Load System Driver
+_if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadSystemDRV;
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Drivers...";
+_if(!_file_exist "{SYS_ROOT}/drvload.ca")|_goto :FailedCrashDrvMissing;
+_var {drvload_callback} = _script <"{SYS_ROOT}/drvload.ca"> "Kernel_Load_Driver";
+_if(!_cp("{drvload_callback}","ok"))|_goto :FailedCrashDrvLoader;
 
+:SkipLoadSystemDRV;
 //Check SysImage
 
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Checking System Image...";
@@ -2161,6 +2324,9 @@ _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "SYSTEM";
 _if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_restart")) | _goto :RESTART_OK;
+_sipcfg.open "{SYS_NROOT}/SECURITY/SYSTEM.nuslc";
+_sipcfg KernelProtect = "true";
+
 
 _if(!_cp("{K_SERVICE_CALLBACK}","reload_SYSTEM"))|_goto :FAILLOGIN_SYSTEM;
 
@@ -2195,7 +2361,7 @@ _if(_cp("{K_SERVICE_CALLBACK}","user_hiber")) | _goto :NULLKERNEL_DEBUG;
 _if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :FAILSERVICEBACK;
 
 _var {BUG_REPORT} = "ntvkernel.ca";
-_var {ToolsName} = "OS Kernel";
+//_var {ToolsName} = "OS Kernel";
 _var {NATVC_CRASH_CODE} = "SYSTEM_SERVICE_EXCEPTION";
 _var {NATVC_CRASH_MESSAGE} = "NUES Service Error. callback: {K_SERVICE_CALLBACK}";
 
@@ -2253,6 +2419,11 @@ _file_write "[%time%][Kernel][Error][Exception] CID : failsys (unexpected)";
 _var {BUG_REPORT} = "ntvkernel.ca";
 _var {NATVC_CRASH_CODE} = "CRITICAL_MODULE_DIED";
 _var {NATVC_CRASH_MESSAGE} = "A Critical Module unexpected died . Your device needs to be aware of this problem";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {NATVC_CRASH_CODE} = "DEBUG_CRASH_SCREEN";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {NATVC_CRASH_MESSAGE} = "Display Crash Screen not happend any error. Just for debug crash scrren";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {ToolsName} = "No Bug happend";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {BUG_REPORT} = "Debug Mode";
+_var {FAILSYS_MBU} = "false";
 _goto :BACKLOADCRASH;
 
 :NULLKERNEL_DEBUG;
@@ -2282,6 +2453,22 @@ _var {BUG_REPORT} = "ntvlogon.ca";
 _var {NATVC_CRASH_CODE} = "LOCAL_SERVICE_FAILED";
 _var {NATVC_CRASH_MESSAGE} = "System Service error";
 _goto :BACKLOADCRASH;
+
+:FailedCrashDrvMissing;
+_file_write "[%time%][Kernel][Error][Exception] Driver load failed. file missing drvload.ca";
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {NATVC_CRASH_CODE} = "DRIVER_LOAD_FAILED";
+_var {NATVC_CRASH_MESSAGE} = "Driver load failed. missing file : drvload.ca";
+_goto :BACKLOADCRASH;
+
+
+:FailedCrashDrvLoader;
+_file_write "[%time%][Kernel][Error][Exception] Driver load failed. Unexpected error detected";
+_var {BUG_REPORT} = _str_replace "{DriverFile}" ("{SYS_NROOT}/driver/","");
+_var {NATVC_CRASH_CODE} = "DRIVER_LOAD_ERROR";
+_var {NATVC_CRASH_MESSAGE} = "Driver load error. message {drvload_callback}";
+_goto :BACKLOADCRASH;
+
 
 //Load Recovery
 :failbootRecovery;
@@ -2381,6 +2568,8 @@ _file_del "script/hiberdata";
 _file_del "{NATVC_DISK}/hiberfile.txt";
 
 _dir_remove "{SYS_NROOT}/SECURITY";
+
+_if(_file_exist "{SYS_ROOT}/memreset.ca")|_script <"{SYS_ROOT}/memreset.ca"> "KernelResetMemory";
 
 _var {SysLocker} = "false";
 _return "$reboot";
