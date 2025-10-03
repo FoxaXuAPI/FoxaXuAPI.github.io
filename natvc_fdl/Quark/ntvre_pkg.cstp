@@ -86,10 +86,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=7002;
+$SYS_KERNEL_VID=7005;
 $SYS_REG_NAME=15.4;
 $SYS_KERNEL_CODENAME=Quark;
-$SYS_RELEASE_Channel=2025.10.02.Release.NewKernel;
+$SYS_RELEASE_Channel=2025.10.03.Release.Patch;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
