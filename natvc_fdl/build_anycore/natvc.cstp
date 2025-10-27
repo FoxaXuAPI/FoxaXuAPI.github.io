@@ -20,6 +20,9 @@ $AllowAdminUserDebug=false;
 
 //Debug system
 $DeployModernNatvcApps=true;
+//WARNING. DISABLE This Switchs might made system cannot deploy
+//Some System Component require some mna package
+//You should install these package
 
 //For Insider Version System Unlock Administrator
 $AutoUnlockAdminUser=false;
@@ -53,9 +56,13 @@ $shutdown_record=1;
 $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
+$RestartExecuteMemReset=1;
 
 //SysRepairService
 $DisableSysRepiar=false;
+
+//BootDebug
+$DebugNoGUIBoot=0; //set 1 to print boot message. set 0 to display normal boot screen
 
 //Shutdown Status
 $shutdown=0;
@@ -101,7 +108,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SYSTEM);
 
 //LogFile
 $NATVC_SYS_LOG=Natvc/LogFile; //This Record IS logfile path
-$DebugNoGUIBoot=0; //set 1 to print boot message
+//Debug Switch is move to SETUP
 
 //MAIN
 //System boot will check bootloader file is credible
@@ -118,10 +125,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=6104;
-$SYS_REG_NAME=15.1;
-$SYS_KERNEL_CODENAME=Liquid;
-$SYS_RELEASE_Channel=2025.08.15.Release.GAC_Channel;
+$SYS_KERNEL_VID=8034;
+$SYS_REG_NAME=16.0;
+$SYS_KERNEL_CODENAME=Orange;
+$SYS_RELEASE_Channel=Build.251027.2;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -168,6 +175,8 @@ $admin=Users/admin;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/USERS);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/vaild_command);
 //CONFIG USER ALLOW EXECUTE
+$pm=true;
+${varspace.null}=true;
 $help=true;
 $.exit=true;
 $exit=true;
@@ -178,7 +187,6 @@ $shutdown=true;
 $@shutdown=true;
 $restart=true;
 $lock=true;
-$.shell=true;
 $ls=true;
 $clear=true;
 $path=true;
@@ -191,12 +199,15 @@ $software=true;
 $ok=true;
 $update=true;
 $explorer=true;
-$explorer.ca=true;
 $rootshell=true;
-$rootshell.ca=true;
 $args=true;
 $run=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/vaild_command);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/drivers/cstkrnl.ntvdrv);
+_$directmode;
+_var {CalciumK} = "true";
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/drivers/cstkrnl.ntvdrv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/explorer.ca);
 _$directmode;
 _$nolog;
@@ -247,8 +258,11 @@ _var {Req_install_dev} = _getargs;
 
 _file_write "[Mna_Service] Parameter {Req_install_dev}";
 
-
+_if(!_file_exist "{Req_install_dev}")|_goto :P1;
+_if(_file_exist "{Req_install_dev}")|_goto :P3;
+:P2
 _if(!_file_exist "{Req_install_dev}")|_goto :FailReqApp;
+:P3;
 
 //start setup application
 //Config Program Dir
@@ -303,6 +317,11 @@ _cout " mna install serivces";
 _cout " Current User is not allowed to install this app";
 _cout " Use your administrator user try again";
 _return "failinst";
+
+
+:P1;
+_var {Req_install_dev} = "{SYS_NROOT}/SystemPackage/{Req_install_dev}";
+_goto :P2;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/install.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/mnaload.ca);
 _$directmode;
@@ -311,6 +330,7 @@ _$nolog;
 _var {LoadApp} = _getargs;
 
 _var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+_var {AppData} = "{NATVC_USERPROFILE}/AppData/{LoadApp}";
 
 _if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
 
@@ -320,6 +340,8 @@ _file_write "[Mna_service] Appload on {AppDir}";
 
 _if(!_file_exist "{AppDir}/apploader.ca")|_goto :BreakPackage;
 
+_if(!_dir_exist "{NATVC_USERPROFILE}/AppData")|_dir_make "{NATVC_USERPROFILE}/AppData";
+_if(!_dir_exist "{AppData}")|_dir_make "{AppData}";
 _file_write "[Mna_service] Execute Program :   {AppDir}/apploader.ca";
 
 _var {mna_loader_callback} = _script <"{AppDir}/apploader.ca">;
@@ -344,6 +366,22 @@ _cout "Press any key to exit";
 _pause;
 _return "failLdr";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/mnaload.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/pkgexist.ca);
+_$directmode;
+
+_var {Parameter} = _getargs;
+
+_if(_file_exist "{SYS_NROOT}/NatvcApps/{Parameter}/pkgdata.mna")|_return "true";
+_if(_file_exist "{PROG_PATH}/{Parameter}/pkgdata.mna")|_return "true";
+_return "false";
+
+//Ret
+:R_T;
+_return "true";
+
+:R_F;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/pkgexist.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/pkgSaved.ca);
 _$directmode;
 _$nolog;
@@ -367,6 +405,7 @@ _var {SavedFile} = _getline;
 _cout "";
 _cout "Please wait ... ";
 _file_cstp ("{AppDir}","{SavedFile}");
+_file_open "{SYS_LOG}";
 _cout "App Out File Succeed :  {LoadApp}";
 _cout "On File :  {SavedFile}";
 _return "ok";
@@ -386,6 +425,7 @@ _$nolog;
 _var {LoadApp} = _getargs;
 
 _var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+_var {AppData} = "{NATVC_USERPROFILE}/AppData/{LoadApp}";
 
 _if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
 
@@ -395,6 +435,8 @@ _file_write "[Mna_service] Appload on {AppDir}";
 
 _if(!_file_exist "{AppDir}/apploader.ca")|_goto :BreakPackage;
 
+_if(!_dir_exist "{NATVC_USERPROFILE}/AppData")|_dir_make "{NATVC_USERPROFILE}/AppData";
+_if(!_dir_exist "{AppData}")|_dir_make "{AppData}";
 _file_write "[Mna_service] Execute Program :   {AppDir}/apploader.ca";
 
 _var {mna_loader_callback} = _script <"{AppDir}/apploader.ca">;
@@ -426,7 +468,61 @@ _file_write "[Mna_Service] Uninstall Request...";
 //start setup application
 //Config Program Dir
 
+_free {mna_pdir};
+_if(_cp("2","{NATVC_isAdmin}"))|_goto :startuninst;
+_if(_cp("1","{NATVC_isAdmin}"))|_goto :startuninst;
+_cout "This user is not allowed to uninstall any app";
+_return "noauth";
 
+
+//Start app
+//MKDIR
+:startuninst;
+_var {LoadApp} = _getargs;
+
+_file_open "{SYS_LOG}";
+_file_write "[Mna_Service] Parameter {LoadApp}";
+
+_var {AppDir} = "{SYS_NROOT}/NatvcApps/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
+
+_if(!_dir_exist "{AppDir}")|_goto :UseMethod;
+
+_dir_remove "{AppDir}";
+_if(_dir_exist "{AppDir}")|_goto :Use Second TaskRemove;
+
+
+_file_open "{SYS_LOG}";
+_file_write "[Mna_Service] App Uninstall Succeed :  {LoadApp}";
+_file_write "[Mna_Service] Uninstall Operate User :  {NATVC_WHOIS},  User Auth :  {NATVC_isAdmin},";
+_cout "App Uninstall Succeed :  {LoadApp}";
+//_cout "Log File :   {SYS_LOG}";
+_return "ok";
+
+:UseMethod;
+_cout "mna service load fail";
+_cout "Request Uninstall App Not Found :  {LoadApp}";
+_cout "method :   uninstall.ca     Args = App";
+_cout "Press any key to exit";
+_return "failLdr";
+
+:Use Second TaskRemove;
+_cout "Failed uninstall {AppDir}";
+_cout "Use uninstallenf.ca to remove this application";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/uninstall.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/uninstallenf.ca);
+_$directmode;
+_$nolog;
+
+//mna app uninstaller tool
+//Uninstall Main Service
+_file_open "{SYS_LOG}";
+_file_write "[Mna_Service] Uninstall Request...";
+
+//start setup application
+//Config Program Dir
 
 _free {mna_pdir};
 _if(_cp("2","{NATVC_isAdmin}"))|_goto :startuninst;
@@ -450,6 +546,8 @@ _if(!_dir_exist "{AppDir}")|_var {AppDir} = "{PROG_PATH}/{LoadApp}";
 _if(!_dir_exist "{AppDir}")|_goto :UseMethod;
 
 _dir_remove "{AppDir}";
+_if(_dir_exist "{AppDir}")|_goto :Use Second TaskRemove;
+
 
 _file_open "{SYS_LOG}";
 _file_write "[Mna_Service] App Uninstall Succeed :  {LoadApp}";
@@ -464,7 +562,19 @@ _cout "Request Uninstall App Not Found :  {LoadApp}";
 _cout "method :   uninstall.ca     Args = App";
 _cout "Press any key to exit";
 _return "failLdr";
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/uninstall.ca);
+
+:Use Second TaskRemove;
+_file_open "{SYS_LOG}";
+_file_write "[Mna_Service] App Uninstall failed :  {LoadApp}. Access Denied";
+_file_write "[Mna_Service] Uninstall Operate User :  {NATVC_WHOIS},  User Auth :  {NATVC_isAdmin},";
+_cout "App Uninstall Failed :  {LoadApp}  .  This app will remove on system restart";
+
+_file_open "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_file_write "_dir_remove "{AppDir}"; ";
+
+_file_open "{SYS_LOG}";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/uninstallenf.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/NatvcApps/$NATVC_APPS_ROOT.txt);
 NATVC APPS ROOT
 MANAGE
@@ -976,18 +1086,17 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
-=======================================================
-      System Error - Immediate Restart Required
-=======================================================
 
-   Your device ran into a problem and needs to restart now.
 
--------------------------------------------------------
 
-     Stop Code: {NATVC_CRASH_CODE}
-     Details   : ({BUG_REPORT})
 
-=======================================================
+
+       Your device ran into a problem and needs to restart now.
+
+       
+
+                  Stop Code : {NATVC_CRASH_CODE}
+                  Details   : ({BUG_REPORT})
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-crash.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-eula.txt);
 foxaxu_dev_lab Software End User License Agreement (EULA)
@@ -1084,9 +1193,11 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-explorer.txt);
               👋 Welcome to Natvc System
 =======================================================
 
-   Hello, {NATVC_USERNAME}  
-   We're glad to have you back.
-
+   There is a place where time stands still
+   A place of breathtaking wonder
+   but also of terrifying danger
+   The adventure begins
+                           Miyazaki Mountain - Philter
 -------------------------------------------------------
 
    📅 Date: {ntvue.logondate}  
@@ -1459,8 +1570,8 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-system-detail.txt);
                    W E L C O M E   T O   N A T V C
 =======================================================
 
-💧 Natvc 15 Liquid
-Lightweight • AI-Enhanced • Secure • Fast
+💧 Natvc
+Lightweight • Stable • Secure • Fast
 
 -------------------------------------------------------
 
@@ -1585,12 +1696,16 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/local_ntsh.nsv);
 
 //PROGRAM
 $Execute={SYS_ROOT}/nativeshell.ca;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID={NATVC_WHOIS};
 $UserPassword={NATVC_USER_PASSWORD};
 
+$SetServiceStatusTrue=true;
+
 //Name ntvue_user_logon_interface
+
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
@@ -1600,10 +1715,13 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/ntvue_user_logon_interface.nsv);
 
 //PROGRAM
 $Execute={SYS_ROOT}/ntvue.ca;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID=SYSTEM;
 $UserPassword=@nopswd;
+
+$SetServiceStatusTrue=false;
 
 //Name ntvue_user_logon_interface
 
@@ -1615,42 +1733,49 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/power_ntsh.nsv);
 
 //PROGRAM
 $Execute={SYS_ROOT}/nativeshell.ca;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID=SYSTEM;
 $UserPassword=@nopswd;
+
+$SetServiceStatusTrue=true;
 
 //Name ntvue_user_logon_interface
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/power_ntsh.nsv);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/user_local_explorer.nsv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/userprofile_explorer.nsv);
 //Natvc Service Config
 
 //PROGRAM
 $Execute={SYS_ROOT}/explorer.ca;
+$Argument={NATVC_USERPROFILE};
 
 //RUNAS USER
 $UserID={NATVC_WHOIS};
 $UserPassword={NATVC_USER_PASSWORD};
 
+$SetServiceStatusTrue=true;
+
 //Name ntvue_user_logon_interface
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/user_local_explorer.nsv);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/userprofile_explorer.nsv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/{Template}.nsv);
 //Natvc Service Config
 
 //PROGRAM
 $Execute=<Execute>;
+$Argument={varspace.null};
 
 //RUNAS USER
 $UserID=<USERID>;
 $UserPassword=<PASSWORD>;
 
-
+$SetServiceStatusTrue=true;
 
 //DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
 //Natvc Service
@@ -2231,13 +2356,30 @@ _goto :BACKMAINCONSOLE;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/bcdmgr.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/confedit.ca);
 _$directmode;
-_$nolog;
+
+_var {AppLauncherName} = "natvc.configeditor.system.mna";
+_var {Unexpected_error_feedback} = "{varspace.null}";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+//Load Old Config Editor
+
 //Natvc Config Editor Tool
 //Args use "openedit"
 
 _var {ToolsName} = "CONFEDIT";
 _var {CONFEDIT_TEMP_SIGN} = "false";
-_if(_cp(_getargs,"openedit"))|_goto :OpenEditor;
+_if(_cp("{MNAPI_Argument}","openedit"))|_goto :OpenEditor;
 _if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
 _var {CONFEDIT_TEMP_SIGN} = "true";
 
@@ -2251,7 +2393,7 @@ _if(!_cp("{CONFEDIT_TEMP_SIGN}","true"))|_return "exitconsole";
 _clear;
 
 _cout "----------------------------------------------";
-_cout "@ Natvc Config Edit   ({SYSNAME}.{SYS_KERNEL_VID}) ";
+_cout "@ Natvc Config Edit   ({SYSNAME}.{SYS_KERNEL_VID}) (New Editor Available)";
 _cout "----------------------------------------------";
 _cout "- NATVC Config Editor ";
 _cout "-    Config:   ";
@@ -2300,7 +2442,7 @@ _goto :BACKMAINCONSOLE;
 _if(!_file_exist "{RegOpenFile}")|_return "failopen";
 _sipcfg.open "{RegOpenFile}";
 _clear;
-_cout "Config Edit   ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout " Config Edit   ({SYSNAME}.{SYS_KERNEL_VID}) (New Editor Available)";
 _cout "@--------------------------------------------------------@";
 _cout "  File :  {RegOpenFile}";
 _cout " --------------------------------------------------------";
@@ -2361,6 +2503,7 @@ _cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
 _cout "Press Enter ...";
 _pause;
 _return "user_noauth";
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/confedit.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/confget.ca);
 _$directmode;
@@ -2418,7 +2561,11 @@ _if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
 
 _var {file_delete_args} = _getargs;
 
+_if(_file_exist "{rs_pathexec}/{file_delete_args}")|_goto :DELRSP;
+
 _if(!_file_exist "{file_delete_args}")|_goto :userselect;
+
+_cout "Delete file :  {file_delete_args}";
 _file_del "{file_delete_args}";
 
 _if(_file_exist "{file_delete_args}")|_goto :DeleteFail;
@@ -2429,6 +2576,9 @@ _return "delok";
 _cout "Type File name";
 _prts "file >";
 _var {file_delete_args} = _getline;
+_if(_file_exist "{rs_pathexec}/{file_delete_args}")|_goto :DELRSP;
+
+_cout "Delete file :  {file_delete_args}";
 _file_del "{file_delete_args}";
 
 _if(_file_exist "{file_delete_args}")|_goto :DeleteFail;
@@ -2438,6 +2588,15 @@ _return "delok";
 _cout "Could not delete this file :  {file_delete_args}";
 _cout "Access Is Denied";
 _return "delfail";
+
+:DELRSP;
+_var {file_delete_args} = "{rs_pathexec}/{file_delete_args}";
+
+_cout "Delete file :  {file_delete_args}";
+_file_del "{file_delete_args}";
+
+_if(_file_exist "{file_delete_args}")|_var :DeleteFail;
+_return "delok";
 
 
 //ERRPAGE
@@ -2479,7 +2638,7 @@ _cout "   Temp OS: {RE_ENV}";
 _cout "                                              ";
 _cout "   HARDWARE PLATFORM                         ";
 _cout "                ";
-_cout "   Firmware: {BootMethod}";
+_cout "   Firmware: {BootMethod}.  MotherOS:  {hal_api.SystemBase}";
 _cout "   Platform: {Platform}";
 _cout "   Device OEM: {MAF_OEM}";
 _cout "                                              ";
@@ -2545,6 +2704,9 @@ _cout "Clear  System Fast boot dump";
 _file_del "{NATVC_DISK}/hiberfile.txt";
 _var {Next_startup_fast_boot} = "-1";
 
+_cout "Clear  System Temp";
+_dir_remove "{SystemTemp}";
+
 _cout "Delete Old Bootloader";
 _file_del "{BootVolume}/ReplaceLoader.nbf";
 
@@ -2578,6 +2740,74 @@ _typefile "{NATVC_ABOUTS_TEXT}";
 _pause;
 _goto :BACKMAINCONSOLE;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/diskclean.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/drvload.ca);
+_$directmode;
+
+//System Driver Loader
+_var {drv_temp} = _getargs;
+
+_if(!_cp("{drv_temp}","Kernel_Load_Driver"))|_return "failuserauth";
+
+_file_write "[%time%][DriverLoad] Start loading Natvc Driver";
+
+//List All Driver
+_if(_file_exist "{SystemTemp}/drvlist.txt")|_file_del "{SystemTemp}/drvlist.txt";
+_dir_list ("{SystemTemp}/drvlist.txt","{SYS_NROOT}/drivers");
+
+//LIST ALL FILES
+//FilePrint
+_var {_DRVLoad_ReadINT} = "1";
+
+:BackReload;
+_var {DriverFile} = _file_read ("{SystemTemp}/drvlist.txt","{_DRVLoad_ReadINT}");
+_if(_cp("{DriverFile}","overline"))|_return "ok";
+_if(_cp("{DriverFile}","FileNotExist"))|_return "ok";
+_file_write "[%time%][DriverLoad] Loading {DriverFile} ...";
+
+//LoadDRV
+_var {DriverLoadResult} = _script <"{DriverFile}"> "load_driver";
+_file_write "[%time%][DriverLoad] Complete load driver. Result Code: {DriverLoadResult}";
+
+_if(!_cp("{DriverLoadResult}","drv_load_ok"))|_goto :FailedDRVLoad;
+_var {_DRVLoad_ReadINT} = _+("{_DRVLoad_ReadINT}","1");
+_goto :BackReload;
+
+
+
+:FailedDRVLoad;
+_return "DRV_ERROR: {DriverLoadResult}";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/drvload.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/envset.ca);
+_$directmode;
+_$nolog;
+
+//Type Env
+:BackMainET;
+_clear;
+_file_open "{SYS_LOG}";
+_cout "Environment Set Tool":
+_cout "Type you want set System Environment";
+_prt "Type Env>";
+_var {GetEnvTyper} = _getline;
+_if(_cp("{GetEnvTyper}","exit"))|_return "ok";
+_cout "";
+_cout "Type you want set value";
+_prt "Type Value>";
+_var {SetEnvTyper} = _getline;
+_if(_cp("{SetEnvTyper}","exit"))|_return "ok";
+
+_file_del "{temp}/envsetTemp.ca";
+_file_open "{temp}/envsetTemp.ca";
+_file_write "_var {GetEnvTyper} = "{SetEnvTyper}"; ";
+_file_write "_return "ok"; ";
+
+_script <"{temp}/envsetTemp.ca">;
+_file_del "{temp}/envsetTemp.ca";
+
+_cout "Env:   {GetEnvTyper} = {SetEnvTyper}";
+_pause;
+_goto :BackMainET;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/envset.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/envtype.ca);
 _$directmode;
 _$nolog;
@@ -2608,331 +2838,28 @@ _goto :BackMainET;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/envtype.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/explorer.ca);
 _$directmode;
-_$nolog;
 
-//Explorer Main
+_var {AppLauncherName} = "natvc.userinterface.file.explorer.mna";
+_var {Unexpected_error_feedback} = "failedloadExplorer";
 
-//Load Cache File Map
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
 
-_var {ToolsName} = "EXPLORER";
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
 
-_var {EXPLORER_WORK_DIR} = _getargs;
-
-//Load Default Maps
-_if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
-
-_var {USE_NUM_SELECT_FOLDER} = "0";
-_if(_file_exist "{NATVC_USERPROFILE}/USE_NUM_SELECT_FOLDER")|_var {USE_NUM_SELECT_FOLDER} = "1";
-
-_free {EXPLORER_WORK_DIR_LAST};
-_free {EXPLORER_WORK_DIR_LAST_LAST};
-_free {EXPLORER_WORK_DIR_LAST_LAST_LAST};
-
-//Open File Manager
-//CONSOLE
-
-_var {CopyFileName_Cache} = "{noselect_files}";
-_var {CopyFileNameTag_Cache} = "{ORGNAMEDIR}";
-_var {CopyFileDelete_Cache} = "0";
-
-_var {CopyDirName_Cache} = "{noselect_files}";
-_var {CopyDirNameTag_Cache} = "{ORGNAMEDIR}";
-_var {CopyDirDelete_Cache} = "0";
-
-_var {EXPLORER_WORK_DIR_LAST} = "{nolastdir}";
-_var {EXPLORER_WORK_DIR_LAST_LAST} = "{nolastdir}";
-_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{nolastdir}";
-
-:RELOADCONSOLE;
-_var {NumTarget} = "0";
-_file_del "{temp}/Explorer_cacheList.txt";
-_if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
+:FailStartupProgram_PKGFALSE;
 _clear;
-_cout "@---- File Explorer -------------------------------------------";
-_cout "| DIR:  {EXPLORER_WORK_DIR}";
-_cout "---------------------------------------------------------------";
-_file_list ("{temp}/Explorer_cacheList.txt","{EXPLORER_WORK_DIR}");
-_file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}/","");
-_if(_file_exist "{temp}/Explorer_cacheList.txt")|_textprint "{temp}/Explorer_cacheList.txt";
-_if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No File at here";
-_cout "---------------------------------------------------------------";
-_cout "type dir name to opendir,type file name to edit file";
-_cout "command :   "rmdir"  "mkdir"  "cpdir" "cutdir" "cd"  "paste"  "exit"  ";
-_if(_cp("{USE_NUM_SELECT_FOLDER}","1"))|_cout "Number Select Folder/File is Enabled. You can type number to select";
-_cout "";
-_prt "Explorer >";
-_var {UserTypeGet} = _getline;
-//Process User Command
-:ReProcessCommand
-//_cout "Recyclic {UserTypeGet}";
-//_goto :RELOADCONSOLE;
-_if(_cp("{UserTypeGet}","LineError"))|_goto :RELOADCONSOLE;
-_if(_cp("{UserTypeGet}","FileNotExist"))|_goto :RELOADCONSOLE;
-_if(_cp("{UserTypeGet}","{varspace.null}"))|_cout "Refresh Explorer";
-_if(_cp("{UserTypeGet}","{varspace.null}"))|_ms_sleep "100";
-_if(_cp("{UserTypeGet}","{varspace.null}"))|_goto :RELOADCONSOLE;
-
-_if(_cp("{UserTypeGet}",".."))|_goto :GotoLastDIR;
-_if(_cp("{UserTypeGet}","..."))|_var {EXPLORER_WORK_DIR} = "{NODIR}";
-_if(_cp("{UserTypeGet}","rmdir"))|_goto :RemoveDir;
-_if(_cp("{UserTypeGet}","mkdir"))|_goto :MakeDir;
-_if(_cp("{UserTypeGet}","cpdir"))|_goto :CopyDirMD;
-_if(_cp("{UserTypeGet}","cutdir"))|_goto :CutDirMD;
-_if(_cp("{UserTypeGet}","cd"))|_goto :CdDir;
-_if(_cp("{UserTypeGet}","debug.levelprint"))|_goto :DEBUG_LVPTR;
-//paste
-_if(_cp("{UserTypeGet}","paste"))|_goto :PasteFileOrDir;
-
-_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST}";
-_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST}";
-_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST} = "{EXPLORER_WORK_DIR}";
-_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-
-_if(_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :FileEdit_Manager;
-
-
-_if(_cp("{UserTypeGet}","exit"))|_return "ok";
-_if(_cp("{UserTypeGet}",".exit"))|_return "ok";
-
-_if(_cp("{USE_NUM_SELECT_FOLDER}","0"))|_goto :RELOADCONSOLE;
-
-_if(_cp("{UserTypeGet}","overline"))|_goto :RELOADCONSOLE;
-
-//Is Num
-_if (_cp("{NumTarget}","1"))|_goto :RELOADCONSOLE;
-_var {NumTarget} = "1";
-_var {UserTypeGet} = _file_read ("{temp}/Explorer_cacheList.txt","{UserTypeGet}");
-_goto :ReProcessCommand;
-
-
-_goto :Explorer_Crash;
-
-
-
-:Explorer_Crash;
-_clear;
-_cout "Natvc Explorer Error. stop working";
-_cout "File Operate failed":
+_cout "Failed to load {AppLauncherName}.";
+_cout "Repair this package or edit to other package";
+_cout "Easy Convert MNA Program";
 _pause;
-_return "crash";
+_return "{Unexpected_error_feedback}";
 
-
-:CopyDirMD;
-_cout "";
-_cout "Type Dir you want Copy";
-_prt "Copy Dir>";
-_var {UserTypeGet} = _getline;
-
-_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_cout "No This dir";
-_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_pause;
-_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
-
-_var {CopyDirName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_var {CopyDirNameTag_Cache} = "{UserTypeGet}";
-_var {CopyDirDelete_Cache} = "0";
-
-_var {CopyFileName_Cache} = "{noselect_files}";
-_var {CopyFileNameTag_Cache} = "{ORGNAMEDIR}";
-_var {CopyFileDelete_Cache} = "0";
-
-_goto :RELOADCONSOLE;
-
-
-:CopyDirMD;
-_cout "";
-_cout "Type Dir you want Cut";
-_prt "Cut Dir>";
-_var {UserTypeGet} = _getline;
-
-_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_cout "No This dir";
-_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_pause;
-_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
-
-_var {CopyDirName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_var {CopyDirNameTag_Cache} = "{UserTypeGet}";
-_var {CopyDirDelete_Cache} = "1";
-
-_goto :RELOADCONSOLE;
-
-
-
-
-:GotoLastDIR;
-_var {EXPLORER_WORK_DIR} = "{EXPLORER_WORK_DIR_LAST}";
-_var {EXPLORER_WORK_DIR_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST}";
-_var {EXPLORER_WORK_DIR_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST_LAST}";
-_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{nolastdir}";
-_goto :RELOADCONSOLE;
-
-:RemoveDir;
-_cout "";
-_cout "Type Dir you want remove";
-_prt "Remove Dir>";
-_var {UserTypeGet} = _getline;
-_dir_remove "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_goto :RELOADCONSOLE;
-
-:MakeDir;
-_cout "";
-_cout "Type Dir you want Make";
-_prt "Make Dir>";
-_var {UserTypeGet} = _getline;
-_dir_make "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_goto :RELOADCONSOLE;
-
-:CdDir;
-_cout "";
-_cout "Type Dir";
-_prt "Dir>";
-_var {UserTypeGet} = _getline;
-_var {EXPLORER_WORK_DIR} = "{UserTypeGet}";
-_goto :RELOADCONSOLE;
-
-
-:FileEdit_Manager;
-_cout "";
-_cout "What do you want do";
-_cout "File {EXPLORER_WORK_DIR}/{UserTypeGet}";
-_cout "command :  "copy" "del" "cut" "open"  "exit"   ";
-_prt "file>";
-_var {GETOPT} = _getline;
-_if(_cp("{GETOPT}","copy"))|_var {CopyFileName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_if(_cp("{GETOPT}","copy"))|_var {CopyFileNameTag_Cache} = "{UserTypeGet}";
-_if(_cp("{GETOPT}","copy"))|_var {CopyFileDelete_Cache} = "0";
-
-_if(_cp("{GETOPT}","copy"))|_var {CopyDirName_Cache} = "{noselect_files}";
-_if(_cp("{GETOPT}","copy"))|_var {CopyDirDelete_Cache} = "0";
-
-_if(_cp("{GETOPT}","copy"))|_cout "file is copy. use "paste" command to paste here  ";
-
-_if(_cp("{GETOPT}","del"))|_goto :delMode;
-
-_if(_cp("{GETOPT}","cut"))|_var {CopyFileName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_if(_cp("{GETOPT}","cut"))|_var {CopyFileNameTag_Cache} = "{UserTypeGet}";
-_if(_cp("{GETOPT}","cut"))|_var {CopyFileDelete_Cache} = "1";
-
-_if(_cp("{GETOPT}","cut"))|_var {CopyDirName_Cache} = "{noselect_files}";
-_if(_cp("{GETOPT}","cut"))|_var {CopyDirDelete_Cache} = "0";
-
-_if(_cp("{GETOPT}","cut"))|_cout "file is cut. use "paste" command to paste here  ";
-
-_if(_cp("{GETOPT}","open"))|_goto :OpenFileForOpeate;
-
-_goto :RELOADCONSOLE;
-
-
-
-
-
-:delMode;
-_file_del "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_if(!_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
-_cout "Delete Fail";
-_cout "This file is using ?.  or you haven`t auth to delete this file";
-_pause;
-_goto :RELOADCONSOLE;
-
-
-
-:OpenFileForOpeate;
-
-
-//Check EXP is allow?
-_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
-_var {CONFGET_WORD} = "{UserTypeGet}";
-_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
-
-_if(_cp("{callback_temp}","false")) | _goto :FailLoadProgram;
-
-
-_clear;
-_cout "How do you want open this file";
-_cout "File :   {EXPLORER_WORK_DIR}/{UserTypeGet}";
-_cout "";
-_cout "     1. Run Calcium Application"; //OK
-_cout "     2. Open with Text reader";  //OK
-_cout "     3. Open with Config Editor";  //OK
-_cout "     4. Exit";
-_prt "Select Open Method >";
-_var {OpenMethod} = _getline;
-
-_var {ROOTSHELL_CALLBACK} = "Null";
-_var {rs_pathexec} = "{EXPLORER_WORK_DIR}";
-
-_if(_cp("{OpenMethod}","1"))|_var {ROOTSHELL_CALLBACK} = _script <"{SYS_ROOT}/run.ca"> "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-
-_if(_cp("{OpenMethod}","2"))|_script <"{SYS_ROOT}/textreader.ca"> "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-
-_if(_cp("{OpenMethod}","3"))|_var {RegOpenFile} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
-_if(_cp("{OpenMethod}","3"))|_script <"{SYS_ROOT}/confedit.ca"> "openedit";
-
-_if(_cp("{ROOTSHELL_CALLBACK}","user_shutdown"))|_return "user_shutdown";
-_if(_cp("{ROOTSHELL_CALLBACK}","user_restart"))|_return "user_restart";
-_if(_cp("{ROOTSHELL_CALLBACK}","user_logoff"))|_return "user_logoff";
-_if(_cp("{ROOTSHELL_CALLBACK}","shutdown"))|_return "user_shutdown";
-_if(_cp("{ROOTSHELL_CALLBACK}","restart"))|_return "user_restart";
-_if(_cp("{ROOTSHELL_CALLBACK}","logoff"))|_return "user_logoff";
-
-_if(_cp("{ROOTSHELL_CALLBACK}","notworkonusermode"))|_cout "This Application cannot running on User Mode";
-_if(_cp("{ROOTSHELL_CALLBACK}","noauth"))|_cout "This Application cannot running in current user";
-_if(_cp("{ROOTSHELL_CALLBACK}","failuserauth"))|_cout "This Application cannot running in current user";
-
-_if(!_cp("{ROOTSHELL_CALLBACK}","Null"))|_pause;
-
-_goto :RELOADCONSOLE;
-
-
-
-:FailLoadProgram;
-_cout "For System Security. your device is not allowed run this program";
-_pause;
-_goto :RELOADCONSOLE;
-
-
-
-
-:PasteFileOrDir;
-_if(!_cp("{CopyDirName_Cache}","{noselect_files}"))|_goto :CopyDirMode;
-_if(!_cp("{CopyFileName_Cache}","{noselect_files}"))|_goto :CopyFileMode;
-_cout "No File/Dir on Paste Board";
-_pause
-_goto :RELOADCONSOLE;
-
-:CopyDirMode;
-_var {XCOPY_A} = "{CopyDirName_Cache}";
-_var {XCOPY_B} = "{EXPLORER_WORK_DIR}/{CopyDirNameTag_Cache}";
-_script <"{SYS_ROOT}/xcopy.ca">;
-_free {XCOPY_A};
-_free {XCOPY_B};
-
-_if(_cp("{CopyDirDelete_Cache}","1"))|_dir_remove "{CopyDirName_Cache}";
-
-
-_goto :RELOADCONSOLE;
-
-
-
-:CopyFileMode;
-_file_copy ("{CopyFileName_Cache}","{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}");
-_if(_cp("{CopyFileDelete_Cache}","1"))|_file_del "{CopyFileName_Cache}";
-
-_if(!_file_exist "{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}")|_cout "Copy Fail..";
-_if(!_file_exist "{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}")|_pause;
-
-_goto :RELOADCONSOLE;
-
-
-
-:DEBUG_LVPTR;
-_clear;
-_cout "Top :   {EXPLORER_WORK_DIR}";
-_cout "2   :   {EXPLORER_WORK_DIR_LAST}";
-_cout "3   :   {EXPLORER_WORK_DIR_LAST_LAST}";
-_cout "4   :   {EXPLORER_WORK_DIR_LAST_LAST_LAST}";
-_cout "Debug Toolkit";
-_pause;
-_goto :RELOADCONSOLE;
-
+//Copyright FDL 2025 
+//MNA Apps Launcher
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/explorer.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/filecstp.ca);
 //NATVC File Cstp Tools
@@ -2965,6 +2892,7 @@ _var {UserExplorerConsole} = _getline;
 _if(_cp("{UserExplorerConsole}","1"))|_goto :ExtractMode;
 _if(_cp("{UserExplorerConsole}","2"))|_goto :PackFileMode;
 _if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_if(_cp("{UserExplorerConsole}","exit"))|_return "ok";
 _goto :MainFileExplorer;
 
 
@@ -3207,6 +3135,57 @@ _cout "Press Enter ...";
 _pause;
 _return "user_noauth";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/filepack.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/fxstore.ca);
+_$directmode;
+
+_var {AppLauncherName} = "foxaxu.modernstore.mna";
+_var {Unexpected_error_feedback} = "{varspace.null}";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+_clear;
+_cout "Failed to load {AppLauncherName}.";
+_cout "Repair this package or edit to other package";
+_cout "Easy Convert MNA Program";
+_pause;
+_return "{Unexpected_error_feedback}";
+
+//Copyright FDL 2025 
+//MNA Apps Launcher
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/fxstore.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/hal.ca);
+_$directmode;
+//HAL COM PORT
+
+//RequireCalcium SMA Enable
+_if(!_sma "test")|_goto :FailLoadHAL;
+
+_var {hal_api.SystemBase} = _sma "getsys";
+_var {hal_api.common} = "Natvc";
+
+_return "true";
+    
+
+
+:FailLoadHAL;
+_clear;
+_cout "HAL Load failed";
+_prt "File :  ";
+_prt _getfile;
+_cout "Please Enable SMA command on calcium settings.";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/hal.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/krnlrep.ca);
 _$directmode;
 _$nolog;
@@ -3231,12 +3210,23 @@ _var {CurrentDate} = _str_replace "{CurrentDate}" (":","_");
 _var {CurrentDate} = _str_replace "{CurrentDate}" ("\","");
 _var {CurrentDate} = _str_replace "{CurrentDate}" ("/","");
 
+_var {RandInterstChat} = _getrand("1","10");
+
 _file_open "{SYS_NROOT}/MiniRep/CrashReport-{CurrentDate}-{LOG_REPSTR}.txt";
 
 _file_write "=========================================================================";
 _file_write ":: Natvc Crash Report";
 _file_write "Dump Collect time :  {LOG_REPSTR} - {CurrentDate}";
-_file_write "//Your system is crash.  here is crash report";
+_if(_cp("{RandInterstChat}","1"))|_file_write "//Well, that was unexpected. My bad! 🤦‍♂️";
+_if(_cp("{RandInterstChat}","2"))|_file_write "//I've decided to take an unscheduled nap. Talk to you after my coffee break. ☕";
+_if(_cp("{RandInterstChat}","3"))|_file_write "//It's not a bug, it's a feature... for practicing your patience. 😉";
+_if(_cp("{RandInterstChat}","4"))|_file_write "//My code is currently more lost than a GPS with no signal. 🔍";
+_if(_cp("{RandInterstChat}","5"))|_file_write "//Something went wrong. We're as confused as you are. 🤷";
+_if(_cp("{RandInterstChat}","6"))|_file_write "//I think we both need a moment. Let's try that again, shall we? 🔄";
+_if(_cp("{RandInterstChat}","7"))|_file_write "//Congratulations! You've discovered a feature we didn't even know we had! 🎉";
+_if(_cp("{RandInterstChat}","8"))|_file_write "//Hold my beer while I try to fix myself... 🍺";
+_if(_cp("{RandInterstChat}","9"))|_file_write "//This error is so advanced, even we don't understand it yet. 🧠";
+_if(_cp("{RandInterstChat}","10"))|_file_write "//404: Sanity not found. Please try again later. 😵";
 _file_write "";
 _file_write "System Version :  {SYSNAME}.{SYS_KERNEL_VID}";
 _file_write "Error Code :  {NATVC_CRASH_CODE}";
@@ -3245,9 +3235,13 @@ _file_write "";
 _file_write "What failed :  {ToolsName}";
 _file_write "";
 _file_write "BUG REPORT By :  {BUG_REPORT}";
+_file_write "Try Upload these file to analysis problem :";
+_file_write "System Logfile :   {SYS_LOG}";
+_file_write "Dump File :        {SYS_NROOT}/VarSpace_Dump.txt";
+_file_write "";
 _file_write "OS Name :  {SYSNAME}      OS Build:   {SYS_RELEASE_Channel}";
 _file_write "";
-_file_write " hardware info : ";
+_file_write " System Firmware info : ";
 _file_write "    System Loader :   {OSLOADER_FILE}";
 _file_write "    Trust Sign    :   {RBootSign}";
 _file_write "    OS DIR        :   {NATVC_DISK}";
@@ -3351,7 +3345,30 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/logoff.ca);
 _$directmode;
 _$nolog;
 
-_return "logoff";
+_var {testlogoff_target} = _getargs;
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{testlogoff_target}.nuslc")|_goto :NA;
+_if(_file_exist "{SYS_NROOT}/SECURITY/{testlogoff_target}.nuslc")|_goto :PA;
+_if(_cp("{testlogoff_target}","{NATVC_WHOIS}"))|_goto :PA;
+
+_return "VAILED";
+
+
+
+:NA;
+_cout "Method :  logoff.ca  Args :  <You want logoff users>";
+_cout "User not loggin or not exist";
+_return "ok";
+
+
+:PA;
+_cout "User {testlogoff_target} logoff";
+_sipcfg.open "{SYS_NROOT}/SECURITY/{testlogoff_target}.nuslc";
+_if(_cp(_sipcfg KernelProtect,"true"))|_cout "Try logoff {testlogoff_target} failed. Kernel Protect";
+_if(_cp(_sipcfg KernelProtect,"true"))|_return "failed";
+
+_file_del "{SYS_NROOT}/SECURITY/{testlogoff_target}.nuslc";
+_if(_cp("{testlogoff_target}","{NATVC_WHOIS}"))|_return "logoff";
+_return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/logoff.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ls.ca);
 _$directmode;
@@ -3377,6 +3394,222 @@ _cout "";
 
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ls.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/memreset.ca);
+_$directmode;
+
+//MemClear.NTVDRV
+//For Kernel
+//Swap Memory
+
+//System Driver Loader
+_var {Mem_tmp} = _getargs;
+_if(!_cp("{Mem_tmp}","KernelResetMemory"))|_return "failuserauth";
+
+_free {NTVUE_AD_1};
+_free {NTVUE_AD_2};
+_free {NTVUE_AD_3};
+_free {sys_autologin};
+_free {USER_REQ_LOGON};
+_free {bool_isAutoRunExec};
+_free {Explorer_Title};
+_free {NATVC_USER_MENU_CONFIG};
+_free {NATVC_USER_INDEX};
+_free {NTVEXP_AD_1};
+_free {NTVEXP_AD_2};
+_free {NTVEXP_AD_3};
+_free {NTVEXP_AD_4};
+_free {NTVEXP_AD_5};
+_free {rs_pathexec};
+_free {NATVC_USEREXP_GET};
+_free {CONFGET_FILE};
+_free {CONFGET_WORD};
+_free {ConfGet_CALLBACK_PTR};
+_free {callback_temp};
+_free {FAILSYS_MBU};
+_free {NATVC_USERSVC_CALLBACK};
+_free {USER_UE_CALLBACK};
+_free {CALLBACK_NSV};
+_free {ntvl_process};
+_free {BUG_REPORT};
+_free {args_prep};
+_free {ToolsName};
+_free {NSV_DATA};
+_free {NSV_Execute};
+_free {NSV_Argument};
+_free {NSV_UserID};
+_free {NSV_UserPassword};
+_free {NSV_SET_SST};
+_free {NATVC_BOOT_DLOAD};
+_free {NATVC_SHUTDOWN_SECURE};
+_free {NATVC_CRASH_EXECUTE};
+_free {NATVC_ABOUTS_TEXT};
+_free {NATVC_CRASH_TEXT};
+_free {PlayRate};
+_free {PLAYAVGTIME};
+_free {NATVC_CRASH_CODE};
+_free {NATVC_CRASH_MESSAGE};
+_free {IsAutoLogin};
+_free {UserSVCBUFFER};
+_free {NATVC_REQ_LOGIN};
+_free {NATVC_WHOIS};
+_free {NATVC_USERPROFILE};
+_free {temp};
+_free {NATVC_USERPROFILE_CONFIG};
+_free {NATVC_USERNAME};
+_free {NATVC_isAdmin};
+_free {NATVC_UserAutoRun};
+_free {NATVC_DisableUser};
+_free {NATVC_USER_PASSWORD};
+_free {K_SERVICE_CALLBACK};
+_free {ntvl_temp};
+_free {StopStartup};
+_free {NoGUIBootOpt};
+_free {GET_SYSTIMEL};
+_free {SYS_LOG_PATH};
+_free {LOG_TIMESTR};
+_free {SYS_LOG};
+_free {last_startup};
+_free {last_shutdown};
+_free {Shutdown_Data};
+_free {temp_record_time};
+_free {SYS_ROOT};
+_free {SYS_NROOT};
+_free {PROG_PATH};
+_free {SYS_USERDIR};
+_free {SYS_USERPATH};
+_free {BL_Verify_F};
+_free {NATVC_EDITION};
+_free {DEF_Title};
+_free {SYS_NAME};
+_free {SYS_KERNEL_VID};
+_free {SYSNAME};
+_free {SYS_KERNEL_CODENAME};
+_free {SYS_RELEASE_Channel};
+_free {_NATVC_SYSID};
+_free {NATVC_USERSVC};
+_free {NATVC_USERMENU};
+_free {NATVC_ROOTSHELL};
+_free {NATVC_EXPLORER};
+_free {SysLocker};
+_free {NATVC_BOOTUI};
+_free {NATVC_Compiler_Warning};
+_free {NATVC_Fail_Startup};
+_free {NATVC_FMV_REQ};
+_free {drv_temp};
+_free {drvload_callback};
+_free {BVM_OSBOOT};
+_free {BootDefaultOption};
+_free {BootSetDefault};
+_free {osvolume};
+
+_free {Boot_OSPATH};
+_free {NATVC_SYSLDR};
+_free {NATVC_DISK};
+_free {NATVC_BOOTLOAD};
+_free {LoadSign};
+_free {RBootSign};
+_free {OSLOADER_FILE};
+_free {BootMethod};
+_free {Status};
+_free {REV_Missing_File};
+_free {REV_ErrorCode};
+_free {NATVC_CONFIG};
+_free {NATVC_CONFIG_SYS};
+_free {NATVC_CONFIG_SOFTWARE};
+_free {NATVC_CONFIG_USERS};
+_free {NATVC_CONFIG_SETUP};
+_free {hal_api.SystemBase};
+_free {hal_api.common};
+_free {SystemTemp};
+_free {_DRVLoad_ReadINT};
+_free {DriverFile};
+_free {CalciumK};
+_free {DriverLoadResult};
+_free {Recovery_SvcUser};
+_free {PASSWD_VERIFY};
+_free {AppLauncherName};
+_free {Unexpected_error_feedback};
+_free {Parameter};
+_free {Result};
+_free {LoadApp};
+_free {AppDir};
+_free {AppData};
+_free {ntvue.logontime};
+_free {ntvue.logondate};
+_free {OSLoad_UseFastBoot};
+_free {Next_startup_fast_boot};
+_free {Menu_Type};
+_free {mna_loader_callback};
+_free {appfeedback};
+_free {NATVC_USEREXP_RUN_CALLBACK};
+
+_free {RunArgs};
+_free {UEL_OriginType};
+_free {mna_Result};
+_free {NATVC_Execute_Program};
+_free {ntsh_version};
+_free {ntsh_revision};
+_free {StartPath};
+_free {SecondPath};
+_free {CheckPREPath};
+_free {ns_type};
+_free {ns_fnd_exec};
+_free {EXPLORER_WORK_DIR};
+_free {USE_NUM_SELECT_FOLDER};
+_free {CopyFileName_Cache};
+_free {CopyFileNameTag_Cache};
+_free {CopyFileDelete_Cache};
+_free {CopyDirName_Cache};
+_free {CopyDirNameTag_Cache};
+_free {CopyDirDelete_Cache};
+_free {EXPLORER_WORK_DIR_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST_LAST};
+_free {NumTarget};
+_free {UserTypeGet};
+_free {OS_CALLBACK};
+_free {Mem_tmp};
+_free {MNAPI_Argument};
+
+//COMPLETE
+_cout "Reset Memory Succeed";
+_file_write "[Memory Reset] Memory Reset succeed";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/memreset.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mkdir.ca);
+_$directmode;
+_$nolog;
+
+_var {temp_mkdir} = _getargs;
+
+_if (_cp("{temp_mkdir}",'{varspace.null}'))  | _goto :SELECTOPT;
+_if (_cp("{temp_mkdir}",'{RunArgs}'))        | _goto :SELECTOPT;
+_if (_cp("{temp_mkdir}",'RootShell'))        | _goto :SELECTOPT;
+
+_goto :DIRMK;
+
+:SELECTOPT;
+_cout "Type Folder you want create:";
+_var {temp_mkdir} = _getline;
+
+:DIRMK;
+_if(_dir_exist "{temp_mkdir}")|_goto :AlreadyExist;
+
+_if(!_dir_exist "{temp_mkdir}")|_dir_make "{temp_mkdir}";
+_if(!_dir_exist "{temp_mkdir}")|_goto :MKFail;
+_cout "Compete.";
+_return "ok";
+
+:MKFail;
+_cout "Make Directory failed. access denied:  {temp_mkdir}";
+_cout "";
+_return "fail";
+
+:AlreadyExist;
+_cout "DIR :  {temp_mkdir} is already exist";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/mkdir.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/mnaload.ca);
 _$directmode;
 _$nolog;
@@ -3475,8 +3708,8 @@ _$nolog;
 
 //Data int
 
-_var {ntsh_version} = "2107";
-_var {ntsh_revision} = "103";
+_var {ntsh_version} = "2109";
+_var {ntsh_revision} = "104";
 
 //GET DIRECT 
 
@@ -3486,6 +3719,9 @@ _sipcfg.open "{NATVC_CONFIG}/NativeConf";
 _var {StartPath} = _sipcfg StartPath;
 _var {SecondPath} = _sipcfg SecondPath;
 _clear;
+
+_var {CheckPREPath} = _getargs;
+_if(_dir_exist "{CheckPREPath}")|_var {StartPath} = "{CheckPREPath}";
 
 _var {rs_pathexec} = "{StartPath}";
 _if (!_dir_exist "{rs_pathexec}")|_cout "Config Error:  StartPath is not accessable. Reset to SYS_ROOT";
@@ -3540,8 +3776,9 @@ _goto :TypeNewShell;
 
 
 :TYPESHELL_EXE;
+_file_write "[%time%][NativeShell] Execute -->  {rs_pathexec}/{ns_fnd_exec}";
 _var {ns_exec_back} = _script <"{rs_pathexec}/{ns_fnd_exec}"> "{RunArgs}";
-_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
+_file_write "[%time%][NativeShell] Program Return -->  {ns_exec_back}";
 _if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
 _if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
@@ -3553,8 +3790,9 @@ _if(_cp("{ns_exec_back}","logoff"))|_return "user_logoff";
 _goto :TypeNewShell;
 
 :S_TYPESHELL_EXE;
+_file_write "[%time%][NativeShell] Execute -->  {SecondPath}/{ns_fnd_exec}";
 _var {ns_exec_back} = _script <"{SecondPath}/{ns_fnd_exec}"> "{RunArgs}";
-_file_write "[%time%][RootShell] Root Shell Return -->  {ns_exec_back}";
+_file_write "[%time%][NativeShell] Program Return -->  {ns_exec_back}";
 _if(_cp("{ns_exec_back}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{ns_exec_back}","user_restart"))|_return "user_restart";
 _if(_cp("{ns_exec_back}","user_logoff"))|_return "user_logoff";
@@ -3984,6 +4222,7 @@ _file_write "[%time%][NatvcDeploy] OOBE User Logoff .  status code :  {OOBEDEGBU
 _file_write "[%time%][NatvcDeploy] OOBE Page Status  : {OOBE_PAGE_STATUS}";
 
 _if(_cp("{OOBE_PAGE_STATUS}","oobe_shutdown"))|_goto :OOBE_CANCEL_PREP;
+_if(_cp("{OOBE_PAGE_STATUS}","oobe_recovery"))|_return "oobe_recovery";
 _if(_cp("{OOBEDEGBUG}","user_shutdown"))|_return "user_shutdown";
 _if(_cp("{OOBEDEGBUG}","user_restart"))|_return "user_restart";
 
@@ -4034,436 +4273,29 @@ _pause;
 _return "user_restart";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvdeploy.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvexp.ca);
-//NATVC Explorer
-//Enter User Experience
 _$directmode;
-_$nolog;
-_$no_err_report;
 
-_var {bool_isAutoRunExec} = "0";
+_var {AppLauncherName} = "natvc.userinterface.explorer.mna";
+_var {Unexpected_error_feedback} = "logoff";
 
-_file_write "[%time%][SystemExplorer] Load Explorer";
-_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
 
-_var {Explorer_Title} = _sipcfg explorer_title;
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
 
-_if(_cp("{NATVC_EXPLORER}","{NATVC_ROOTSHELL}"))|_goto :SAFEMODE_Notifications;
-:SafeMode_Apply;
-
-_var {NATVC_USER_MENU_CONFIG} = "{NATVC_USERPROFILE}/usermenu";
-_var {NATVC_USER_INDEX} = "{NATVC_USERPROFILE}/userindex";
-_if(!_file_exist "{NATVC_USER_INDEX}") | _file_copy ("{SYS_USERPATH}/default/userindex","{NATVC_USER_INDEX}");
-
-//MAIN UI EXP
-
-_file_write "[%time%][SystemExplorer] Check user status";
-
-_if(_cp("{bool_isAutoRunExec}","1"))|_goto :SkipDetectAutoRun;
-_if(_file_exist "{NATVC_USERPROFILE}/autorun")|_goto :PROCE_AutoRun;
-
-:SkipDetectAutoRun;
-_if(!_file_exist "{NATVC_USERPROFILE}/startcomplete")|_goto :LOAD_STARTREADER;
-
-
-//Detect Start Reader
-
-:ReloadExplorer;
-_var {ToolsName} = "NATVC Explorer";
-_free {varspace.null};
-
-
-_sipcfg.open "{SYS_NROOT}/Themes/NtvexpThemes.txt";
-
-_var {NTVEXP_AD_1} = _sipcfg TitleA;
-_var {NTVEXP_AD_2} = _sipcfg TitleB;
-_var {NTVEXP_AD_3} = _sipcfg TitleC;
-_var {NTVEXP_AD_4} = _sipcfg TitleD;
-_var {NTVEXP_AD_5} = _sipcfg TitleE;
-
-
-_file_write "[%time%][SystemExplorer] Load Main";
-
+:FailStartupProgram_PKGFALSE;
 _clear;
-_if(_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_typefile "{SYS_NROOT}/res/natvc-explorer.txt";
-
-_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Explorer Resources load fail";
-_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Fail load user interface {SYS_NROOT}/res/natvc-explorer.txt";
-_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "";
-
-:BACKMAINCONSOLE;
-_var {ntvue.logontime} = _getclock;
-_var {ntvue.logondate} = _getdate;
-_var {rs_pathexec} = "{SYS_ROOT}";
-_file_open "{SYS_LOG}";
-_cout "";
-_prt "{Explorer_Title}";
-_var {NATVC_USEREXP_GET} = _getline;
-
-_file_write "[%time%][SystemExplorer] User Execute Command -->  {NATVC_USEREXP_GET}";
-
-//Check EXP is allow?
-_if(!_file_exist "{NATVC_USERPROFILE}/useroptban")|_file_copy("{SYS_USERPATH}/default/useroptban","{NATVC_USERPROFILE}/useroptban")
-_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
-_var {CONFGET_WORD} = "{NATVC_USEREXP_GET}";
-_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
-
-_if(_cp("{callback_temp}","false")) | _goto :bancmd;
-
-//Other
-_if(_cp("{NATVC_USEREXP_GET}",'{varspace.null}'))|_goto :ReloadExplorer;
-_if(_cp("{NATVC_USEREXP_GET}",".rs"))|_goto :rs_restart;
-_if(_cp("{NATVC_USEREXP_GET}",".bm"))|_goto :bm_restart;
-_if(_cp("{NATVC_USEREXP_GET}",".re"))|_goto :GORECOVERY;
-_if(_cp("{NATVC_USEREXP_GET}",".adv"))|_goto :LoadAdvancedBootOpt;
-_if(_cp("{NATVC_USEREXP_GET}",".shell")) | _goto :Open_RootShellCon;
-_if(_cp("{NATVC_USEREXP_GET}","reload"))|_goto :ReloadExplorer;
-_if(_cp("{NATVC_USEREXP_GET}","logoff"))|_return "user_logoff";
-_if(_cp("{NATVC_USEREXP_GET}","shutdown"))|_return "user_shutdown";
-
-_if(_cp("{NATVC_USEREXP_GET}","@shutdown"))|_var {Next_startup_fast_boot} = "-1";
-_if(_cp("{NATVC_USEREXP_GET}","@shutdown"))|_return "user_shutdown";
-
-_if(_cp("{NATVC_USEREXP_GET}","restart"))|_return "user_restart";
-_if(_cp("{NATVC_USEREXP_GET}","user_logoff"))|_return "user_logoff";
-_if(_cp("{NATVC_USEREXP_GET}","lock"))|_return "user_lock";
-_if(_cp("{NATVC_USEREXP_GET}","user_shutdown"))|_return "user_shutdown";
-_if(_cp("{NATVC_USEREXP_GET}","user_restart"))|_return "user_restart";
-_if(_cp("{NATVC_USEREXP_GET}","hiber"))|_return "user_hiber";
-_if(_cp("{NATVC_USEREXP_GET}","sysfix"))|_goto :RunSysFixMode;
-_if(_cp("{NATVC_USEREXP_GET}","bootopt"))|_goto :RunBootOPT;
-_if(_cp("{NATVC_USEREXP_GET}","menu")) | _goto :Open_Menu;
-_if(_cp("{NATVC_USEREXP_GET}","software")) | _goto :Open_Software;
-_if(_cp("{NATVC_USEREXP_GET}","linkmgr"))|_goto :LinkManager;
-_if(_cp("{NATVC_USEREXP_GET}","about"))|_goto :About;
-_if(_cp("{NATVC_USEREXP_GET}","help")) | _goto :ListHelper;
-_if(_cp("{NATVC_USEREXP_GET}","fdl_debug.crashtest")) | _goto :CrashTest;
-
-//Detect Direct Run MNA
-_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_USEREXP_GET}";
-_if(_cp("{mna_Result}","noapp"))|_goto :CheckIndexMode;
-_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
-_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
-_goto :Run Command;
-
-
-:CheckIndexMode;
-_sipcfg.open "{NATVC_USER_INDEX}";
-_var {NATVC_Execute_Program} = _sipcfg {NATVC_USEREXP_GET};
-_if(_cp("{NATVC_Execute_Program}",'{varspace.null}')) | _goto :SkipTestSOFTWARE;
-_if(_file_exist "{NATVC_Execute_Program}") | _goto :Exec_Script;
-_if(!_file_exist "{NATVC_Execute_Program}") | _goto :TestMNAWork;
-
-
-:TestMNAWork;
-_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Execute_Program}";
-_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
-_if(_cp("{mna_Result}","noapp"))|_goto :SkipTestSOFTWARE;
-//RunOKStatus
-_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
-_goto :Run Command;
-
-
-:SkipTestSOFTWARE;
-_file_write "[%time%][SystemExplorer][Error] userLink Return a Error -->  Unknown Command";
-_cout "{NATVC_USEREXP_GET} :  Not Command or execute tool.";
-_goto :BACKMAINCONSOLE;
-
-:ListHelper;
-_clear
-_cout "";
-_typefile "{SYS_NROOT}/res/natvc-explorer-help.txt";
-_goto :BACKMAINCONSOLE;
-
-
-
-//Function
-:About;
-_clear;
-_typefile "{NATVC_ABOUTS_TEXT}";
+_cout "Failed to load {AppLauncherName}.";
+_cout "Repair this package or edit to other package";
+_cout "Easy Convert MNA Program";
 _pause;
-_goto :BACKMAINCONSOLE;
+_return "{Unexpected_error_feedback}";
 
-
-
-:LinkManager;
-_file_write "[%time%][SystemExplorer] Open Link Manager";
-_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{SYS_ROOT}/linkmgr.ca">;
-_goto :BACKMAINCONSOLE;
-
-
-
-:Open_RootShellCon;
-_file_write "[%time%][SystemExplorer] Open Root Shell Mode";
-_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{SYS_ROOT}/rootshell.ca">;
-
-_goto :Run Command;
-
-
-:Open_Software;
-_prt "Open Software Link > ";
-_var {NATVC_USEREXP_GET} = _getline;
-_sipcfg.open "{NATVC_CONFIG_SOFTWARE}";
-_var {NATVC_Execute_Program} = _sipcfg {NATVC_USEREXP_GET};
-_if(_cp("{NATVC_Execute_Program}",'{varspace.null}')) | _goto :SkipTestSOFTWARE;
-
-_if(_file_exist "{NATVC_Execute_Program}") | _goto :Exec_Script;
-_if(!_file_exist "{NATVC_Execute_Program}") | _goto :SoftwareErrorNotFound;
-
-_goto :BACKMAINCONSOLE;
-
-
-
-:IndexNotWork;
-_cout "This Index :  {NATVC_USEREXP_GET} seems not work";
-_cout "Execute File Not Found";
-_cout "Index Link :  "{NATVC_USEREXP_GET}" .";
-_cout "File Address  :  "{NATVC_Execute_Program}" .";
-_goto :BACKMAINCONSOLE;
-
-
-
-:SoftwareErrorNotFound;
-_cout "Software Error";
-_cout "Execute File Not Found";
-_cout "on config/SOFTWARE ... ";
-_cout "Software Link :  {NATVC_USEREXP_GET} .";
-_cout "File Address  :  {NATVC_Execute_Program} .";
-_goto :BACKMAINCONSOLE;
-
-
-
-:Exec_Script;
-//AutoConfig Load;
-_file_write "[%time%][SystemExplorer] Execute Script {NATVC_Execute_Program}";
-_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{NATVC_Execute_Program}">;
-_file_write "[%time%][SystemExplorer] Program is exit. callback is :  "{NATVC_USEREXP_RUN_CALLBACK}"  ";
-_cout "";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","reload"))|_goto :ReloadExplorer;
-
-:Run Command;
-
-_file_write "[%time%][SystemExplorer] check callback operate";
-
-//Check EXP is allow?
-_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
-_var {CONFGET_WORD} = "{NATVC_USEREXP_RUN_CALLBACK}";
-
-_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
-
-_file_write "[%time%][SystemExplorer] OpenLibrary(Config Get) Return value is "{callback_temp}" ";
-
-_if(_cp("{callback_temp}","false")) | _goto :bancmd;
-
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".rs"))|_goto :rs_restart;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".bm"))|_goto :bm_restart;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".re"))|_goto :GORECOVERY;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".shell")) | _goto :Open_RootShellCon;
-
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","reload"))|_goto :ReloadExplorer;
-
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","logoff"))|_return "user_logoff";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown"))|_return "user_shutdown";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))|_return "user_restart";
-
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","lock"))|_return "user_lock";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_logoff"))|_return "user_logoff";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_shutdown"))|_return "user_shutdown";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_restart"))|_return "user_restart";
-
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","hiber"))|_return "user_hiber";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","sysfix"))|_goto :RunSysFixMode;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","bootopt"))|_goto :RunBootOPT;
-
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","menu")) | _goto :Open_Menu;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","software")) | _goto :Open_Software;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","linkmgr"))|_goto :LinkManager;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","about"))|_goto :About;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","help")) | _goto :ListHelper;
-
-_file_write "[%time%][SystemExplorer] No Operate need execute. back main console";
-
-_goto :BACKMAINCONSOLE;
-
-
-
-:Open_Menu;
-//Exec Open Menu
-_file_write "[%time%][SystemExplorer] Open User Menu";
-_if(_cp("{NATVC_USERMENU}","0"))|_goto :FAIL_MENULOST;
-
-_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{NATVC_USERMENU}">;
-
-_file_write "[%time%][SystemExplorer] User Menu Callback -->  {NATVC_USEREXP_RUN_CALLBACK}";
-
-//Check EXP is allow?
-_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
-_var {CONFGET_WORD} = "{NATVC_USEREXP_RUN_CALLBACK}";
-_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
-
-_if(_cp("{callback_temp}","false")) | _goto :bancmd;
-
-//_cout "{NATVC_USEREXP_RUN_CALLBACK}";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","reload"))|_goto :ReloadExplorer;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","logoff"))|_return "user_logoff";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown"))|_return "user_shutdown";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))|_return "user_restart";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","hiber"))|_return "user_hiber";
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","sysfix"))|_goto :RunSysFixMode;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","bootopt"))|_goto :RunBootOPT;
-
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","cmenu"))|_goto :BACKMAINCONSOLE;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".rs"))|_goto :rs_restart;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".bm"))|_goto :bm_restart;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".re"))|_goto :GORECOVERY;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".shell")) | _goto :Open_RootShellCon;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","software"))| _goto :Open_Software;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","about"))| _goto :About;
-_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","linkmgr"))|_goto :LinkManager;
-_goto :CheckIndexMode;
-
-
-
-
-//Restart Device
-:rs_restart;
-//Restart and Open Root Shell
-_file_write "[%time%][SystemExplorer] Execute -->  Restart and boot with rootshell";
-_var {boot_rsmode} = "true";
-_return "user_restart";
-
-
-
-:bm_restart;
-//Restart and Open Root Shell
-_file_write "[%time%][SystemExplorer] Execute -->  Restart and boot with rootshell";
-_var bvm_bm = "true";
-_return "user_restart";
-
-
-:RunBootOPT;
-//Restart and Open Root Shell
-_file_write "[%time%][SystemExplorer] Execute -->  Restart and Load System boot Option";
-_var {NBFMenu} = "true";
-_return "user_restart";
-
-
-:RunSysFixMode;
-//Restart and Check system 
-_file_write "[%time%][SystemExplorer] Execute -->  Restart and run system automatic repair";
-_var {checksysfix} = "true";
-_return "user_restart";
-
-
-//ERRPAGE
-:FAIL_CRASH;
-_clear;
-_file_write "[%time%][SystemExplorer][Error] AppCrash on {NATVC_USEREXP_GET}";
-_cout "NATVC Explorer Console";
-_cout "APPCRASH. Last Command :  {NATVC_USEREXP_GET}";
-_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
-_cout "Press Enter to logoff";
-_pause;
-_return "user_logoff";
-
-
-
-:NoRightCMD;
-_var {NATVC_USEREXP_GET} = "NOTSET";
-_goto :BACKMAINCONSOLE;
-
-
-
-:FAIL_MENULOST;
-_file_write "[%time%][SystemExplorer][Error] Load UserMenu failed :  FAIL_MENULOST";
-_clear;
-_cout "NATVC Explorer Console";
-_cout "User Menu Error";
-_cout "File Missing : {NATVC_USERMENU}";
-_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
-_cout "Press Enter to Back";
-_pause;
-_goto :BACKMAINCONSOLE;
-
-
-:ERRARFileMis;
-_clear;
-_cout "Cannot Load Explorer auto run";
-_cout "file missing :   {Explorer_AutoRun}";
-_cout "press enter to back CLI";
-_pause;
-_goto :BACKMAINCONSOLE;
-
-
-:bancmd;
-_file_write "[%time%][SystemExplorer] Command is disabled by administrator";
-_cout "This command is disabled by administrator";
-_cout "";
-_goto :BACKMAINCONSOLE;
-
-:GORECOVERY;
-
-_sipcfg.open "{NATVC_CONFIG_SETUP}";
-_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :NORENOTICE;
-
-_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">;
-
-_return "user_restart";
-
-
-:LoadAdvancedBootOpt;
-_var {NATVC_A_RE} = "true";
-_return "user_restart";
-
-
-:NORENOTICE;
-_cout "System no recovery environment";
-_cout "Please try to use "refix" to repair";
-_goto :BACKMAINCONSOLE;
-
-:PROCE_AutoRun;
-//Process Task
-_var {bool_isAutoRunExec} = "1";
-_sipcfg.open "{NATVC_USERPROFILE}/autorun";
-_var {Explorer_AutoRun} = _sipcfg task;
-_clear;
-_if(!_file_exist "{Explorer_AutoRun}")|_goto :ERRARFileMis;
-_var {NATVC_Execute_Program} = "{Explorer_AutoRun}";
-_goto :Exec_Script;
-
-:CrashTest;
-_return "failsys";
-
-
-:SAFEMODE_Notifications;
-_clear;
-_cout "----------------------------------------------------";
-_cout "  Natvc is running on safe mode.";
-_cout "  By default, the explorer will not run automatically.";
-_cout "  The explorer allows the configuration of programs that start automatically.";
-_cout "  We do not recommend running Explorer in safe mode.";
-_cout "";
-_cout "  If you want to continue running in safe mode, please enter:  runassafemode";
-_cout "----------------------------------------------------";
-_prts "Explorer Notification >";
-_var {APPLY_SAFE} = _getline;
-
-_if(!_cp("{APPLY_SAFE}","runassafemode"))|_return "cancel";
-
-_goto :SafeMode_Apply;
-
-
-:LOAD_STARTREADER;
-_if(_file_exist "{NATVC_USERPROFILE}/autorun")|_goto :SkipDisplayStartRead;
-
-_clear;
-_typefile "{SYS_NROOT}/res/start-read.txt";
-_cout "";
-_pause;
-:SkipDisplayStartRead;
-
-_sipcfg.open "{NATVC_USERPROFILE}/startcomplete"
-_sipcfg SNA = "true";
-_goto :ReloadExplorer;
+//Copyright FDL 2025 
+//MNA Apps Launcher
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvexp.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvkernel.ca);
 _$directmode;
@@ -4503,6 +4335,9 @@ _if(!_file_exist "{NATVC_CONFIG_USERS}") | _goto :SysBootFallbackConfig;
 _if(!_file_exist "{NATVC_CONFIG_SETUP}") | _goto :SysBootFallbackConfig;
 _var {StopStartup} = "false";
 
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {NoGUIBootOpt} = _sipcfg DebugNoGUIBoot;
+
 _sipcfg.open "{NATVC_CONFIG_SYS}";
 
 _var {GET_SYSTIMEL} = _getdate;
@@ -4518,8 +4353,6 @@ _var {LOG_TIMESTR} = _getclock;
 _var {LOG_TIMESTR} = _str_replace "{LOG_TIMESTR}" (":","_");
 
 _var {SYS_LOG} = "{NATVC_DISK}/{SYS_LOG_PATH}/{GET_SYSTIMEL}/StartupTime-{LOG_TIMESTR}.log";
-
-_var {NoGUIBootOpt} = _sipcfg DebugNoGUIBoot;
 
 _if(_cp("{NoGUIBootOpt}","1"))|_clear;
 
@@ -4539,7 +4372,7 @@ _if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerWarning;
 
 //Check last startup;
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
-
+_var {RestartExecuteMemReset} = _sipcfg RestartExecuteMemReset;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
 
 _var {last_startup} = _sipcfg last_startup;
@@ -4643,6 +4476,12 @@ _file_write "[%time%][Kernel][Boot] Bootloader is trusted";
 _file_write "[%time%][Kernel][Boot] BL File :  {BVM_OSBOOT}";
 :SkipBLTrustCheck;
 
+//Load HAL
+_file_write "[%time%][Kernel][Boot] Loading HAL";
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading HAL.CA to Kernel ...";
+_if(!_file_exist "{SYS_ROOT}/hal.ca")|_return "{SYS_ROOT}/hal.ca";
+_if(!_script <"{SYS_ROOT}/hal.ca">)|_goto :LoadHALFailed;
+_file_write "[%time%][Kernel][Boot] Load HAL OK";
 
 
 //Load System Data
@@ -4712,6 +4551,8 @@ _file_write "[%time%][Kernel][Boot] Boot Safe Mode :  {boot_rsmode}";
 
 _var {NATVC_CRASH_TEXT} = _sipcfg NATVC_CRASH_TEXT;
 _var {NATVC_CRASH_TEXT} = "{NATVC_DISK}/{NATVC_CRASH_TEXT}";
+_var {SystemTemp} = "{SYS_NROOT}/Temp";
+_if(!_dir_exist "{SystemTemp}")|_dir_make "{SystemTemp}";
 
 _if(_cp("{NoGUIBootOpt}","1"))|_goto :SkipLoadUIBoot2;
 _if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadUIBoot2;
@@ -4719,7 +4560,14 @@ _script <"{SYS_ROOT}/ntvani.ca">;
 :SkipLoadUIBoot2;
 
 //END
+//Load System Driver
+_if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadSystemDRV;
+_if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Drivers...";
+_if(!_file_exist "{SYS_ROOT}/drvload.ca")|_goto :FailedCrashDrvMissing;
+_var {drvload_callback} = _script <"{SYS_ROOT}/drvload.ca"> "Kernel_Load_Driver";
+_if(!_cp("{drvload_callback}","ok"))|_goto :FailedCrashDrvLoader;
 
+:SkipLoadSystemDRV;
 //Check SysImage
 
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Checking System Image...";
@@ -4778,6 +4626,9 @@ _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "SYSTEM";
 _if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_restart")) | _goto :RESTART_OK;
+_sipcfg.open "{SYS_NROOT}/SECURITY/SYSTEM.nuslc";
+_sipcfg KernelProtect = "true";
+
 
 _if(!_cp("{K_SERVICE_CALLBACK}","reload_SYSTEM"))|_goto :FAILLOGIN_SYSTEM;
 
@@ -4812,7 +4663,7 @@ _if(_cp("{K_SERVICE_CALLBACK}","user_hiber")) | _goto :NULLKERNEL_DEBUG;
 _if(_cp("{K_SERVICE_CALLBACK}","ok")) | _goto :FAILSERVICEBACK;
 
 _var {BUG_REPORT} = "ntvkernel.ca";
-_var {ToolsName} = "OS Kernel";
+//_var {ToolsName} = "OS Kernel";
 _var {NATVC_CRASH_CODE} = "SYSTEM_SERVICE_EXCEPTION";
 _var {NATVC_CRASH_MESSAGE} = "NUES Service Error. callback: {K_SERVICE_CALLBACK}";
 
@@ -4870,6 +4721,11 @@ _file_write "[%time%][Kernel][Error][Exception] CID : failsys (unexpected)";
 _var {BUG_REPORT} = "ntvkernel.ca";
 _var {NATVC_CRASH_CODE} = "CRITICAL_MODULE_DIED";
 _var {NATVC_CRASH_MESSAGE} = "A Critical Module unexpected died . Your device needs to be aware of this problem";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {NATVC_CRASH_CODE} = "DEBUG_CRASH_SCREEN";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {NATVC_CRASH_MESSAGE} = "Display Crash Screen not happend any error. Just for debug crash scrren";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {ToolsName} = "No Bug happend";
+_if(_cp("{FAILSYS_MBU}","true"))|_var {BUG_REPORT} = "Debug Mode";
+_var {FAILSYS_MBU} = "false";
 _goto :BACKLOADCRASH;
 
 :NULLKERNEL_DEBUG;
@@ -4899,6 +4755,22 @@ _var {BUG_REPORT} = "ntvlogon.ca";
 _var {NATVC_CRASH_CODE} = "LOCAL_SERVICE_FAILED";
 _var {NATVC_CRASH_MESSAGE} = "System Service error";
 _goto :BACKLOADCRASH;
+
+:FailedCrashDrvMissing;
+_file_write "[%time%][Kernel][Error][Exception] Driver load failed. file missing drvload.ca";
+_var {BUG_REPORT} = "ntvkernel.ca";
+_var {NATVC_CRASH_CODE} = "DRIVER_LOAD_FAILED";
+_var {NATVC_CRASH_MESSAGE} = "Driver load failed. missing file : drvload.ca";
+_goto :BACKLOADCRASH;
+
+
+:FailedCrashDrvLoader;
+_file_write "[%time%][Kernel][Error][Exception] Driver load failed. Unexpected error detected";
+_var {BUG_REPORT} = _str_replace "{DriverFile}" ("{SYS_NROOT}/driver/","");
+_var {NATVC_CRASH_CODE} = "DRIVER_LOAD_ERROR";
+_var {NATVC_CRASH_MESSAGE} = "Driver load error. message {drvload_callback}";
+_goto :BACKLOADCRASH;
+
 
 //Load Recovery
 :failbootRecovery;
@@ -4998,6 +4870,17 @@ _file_del "script/hiberdata";
 _file_del "{NATVC_DISK}/hiberfile.txt";
 
 _dir_remove "{SYS_NROOT}/SECURITY";
+
+//CHECK PRE RESULT
+_if(!_cp("1","{RestartExecuteMemReset}"))|_goto :SKIPDETECTMEMRESET;
+_if(_cp("1","{IsSystemRestartToRE}"))|_goto :SKIPDETECTMEMRESET;
+
+//START
+_if(_file_exist "{SYS_ROOT}/memreset.ca")|_script <"{SYS_ROOT}/memreset.ca"> "KernelResetMemory";
+
+:SKIPDETECTMEMRESET;
+_free {RestartExecuteMemReset};
+_free {IsSystemRestartToRE};
 
 _var {SysLocker} = "false";
 _return "$reboot";
@@ -5111,6 +4994,11 @@ _file_write "[%time%][Kernel][Boot][ERROR] Startup failed ..";
 
 _pause;
 _return "configMiss";
+
+
+:LoadHALFailed;
+_file_write "[%time%][Kernel][Boot][ERROR] Load HAL failed ..";
+_return "Load HAL failed";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvkernel.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvload.ca);
 _$directmode;
@@ -5157,7 +5045,7 @@ _free {BootSign};
 
 _if(_cp("{HiberMode}","1"))|_goto :SkipSessionCheck;
 
-_if(_cp("{SysLocker}","true"))|_return "notworkonusermode";
+_if(_cp("{SysLocker}","true"))|_return "KernelLoadError:LockMemoryFailed";
 
 _clear;
 _typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
@@ -5182,12 +5070,6 @@ _if(!_file_exist "{REV_Missing_File}")|_goto :SystemLoadError;
 _var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca";
 _if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
 
-_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvani.ca";
-_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
-
-_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca";
-_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
-
 _var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/usersvc.ca";
 _if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
 
@@ -5198,7 +5080,15 @@ _var {REV_Missing_File} = "System Boot fail";
 _var {Status} = _script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca"> ;
 _if(_cp("{Status}","$reboot"))|_return "$reboot";
 _if(_cp("{Status}","$shutdown"))|_return "$shutdown";
-_goto :SystemRecovery;
+_clear;
+_cout "Natvc Kernel Unexpected Crashed on system startup";
+_cout "File  :   {NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca";
+_cout "Error :   {Status}";
+_cout "Press Enter to Load Recovery";
+_cout "";
+_pause;
+
+_goto :LoadRecoveryEnv;
 
 
 
@@ -5249,6 +5139,11 @@ _var bvm_bm = "true";
 _clear;
 _typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-recovery-error.txt";
 _pause;
+_return "$reboot";
+
+:LoadRecoveryEnv;
+_cout "Recovery";
+_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">
 _return "$reboot";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvload.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvload.nbf);
@@ -5292,7 +5187,7 @@ _free {BootSign};
 
 _if(_cp("{HiberMode}","1"))|_goto :SkipSessionCheck;
 
-_if(_cp("{SysLocker}","true"))|_return "notworkonusermode";
+_if(_cp("{SysLocker}","true"))|_return "KernelLoadError:LockMemoryFailed";
 
 _clear;
 _typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
@@ -5317,12 +5212,6 @@ _if(!_file_exist "{REV_Missing_File}")|_goto :SystemLoadError;
 _var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca";
 _if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
 
-_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/ntvani.ca";
-_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
-
-_var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca";
-_if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
-
 _var {REV_Missing_File} = "{NATVC_DISK}/{Boot_OSPATH}/System/usersvc.ca";
 _if(!_file_exist "{REV_Missing_File}")|_goto :SystemRecovery;
 
@@ -5333,7 +5222,15 @@ _var {REV_Missing_File} = "System Boot fail";
 _var {Status} = _script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca"> ;
 _if(_cp("{Status}","$reboot"))|_return "$reboot";
 _if(_cp("{Status}","$shutdown"))|_return "$shutdown";
-_goto :SystemRecovery;
+_clear;
+_cout "Natvc Kernel Unexpected Crashed on system startup";
+_cout "File  :   {NATVC_DISK}/{Boot_OSPATH}/System/ntvkernel.ca";
+_cout "Error :   {Status}";
+_cout "Press Enter to Load Recovery";
+_cout "";
+_pause;
+
+_goto :LoadRecoveryEnv;
 
 
 
@@ -5385,6 +5282,11 @@ _clear;
 _typefile "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-recovery-error.txt";
 _pause;
 _return "$reboot";
+
+:LoadRecoveryEnv;
+_cout "Recovery";
+_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">
+_return "$reboot";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvload.nbf);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvlogon.ca);
 _$directmode;
@@ -5398,14 +5300,21 @@ _if(!_cp("{ntvl_temp}","Kernel_int_load_system"))|_return "failuserauth";
 _file_open "{SYS_LOG}";
 _file_write "[%time%][Natvc Logon] The system logon service is start";
 
+//Check Is System Need Load StartupExecute
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_goto :StartExecuteNSTK;
+:BackNSTK;
 
 //Load User Logon Interface
 :ReinitService;
+_var {ToolsName} = "Natvc Logon Process";
 _file_write "[%time%][Natvc Logon] Attempt Load User Logon Service";
 _var {ntvl_process} = _script <"{SYS_ROOT}/services.ca"> "ntvue_user_logon_interface";
 //Process NULI Result
 _file_write "[%time%][Natvc Logon] User Logon Service is stop. code:  {ntvl_process}";
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca")|_goto :StartExecuteTSKC;
 
+
+:BackTSKC;
 //Break Result
 _if(_cp("{ntvl_process}","relogin")) | _goto :ReinitService;
 _if(_cp("{ntvl_process}","noauth")) | _goto :ReinitService;
@@ -5432,6 +5341,35 @@ _cout " ";
 _cout "   Press Enter to Restart Logon Interface";
 _pause;
 _goto :ReinitService;
+
+
+
+:StartExecuteTSKC;
+_file_open "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_file_write "_return "ok"; ";
+_file_open "{SYS_LOG}";
+_file_write "[%time%][Natvc Logon] Run Task {SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_clear;
+_cout "Please wait... ";
+_cout "The system needs to perform some operations before shutting down completely. ";
+_script <"{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca">;
+_ms_sleep "400";
+_file_del "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_goto :BackTSKC;
+
+
+:StartExecuteNSTK;
+_file_open "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca";
+_file_write "_return "ok"; ";
+_file_open "{SYS_LOG}";
+_file_write "[%time%][Natvc Logon] Run Task {SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca";
+_clear;
+_cout "Please wait... ";
+_cout "The system needs to perform some operations on Startup";
+_script <"{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca">;
+_ms_sleep "400";
+_file_del "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca";
+_goto :BackNSTK;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvlogon.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvperf.ca);
 _$directmode;
@@ -5470,7 +5408,7 @@ _if(_cp(_sipcfg DefaultOption,"recovery"))|_goto :BootAlready;
 
 _sipcfg DefaultOption = "recovery";
 _sipcfg RollBackLoad = "{BootDefaultOption}";
-
+_var {IsSystemRestartToRE} = "1";
 _return "restart";
 
 
@@ -5491,14 +5429,29 @@ _pause;
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvrebl.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvue.ca);
-// NATVC User Experience
-// Default UI or LogonUI
 _$directmode;
-_$nolog;
+
+_var {AppLauncherName} = "natvc.logon.interface.host.mna";
+_var {Unexpected_error_feedback} = "restart";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+//Load OLD UserExperence
+
+
+// Default UI or LogonUI
 
 //Execute
 
-_var {ToolsName} = "UserExperience";
+_var {ToolsName} = "UserExperience (Old)";
 
 _file_write "[%time%][UserExperience] Load User Experience Main";
 
@@ -5589,12 +5542,16 @@ _typefile "{SYS_NROOT}/res/natvc-ntvue.txt";
 _file_write "[%time%][Logon Interface] Wait User Operation";
 _prt "Type User Name>";
 _var {USER_REQ_LOGON} = _getline;
-
+_if(_cp("{USER_REQ_LOGON}","@debug.currentuser"))|_goto :List_CurrentUserStatus;
 _if(_cp("{USER_REQ_LOGON}","{NULLUSER}"))|_goto :NE_ERR_NOTTYPE;
 _if(_cp("{USER_REQ_LOGON}","restart"))|_goto :UE_RESTART_API;
 _if(_cp("{USER_REQ_LOGON}","shutdown"))|_goto :UE_SHUTDOWN_API;
 _if(_cp("{USER_REQ_LOGON}","apiexit"))|_return "$shutdown";
 _if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :NE_ERR_NOTTYPE;
+_if(_cp("{USER_REQ_LOGON}",".re"))|_goto :GORECOVERY;
+
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_var {Next_startup_fast_boot} = "-1";
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_goto :UE_SHUTDOWN_API;
 
 :AutoLoginUserLoadM;
 
@@ -5810,6 +5767,7 @@ _var {Deploy_callback} = _script <"{Natvc_Deploy_Program}">;
 
 
 _if(_cp("{Deploy_callback}","oobe_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{Deploy_callback}","oobe_recovery"))|_goto :GORECOVERY;
 _if(_cp("{Deploy_callback}","user_shutdown"))|_goto :UE_SHUTDOWN_API;
 _if(_cp("{Deploy_callback}","user_restart"))|_goto :UE_RESTART_API;
 
@@ -5883,6 +5841,45 @@ _clear;
 _typefile "{SYS_NROOT}/res/natvc-ntvue-nouser.txt"
 _pause;
 _goto :BACKMAINTEXT;
+
+
+
+
+//Recovery Init
+:GORECOVERY;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :NORENOTICE;
+
+_script <"{SYS_ROOT}/ntvrebl.ca">;
+_clear;
+_cout "Restarting to Recovery";
+_return "user_restart";
+
+:NORENOTICE;
+_clear;
+_cout "System no recovery environment";
+_cout "Please try to use "refix" to repair";
+_pause;
+_goto :BACKMAINTEXT;
+
+:List_CurrentUserStatus;
+_clear;
+_cout "System Login Interface Report";
+_cout "Current Login User";
+_cout "";
+_cout "UserName: {NATVC_USERNAME} ";
+_cout "Whois: {NATVC_WHOIS} ";
+_cout "UserProfile: {NATVC_USERPROFILE}  ";
+_cout "";
+_cout "isAdmin: {NATVC_isAdmin}      ";
+_cout "AutoRun: {NATVC_UserAutoRun}  ";
+_cout "Service Mode :  {NSV_SERVICE_MODE}";
+_cout "";
+_cout "LOCAL LOGON APPLICATION";
+_cout _getfile;
+_pause;
+_goto :BACKMAINTEXT;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvue.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvupd.ca);
 //Natvc Update
@@ -5947,12 +5944,30 @@ _pause;
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvupd.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/oobe.ca);
-//NATVC Explorer
-//Enter User Experience
+_$directmode;
+
+_var {AppLauncherName} = "natvc.outofboxExp.mna";
+_var {Unexpected_error_feedback} = "@oobecancel";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+//Load Old OOBE SERVICE
+
+//OOBE SERVICES
 _$directmode;
 _$nolog;
 
-_var {ToolsName} = "NATVC_OOBE_Service";
+_var {ToolsName} = "NATVC_OOBE_Service (Old)";
 
 //Only Run on oobe user
 
@@ -6004,6 +6019,7 @@ _if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
 _if(_cp("_ARGS_NU_FULLNAME","@oobereload"))|_goto :ReloadExplorer;
 _if(_cp("_ARGS_NU_FULLNAME","@loaddebug"))|_return "oobeexit";
 _if(_cp("_ARGS_NU_FULLNAME","@oobecancel"))|_goto :ConfigCANCEL;
+_if(_cp("_ARGS_NU_FULLNAME","@recovery"))|_goto :ConfigRecovery;
 _if(_cp("_ARGS_NU_FULLNAME","@restart"))|_return "restart";
 _if(_cp("_ARGS_NU_FULLNAME","@shutdown"))|_return "shutdown";
 _if(_cp("_ARGS_NU_FULLNAME","@skipoobe"))|_goto :EndPageOOBE;
@@ -6017,7 +6033,7 @@ _var _ARGS_NU_ID = _getline;
 _if(_cp("_ARGS_NU_ID","@oobereload"))|_goto :ReloadExplorer;
 
 _if(_cp("_ARGS_NU_ID",'SYSTEM'))|_goto :FORBIDDEN;
-_if(_cp("_ARGS_NU_ID",'SystemShell'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'public'))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID",'admin'))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID",'oobe'))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID",'default'))|_goto :FORBIDDEN;
@@ -6148,6 +6164,10 @@ _goto :ReloadExplorer;
 _var {OOBE_PAGE_STATUS} = "oobe_shutdown";
 _return "shutdown";
 
+:ConfigRecovery;
+_var {OOBE_PAGE_STATUS} = "oobe_recovery";
+_return "restart";
+
 
 :Server Page;
 _clear;
@@ -6261,6 +6281,28 @@ _$nolog;
 
 _return "restart";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/restart.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rmdir.ca);
+_$directmode;
+_$nolog;
+
+_var {temp_rmdir} = _getargs;
+
+_if(_dir_exist "{temp_rmdir}")|_goto :DIRDEL;
+
+_cout "Type Folder you want delete:";
+_var {temp_rmdir} = _getline;
+
+:DIRDEL;
+_if(_dir_exist "{temp_rmdir}")|_dir_remove "{temp_rmdir}";
+_if(_dir_exist "{temp_rmdir}")|_goto :RMFail;
+_cout "Compete.";
+_return "ok";
+
+:RMFail;
+_cout "delete fail. access denied:  {temp_rmdir}";
+_cout "";
+_return "fail";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/rmdir.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rootshell.ca);
 // NATVC ROOT SHELL
 // Only Running on SYSTEM
@@ -6676,13 +6718,15 @@ _if(!_file_exist "{SYS_NROOT}/Service/{NSV_DATA}.nsv")|_goto :FailLoadService;
 _var {NSV_DATA} = "{SYS_NROOT}/Service/{NSV_DATA}.nsv";
 
 :StartLoadService;
-
+_var {ToolsName} = "Natvc Services";
 //Load Config Datas
 _sipcfg.open "{NSV_DATA}";
 _var {NSV_Execute} = _sipcfg Execute;
+_var {NSV_Argument} = _sipcfg Argument;
 
 _var {NSV_UserID} = _sipcfg UserID;
 _var {NSV_UserPassword} = _sipcfg UserPassword;
+_var {NSV_SET_SST} = _sipcfg SetServiceStatusTrue;
 
 //Login Current Users
 
@@ -6702,11 +6746,13 @@ _var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
 _var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
 _var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
 
-_var {NSV_SERVICE_MODE} = "true";
+_if(_cp("{NSV_SET_SST}","true"))|_var {NSV_SERVICE_MODE} = "true";
 _file_write "[%time%][Services] Start Service :  {NSV_DATA}  User :  {NATVC_WHOIS}  Auth :  {NATVC_isAdmin} .";
-_var {CALLBACK_NSV} = _script <"{NSV_Execute}">;
+_file_write "[%time%][Services] Service Profile :  {NSV_Execute}  Argument : {NSV_Argument}";
+_file_write "[%time%][Services] Service Detect Mark is :  {NSV_SET_SST}";
+_var {CALLBACK_NSV} = _script <"{NSV_Execute}"> "{NSV_Argument}";
 _file_write "[%time%][Services] Stop Service :  {NSV_DATA}  .";
-_var {NSV_SERVICE_MODE} = "false";
+_if(_cp("{NSV_SET_SST}","true"))|_var {NSV_SERVICE_MODE} = "false";
 
 _sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
 _var {NATVC_USERNAME}      = _sipcfg USERNAME;
@@ -7026,6 +7072,7 @@ _file_del "{SYS_NROOT}/SystemLogFile.log.old";
 _file_write "This is New System Mark Record";
 
 _dir_remove "{SYS_NROOT}/SystemUser/Temp";
+_dir_remove "{SYS_NROOT}/SystemUser/AppData";
 _file_del "{SYS_NROOT}/SystemUser/userindex";
 
 _dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
@@ -7113,6 +7160,7 @@ _file_del "{SYS_NROOT}/SystemLogFile.log.old";
 _file_write "This is New System Mark Record";
 
 _dir_remove "{SYS_NROOT}/SystemUser/Temp";
+_dir_remove "{SYS_NROOT}/SystemUser/AppData";
 _file_del "{SYS_NROOT}/SystemUser/userindex";
 
 _dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
@@ -7201,14 +7249,30 @@ _return "restart";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/sysrollback.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/textreader.ca);
 _$directmode;
-_$nolog;
+
+_var {AppLauncherName} = "natvc.textreader.modern.mna";
+_var {Unexpected_error_feedback} = "{varspace.null}";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+//Load Old Textreader
 
 _var {ACCESS_URL} = _getargs;
 
 _if(_file_exist "{ACCESS_URL}")|_goto :NEXPLORER MAIN;
 
 _clear;
-_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID}) (New Text reader Available)";
 _cout "----------------------------------------------------------------";
 _cout "@FILE DIR   | > <Not Open>";
 _cout "----------------------------------------------------------------";
@@ -7224,7 +7288,7 @@ _goto :NEXPLORER MAIN;
 
 :NEXPLORER MAIN;
 _clear;
-_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID}) (New Text reader Available)";
 _cout "----------------------------------------------------------------";
 _cout "@FILE DIR   | >{ACCESS_URL}";
 _cout "----------------------------------------------------------------";
@@ -7255,72 +7319,35 @@ _cout "";
 _cout "";
 _cout "";
 _goto :EndloadPage;
+
+
+//Copyright FDL 2025 
+//MNA Apps Launcher
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/textreader.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usermenu.ca);
-//NATVC USER MENU
-// BASE USER Function
 _$directmode;
-_$nolog;
 
-_var {ToolsName} = "USERMENU";
+_var {AppLauncherName} = "natvc.userinterface.startmenu.mna";
+_var {Unexpected_error_feedback} = "{varspace.null}";
 
-//MAIN TYPE
-//USER MENU
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
 
-_file_write "[%time%][UserMenu] User {NATVC_WHOIS} open Menu";
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
 
-_if(!_file_exist "{NATVC_USER_MENU_CONFIG}") | _goto :ERR_NOCONFIG;
-
-//Load Menu
-_file_write "[%time%][UserMenu] Load config :  {NATVC_USER_MENU_CONFIG}";
-_sipcfg.open "{NATVC_USER_MENU_CONFIG}";
-_var {Menu_Type} = _sipcfg MENU_TYPE;
-
-_if(!_file_exist "{Menu_Type}") | _goto :ERR_NOMType;
-
+:FailStartupProgram_PKGFALSE;
 _clear;
-_typefile "{Menu_Type}";
-_file_write "[%time%][UserMenu] LoadMain";
+_cout "Failed to load {AppLauncherName}.";
+_cout "Repair this package or edit to other package";
+_cout "Easy Convert MNA Program";
+_pause;
+_return "{Unexpected_error_feedback}";
 
-:BACKMAINCONSOLE;
-_cout "";
-_prt "$ User Start Menu > ";
-_file_write "[%time%][UserMenu] Wait user Operation";
-_var {NATVC_USEREXP_GET} = _getline;
-
-_file_write "[%time%][UserMenu] User Execute Command -->  {NATVC_USEREXP_GET}";
-_goto :RET_RAW;
-
-//Function
-:RET_RAW;
-_file_write "[%time%][UserMenu] userLib return {NATVC_USEREXP_GET}";
-
-_if(_cp("{NATVC_USEREXP_GET}","{varspace.null}"))|_return "cmenu";
-
-_return "{NATVC_USEREXP_GET}";
-
-//ERRPAGE
-:ERR_NOCONFIG;
-_file_write "[%time%][UserMenu][Error] Fail Load User Menu: ";
-_file_write "[%time%][UserMenu][Error] Missing Config :  {NATVC_USER_MENU_CONFIG} ";
-_cout "------------------------------------";
-_cout "NATVC User Menu";
-_cout "Fail Load. CONFIG File";
-_cout "Missing Config File :  {NATVC_USER_MENU_CONFIG}";
-_cout "AppCrash";
-_cout "------------------------------------";
-_return "@@appcrash@natvc@usermenu@_failconfig";
-
-:ERR_NOMType;
-_file_write "[%time%][UserMenu][Error] Fail Load User Menu: ";
-_file_write "[%time%][UserMenu][Error] Missing Resource :  {Menu_Type} ";
-_cout "------------------------------------";
-_cout "NATVC User Menu";
-_cout "Fail Load Resource {Menu_Type}";
-_cout "Missing Config File :  {Menu_Type}";
-_cout "AppCrash";
-_cout "------------------------------------";
-_return "@@appcrash@natvc@usermenu@_failresource";
+//Copyright FDL 2025 
+//MNA Apps Launcher
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usermenu.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usermgr.ca);
 _$directmode;
@@ -7401,7 +7428,7 @@ _return "User Create Succeed";
 //Uninstall User Directory
 _if(_cp("_ARGS_NU_ID","SYSTEM"))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","default"))|_return "Create fail. Forbidden";
-_if(_cp("_ARGS_NU_ID","SystemShell"))|_return "Create fail. Forbidden";
+_if(_cp("_ARGS_NU_ID",'public'))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","admin"))|_return "Create fail. Forbidden";
 
 _dir_remove "{SYS_USERPATH}/_ARGS_NU_ID";
@@ -7417,7 +7444,7 @@ _return "User is Delete Complete _ARGS_NU_ID";
 //Set User Profile
 _if(_cp("_ARGS_NU_ID","SYSTEM"))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","default"))|_return "Create fail. Forbidden";
-_if(_cp("_ARGS_NU_ID","SystemShell"))|_return "Create fail. Forbidden";
+_if(_cp("_ARGS_NU_ID",'public'))|_return "Create fail. Forbidden";
 
 _sipcfg.open "{SYS_USERPATH}/_ARGS_NU_ID/userconfig";
 _var {GetUserStatus} = _sipcfg DisableUser;
@@ -7431,7 +7458,7 @@ _return "Set User Status is {GetUserStatus}";
 :FUN_SETADMIN;
 _if(_cp("_ARGS_NU_ID","SYSTEM"))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","default"))|_return "Create fail. Forbidden";
-_if(_cp("_ARGS_NU_ID","SystemShell"))|_return "Create fail. Forbidden";
+_if(_cp("_ARGS_NU_ID",'public'))|_return "Create fail. Forbidden";
 _if(_cp("_ARGS_NU_ID","admin"))|_return "Create fail. Forbidden";
 
 _sipcfg.open "{SYS_USERPATH}/_ARGS_NU_ID/userconfig";
@@ -7512,7 +7539,7 @@ _var _ARGS_NU_ID = _getline;
 _file_write "[%time%][UserSettings] Select User is _ARGS_NU_ID";
 
 _if(_cp("_ARGS_NU_ID","SYSTEM"))|_goto :FORBIDDEN;
-_if(_cp("_ARGS_NU_ID","SystemShell"))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'public'))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID","default"))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID",'{varspace.null}'))|_goto :FORBIDDEN;
 _if(_cp("_ARGS_NU_ID",".exit"))|_return "cancel";
@@ -7554,7 +7581,7 @@ _file_write "[%time%][UserSettings] wait user type id";
 _prt "Write your user id (no space bar) >";
 _var _ARGS_NU_ID = _getline;
 _if(_cp("_ARGS_NU_ID","SYSTEM"))|_goto :FORBIDDEN_X;
-_if(_cp("_ARGS_NU_ID","SystemShell"))|_goto :FORBIDDEN_X;
+_if(_cp("_ARGS_NU_ID",'public'))|_goto :FORBIDDEN_X;
 _if(_cp("_ARGS_NU_ID","oobe"))|_goto :FORBIDDEN_X;
 _if(_cp("_ARGS_NU_ID","admin"))|_goto :FORBIDDEN_X;
 _if(_cp("_ARGS_NU_ID",'{varspace.null}'))|_goto :FORBIDDEN_X;
@@ -7769,6 +7796,9 @@ _if(!_file_exist "{NATVC_UserAutoRun}") | _goto :USERFAIL_NOAR;
 
 //Create User Dump
 _if(!_dir_exist "{SYS_NROOT}/SECURITY")|_dir_make "{SYS_NROOT}/SECURITY";
+
+_if(_cp("{NATVC_WHOIS}","{varspace.null}"))|_goto :PASSFLB;
+
 _file_open "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc";
 _file_write "//Natvc User Secure Login Certificate";
 _file_write "$USERNAME={NATVC_USERNAME};";
@@ -7873,6 +7903,7 @@ _sipcfg.open "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc";
 _var {NATVC_USERNAME}      = _sipcfg USERNAME;
 _var {NATVC_WHOIS}         = _sipcfg USERID;
 _var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_if(_cp("{NATVC_USERPROFILE}","{varspace.null}"))|_goto :ProfileDown;
 _var {NATVC_isAdmin}       = _sipcfg USERADMIN;
 _var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
 _var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
@@ -7880,6 +7911,15 @@ _var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
 
 _goto :FASTLoginBack;
 
+:ProfileDown;
+_clear;
+_cout "User :  {NATVC_REQ_LOGIN}";
+_cout "The user login Certificate failed.";
+_cout "Somethings went wrong.";
+_cout "Press Enter to Reset User Login Certificate.";
+_pause;
+_file_del "{SYS_NROOT}/SECURITY/{NATVC_REQ_LOGIN}.nuslc";
+_return "reload_SYSTEM";
 
 
 :REQ_PASSWORD_TO_UNLOCKUSER;
@@ -7915,6 +7955,25 @@ _var {GET_PASSWORD} = "{PRE_AUTOENTRY_PASSWORD}";
 _var {PRE_AUTOENTRY_PASSWORD} = "@EMPTY";
 _goto :MOD_A_UNLOCKER_TRY;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/usersvc.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/varsize.ca);
+_$directmode;
+
+//List System Size
+_envsave "{temp}/ramdump.dmp";
+
+_var {task.varsize} = _file_read ("{temp}/ramdump.dmp","1");
+_var {task.varcache} = _file_read ("{temp}/ramdump.dmp","2");
+
+_cout "var size :   {task.varsize}";
+_cout "var InFO :   {task.varcache}";
+
+_free {task.varsize};
+_free {task.varcache};
+
+_file_del "{temp}/ramdump.dmp";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/varsize.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/whoami.ca);
 _$directmode;
 _$nolog;
@@ -7986,6 +8045,43 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/foxaxu.modernstore.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/localstore.foxaxu.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/localstore.foxaxu.ca);
+_$directmode;
+_$nolog;
+
+_clear;
+_cout "SORRY. This App is in developer. cooming soon";
+_cout "BY foxaxu store :)";
+_pause;
+_return "exit";
+$CSTP_FILE_RECORD_MARK_ID_END(/localstore.foxaxu.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc FDL App Store;
+$Setup=foxaxu.modernstore.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/foxaxu.modernstore.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -8003,7 +8099,7 @@ $AppName=Natvc mna Package Manager;
 $Setup=mnacore.pkgmanager.mna;
 $AppProperties=systemapps; // systemapps or userapps
 
-$AppVersion=1006;
+$AppVersion=1012;
 
 //Copyright FoxaXu 2025
 //Default Package
@@ -8051,6 +8147,7 @@ _clear;
 _cout "Type software package file";
 _prt "Type Package>";
 _var {UserTypeSetup} = _getline;
+_if(_cp("{UserTypeSetup}","setupdebug"))|_var {UserTypeSetup} = "{SYS_NROOT}/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna";
 _script<"{SYS_NROOT}/mnacore/install.ca"> "{UserTypeSetup}";
 _pause;
 _goto :BACKMAINCONSOLE;
@@ -8145,6 +8242,1954 @@ _pause;
 _goto :BACKMAINCONSOLE;
 $CSTP_FILE_RECORD_MARK_ID_END(/pkm.ca);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/mnacore.pkgmanager.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.configeditor.system.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/natvc.configeditor.system.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/natvc.configeditor.system.ca);
+_$directmode;
+_$nolog;
+//Natvc Config Editor Tool
+//Args use "openedit"
+
+_var {ToolsName} = "CONFEDIT";
+_var {CONFEDIT_TEMP_SIGN} = "false";
+_if(_cp(_getargs,"openedit"))|_goto :OpenEditor;
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+_var {CONFEDIT_TEMP_SIGN} = "true";
+
+
+
+//Natvc Config Editor
+:BACKMAINCONSOLE;
+
+_if(!_cp("{CONFEDIT_TEMP_SIGN}","true"))|_return "exitconsole";
+
+_clear;
+
+_cout "----------------------------------------------";
+_cout "# Natvc Config Editor";
+_cout "----------------------------------------------";
+_cout "  NATVC Config Editor ";
+_cout "     System Config Index:   ";
+_cout "";
+
+_dir_list ("{temp}/confedit","{NATVC_CONFIG}");
+_file_replace "{temp}/confedit" ("{NATVC_CONFIG}/","  ");
+_file_replace "{temp}/confedit" ("/{NATVC_CONFIG}/","  ");
+_file_replace "{temp}/confedit" ("/{NATVC_CONFIG}","  ");
+
+_textprint "{temp}/confedit";
+_file_del "{temp}/confedit";
+_cout "";
+_cout "";
+_cout " Select and Settings.  use exit to back ";
+_cout " Mode (1 - edit/creat new reg .  2 - del reg)";
+_cout " You can open any Config Files";
+_cout "----------------------------------------------";
+
+
+_prts "Open File >";
+_var {regmode} = _getline;
+_if(_cp("{regmode}",".exit"))|_return "ok";
+_if(_cp("{regmode}","exit"))|_return "ok";
+_if(_cp("{regmode}","about"))|_goto :About;
+//Check Files
+
+_var {RegOpenFile} = "{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_var {RegOpenFile} = "{NATVC_DISK}/{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_var {RegOpenFile} = "{SYS_NROOT}/config/{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_var {RegOpenFile} = "{NATVC_USERPROFILE}/{regmode}";
+_if(_file_exist "{RegOpenFile}")|_goto :OpenEditor;
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:OpenEditor;
+_if(!_file_exist "{RegOpenFile}")|_return "failopen";
+_sipcfg.open "{RegOpenFile}";
+_clear;
+_cout "Config Edit   ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "#--------------------------------------------------------#";
+_cout "  Edit File :  {RegOpenFile}";
+_cout " --------------------------------------------------------";
+_textprint "{RegOpenFile}";
+_cout "#--------------------------------------------------------#";
+
+_prts "Set add/edit(1) or delete(2) . use .exit back>";
+_var {useropt} = _getline;
+_if(_cp("{useropt}",".exit"))|_goto :BACKMAINCONSOLE;
+_if(_cp("{useropt}","exit"))|_goto :BACKMAINCONSOLE;
+_if(_cp("{useropt}","1"))|_goto :EditMode;
+_if(_cp("{useropt}","2"))|_goto :DelMode;
+_goto :OpenEditor;
+
+:EditMode;
+_prts "select edit module(add / edit) > ";
+_var {useroptE} = _getline;
+_if(_cp("{useroptE}",".exit"))|_goto :OpenEditor;
+
+_prts "type new info > ";
+_var {useroptY} = _getline;
+_if(_cp("{useroptY}",".exit"))|_goto :OpenEditor;
+
+_sipcfg {useroptE} = "{useroptY}";
+_goto :OpenEditor;
+
+
+
+
+
+:DelMode;
+_prts "select edit module(Remove) > ";
+_var {useroptE} = _getline;
+_if(_cp("{useroptE}",".exit"))|_goto :OpenEditor;
+
+_sipcfg.remove {useroptE};
+_goto :OpenEditor;
+
+
+
+
+
+:About;
+_clear;
+_typefile "{NATVC_ABOUTS_TEXT}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC CONFIG EDIT";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/natvc.configeditor.system.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc System Config Editor;
+$Setup=natvc.configeditor.system.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.configeditor.system.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.logon.interface.host.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/natvc.logon.interface.host.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/natvc.logon.interface.host.ca);
+// NATVC User Experience
+// Default UI or LogonUI
+_$directmode;
+_$nolog;
+
+//Execute
+
+_var {ToolsName} = "UserExperience";
+
+_file_write "[%time%][UserExperience] Load User Experience Main";
+
+_var {ntvue.logontime} = _getclock;
+_var {ntvue.logondate} = _getdate;
+
+//MAIN UI
+_file_write "[%time%][UserExperience] Check pre_execute program";
+
+
+_if(_cp("{ReCreateImage}","true"))|_goto :ReCreateImage;
+:BackCreateImage;
+
+//Default Disabled
+_if(!_file_exist "{NATVC_USERPROFILE}/EnabledLogonImageCheck")|_goto :DisabledLImageCheck;
+_file_write "[%time%][UserExperience] Checking Logon Interface Image";
+_if(!_file_cp("{SYS_ROOT}/ntvue.ca","{SYS_NROOT}/SystemImage/ntvue.ca"))|_goto :CrashNTVueErr;
+//Compare File full
+
+:DisabledLImageCheck;
+
+_if(!_cp("{NATVC_isAdmin}","2"))|_return "failuserauth";
+_if(!_file_exist "{NATVC_USERPROFILE}/LogonUI.txt")|_return "failuserauth";
+_file_write "[%time%][Logon Interface] Boot Safe Mode :  {boot_rsmode}";
+_if(_cp("{boot_rsmode}","true"))|_goto :O_ROOTSHELL;
+
+//Try Save Natvc Fast Boot Dump File
+_if(_file_exist "{NATVC_DISK}/hiberfile.txt")|_goto :SkipLoadFSL;
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {OSLoad_UseFastBoot} = _sipcfg FastBoot;
+_if(!_cp("{OSLoad_UseFastBoot}","1"))|_goto :SkipLoadAllFSB;
+
+_file_write "[%time%][UserExperience] System is trying Save Hiberfile for next startup fast boot";
+_file_write "[%time%][UserExperience] Make VarSpace Snapshot.";
+
+_envsave "{NATVC_DISK}/hiberfile.txt";
+
+_file_write "[%time%][UserExperience] File Dump on {NATVC_DISK}/hiberfile.txt";
+
+:SkipLoadFSL;
+_file_write "[%time%][UserExperience] Fast boot is OK";
+_var {Next_startup_fast_boot} = "1";
+_goto :Load_Main_UserExperience;
+
+:SkipLoadAllFSB;
+_file_write "[%time%][UserExperience] Fast boot is Disabled on system settings";
+_var {Next_startup_fast_boot} = "-1";
+_goto :Load_Main_UserExperience;
+
+
+:Load_Main_UserExperience;
+//Load Main
+
+_file_write "[%time%][UserExperience] Load Logon Interface";
+
+_sipcfg.open "{SYS_NROOT}/Themes/NtvueThemes.txt";
+
+_var {NTVUE_AD_1} = _sipcfg TitleA;
+_var {NTVUE_AD_2} = _sipcfg TitleB;
+_var {NTVUE_AD_3} = _sipcfg TitleC;
+
+_clear;
+
+//DETECT OOBE
+
+_file_write "[%time%][Logon Interface] Check this system oobe";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp(_sipcfg oobe,"1")) | _goto :startOOBEuser;
+
+_if(_cp("{IsAutoLogin}","false"))|_goto :SkipDetectAL;
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_var {sys_autologin} = _sipcfg default;
+_if(!_cp("{sys_autologin}","@"))| _goto :AutoLoginUserA;
+
+:SkipDetectAL;
+
+:BACKMAINTEXT;
+//GET LOGON THEMES
+
+_var {ntvue.logontime} = _getclock;
+_var {ntvue.logondate} = _getdate;
+
+_var {USER_REQ_LOGON} = "{NULLUSER}";
+_clear
+_typefile "{SYS_NROOT}/res/natvc-ntvue.txt";
+_file_write "[%time%][Logon Interface] Wait User Operation";
+_prt "Type User Name>";
+_var {USER_REQ_LOGON} = _getline;
+_if(_cp("{USER_REQ_LOGON}","@debug.currentuser"))|_goto :List_CurrentUserStatus;
+_if(_cp("{USER_REQ_LOGON}","{NULLUSER}"))|_goto :NE_ERR_NOTTYPE;
+_if(_cp("{USER_REQ_LOGON}","restart"))|_goto :UE_RESTART_API;
+_if(_cp("{USER_REQ_LOGON}","shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{USER_REQ_LOGON}","apiexit"))|_return "$shutdown";
+_if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :NE_ERR_NOTTYPE;
+_if(_cp("{USER_REQ_LOGON}",".re"))|_goto :GORECOVERY;
+
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_var {Next_startup_fast_boot} = "-1";
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_goto :UE_SHUTDOWN_API;
+
+:AutoLoginUserLoadM;
+
+//BLOCK Illegal Request
+_if(_cp("{USER_REQ_LOGON}","SYSTEM"))|_goto :USERFAIL_NOUSER;
+_if(_cp("{USER_REQ_LOGON}","default"))|_goto :USERFAIL_NOUSER;
+_if(_cp("{USER_REQ_LOGON}","LOCAL_SERVICE"))|_goto :USERFAIL_NOUSER;
+//END
+
+_file_write "[%time%][Logon Interface] Run User Service...";
+
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-loggin.txt";
+
+//Check user is exist ?
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_var {NATVC_USERPROFILE} = _sipcfg {USER_REQ_LOGON};
+
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Load User Service";
+
+_if(_cp("{NATVC_USERPROFILE}",'{varspace.null}')) | _goto :USERFAIL_NOUSER;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _goto :SkipPlayLogonANI;
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{USER_REQ_LOGON}.nuslc")|_script <"{SYS_ROOT}/ntvani.ca">;
+:SkipPlayLogonANI;
+
+_file_write "[%time%][Logon Interface] Load System User";
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting User Service";
+  //_cout "Waitting User Service";
+_var {NATVC_isAdmin} = "2";
+_var {USER_UE_CALLBACK} = _script <"{NATVC_USERSVC}"> "{USER_REQ_LOGON}";
+
+_if(_cp("{USER_UE_CALLBACK}","loginfail"))|_goto :BACKMAINTEXT;
+
+_file_write "[%time%][Logon Interface] User logoff with argument :  {USER_UE_CALLBACK}";
+
+_if(_cp("{USER_UE_CALLBACK}","reload_SYSTEM"))|_goto :UE_LOGOFF_API;
+_if(_cp("{USER_UE_CALLBACK}","logoff"))|_goto :UE_LOGOFF_API;
+_if(_cp("{USER_UE_CALLBACK}","user_logoff"))|_goto :UE_LOGOFF_API;
+_if(_cp("{USER_UE_CALLBACK}","user_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{USER_UE_CALLBACK}","user_restart"))|_goto :UE_RESTART_API;
+_if(_cp("{USER_UE_CALLBACK}","user_hiber"))|_goto :HiberClose;
+_if(_cp("{USER_UE_CALLBACK}","ok"))|_goto :UE_LOGOFF_API;
+
+_return "{USER_UE_CALLBACK}";
+
+
+//TEXTPRINT
+:ReloadSystemUser;
+_file_write "[%time%][Logon Interface] Reload System User";
+
+_clear;
+
+
+_var {NATVC_REQ_LOGIN} = "SYSTEM";
+
+_return "relogin";
+
+
+:AutoLoginUserA;
+_var {USER_REQ_LOGON} = _sipcfg default;
+_file_write "[%time%][Logon Interface] Config Autologin User :  {USER_REQ_LOGON}";
+_var {IsAutoLogin} = "false";
+_goto :AutoLoginUserLoadM;
+
+
+:O_ROOTSHELL;
+//OPEN ROOT SHELL
+_file_write "[%time%][Logon Interface] Startup as safemode (rootshell)";
+_clear;
+_cout "{SYSNAME} {NATVC_EDITION}.  CodeName : {SYS_KERNEL_CODENAME}";
+_cout "Version :  {SYSNAME}.{SYS_KERNEL_VID}   Build :  {SYS_RELEASE_Channel}";
+_cout "This system is booting in safe mode - Boot firmware :  {BootMethod}";
+_sleep 5;
+
+
+_file_write "[%time%][Logon Interface] Set Auto Execute Program";
+
+_var {NATVC_EXPLORER} = {NATVC_ROOTSHELL};
+_var {boot_rsmode} = "false";
+_var {DEF_Title} = "NATVC SafeMode";
+_var {IsAutoLogin} = "false";
+
+_goto :BACKMAINTEXT;
+
+
+:ShellMissing;
+_file_write "[%time%][Logon Interface][Error] Fail load rootshell ";
+_clear;
+_cout "NATVC User Experience";
+_cout "Fail Load Root Shell {NATVC_ROOTSHELL}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Please use normal boot to login";
+_pause;
+_if(_cp("{NATVC_WHOIS}","SYSTEM"))|_return "$shutdown";
+_if(_cp("{NATVC_WHOIS}","SystemShell"))|_return "$shutdown";
+_if(_cp("{NATVC_WHOIS}","LOCAL_SERVICE"))|_return "$shutdown";
+_file_write "[%time%][Logon Interface] System Closed";
+_return "$shutdown";
+
+
+:UE_LOGOFF_API;
+_if(_cp("{NATVC_DisableUser}","1"))|_goto :ReloadSystemUser;
+_var {USER_REQ_LOGON} = "{NATVC_WHOIS}";
+_clear
+_file_write "[%time%][UserExperience] UserSvc Callback : user_logoff";
+_clear;
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc")|_typefile "{SYS_NROOT}/res/natvc-ntvue-logoff.txt";
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc")|_script <"{SYS_ROOT}/ntvani.ca">;
+_clear;
+_goto :ReloadSystemUser;
+
+:UE_RESTART_API;
+_clear;
+_file_write "[%time%][UserExperience] UserSvc Callback : user_restart";
+_if(_cp("{boot_rsmode}","true")) | _goto :UE_WAIT_RESTART_API;
+//Check Shutdown Execute
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(!_cp(_sipcfg shutdown_execute,"noexec")) | _goto :startUpdater;
+
+:BackRestartMode;
+
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-restart.txt";
+_script <"{SYS_ROOT}/ntvani.ca"> "1";
+_if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_RESTART_API_SECURE;
+_return "$reboot";
+
+:UE_WAIT_RESTART_API;
+_clear;
+_file_write "[%time%][UserExperience] UserSvc Callback : user_restart / wait_screen";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-wait.txt";
+_sleep 1;
+_if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_RESTART_API_SECURE;
+_return "$reboot";
+
+
+:UE_RESTART_API_SECURE;
+_file_write "[%time%][UserExperience] Secure Shutdown Report.";
+_clear;
+_cout "Now. Press any Key to Restart. All Application is closed. (Secure Shutdown)";
+_pause;
+_file_write "[%time%][UserExperience] System Restart.";
+_return "$reboot";
+
+:UE_SHUTDOWN_API;
+_file_write "[%time%][UserExperience] UserSvc Callback : user_shutdown";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-shutdown.txt";
+_if(_cp("{Next_startup_fast_boot}","-1"))|_script <"{SYS_ROOT}/ntvani.ca"> "1";
+_if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_SHUTDOWN_API_SECURE;
+_file_write "[%time%][UserExperience] System Shutdown";
+_return "$shutdown";
+
+:UE_SHUTDOWN_API_SECURE;
+_file_write "[%time%][UserExperience] Secure Shutdown Report.";
+_clear;
+_cout "Now. You can close this Device. All Application is closed. (Secure Shutdown)";
+_pause;
+_return "$shutdown";
+
+
+:HiberClose;
+_file_write "[%time%][UserExperience] System Load Hiber Mode";
+_file_write "[%time%][UserExperience] Make VarSpace Snapshot.";
+_envsave "{NATVC_DISK}/hiberfile.txt";
+_file_write "[%time%][UserExperience] Save Snapshot on {NATVC_DISK}/hiberfile.txt";
+_sipcfg.open "script/hiberdata";
+_sipcfg hiberfile = "{NATVC_DISK}/hiberfile.txt";
+_file_write "@ [%time%][SYSTEM] System is HiberMode on %fulltime%";
+_return "$hiber";
+
+
+//ERRPAGE
+:NE_ERR_NOAUTH;
+_clear;
+_file_write "[%time%][UserExperience][Error] Forbidden Run this service";
+_cout "NATVC User Experience";
+_cout "This User is not allowed run this service";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Please try to reboot and restart";
+_pause;
+_if(_cp("{NATVC_WHOIS}","SYSTEM"))|_return "$shutdown";
+_goto :ReloadSystemUser;
+
+:NE_ERR_NOTALLOW;
+_file_write "[%time%][UserExperience][Error] Report : NotAllow";
+_clear;
+_cout "NATVC User Experience";
+_cout "This User is not allowed logon.  User Name : "{USER_REQ_LOGON}". ";
+_cout "Your sign-in request was intercepted";
+_cout "Press Enter key to back";
+_pause;
+_goto :BACKMAINTEXT;
+
+:NE_ERR_NOTTYPE;
+_file_write "[%time%][UserExperience][Error] No Type Detected";
+_var {USER_REQ_LOGON} = "NOT SELECT";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-notype.txt";
+_pause;
+_goto :BACKMAINTEXT;
+
+
+//OOBE MANAGER
+:startOOBEuser;
+//Load System Deploy
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {Natvc_Deploy_Program} = _sipcfg SystemDeploy;
+_if(!_file_exist "{Natvc_Deploy_Program}")|_goto :FailDetectDeployProg;
+
+_var {Deploy_callback} = _script <"{Natvc_Deploy_Program}">;
+
+
+_if(_cp("{Deploy_callback}","oobe_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{Deploy_callback}","oobe_recovery"))|_goto :GORECOVERY;
+_if(_cp("{Deploy_callback}","user_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{Deploy_callback}","user_restart"))|_goto :UE_RESTART_API;
+
+_file_write "[%time%][UserExperience][Report] Deploy Service Exit,  Status Code :  {Deploy_callback}";
+
+_clear;
+_goto :ReloadSystemUser;
+
+:FailDetectDeployProg;
+_file_write "[%time%][UserExperience][Error] Deploy Service Failed :  {Natvc_Deploy_Program}";
+_clear;
+_cout "Natvc Setup Could not continue";
+_cout "System Deploy Program is missing or unable load";
+_cout "try to reinstall natvc or use third party software deploy natvc";
+_cout "ERROR :  DEPLOY_ERROR_EXECUTE";
+_pause;
+_return "$reboot";
+
+
+//Update API
+:startUpdater;
+_file_write "[%time%][UserExperience] System has a Update need install";
+_var {ReCreateImage} = "true";
+//Get Update Execute File
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {update_execute} = _sipcfg shutdown_execute;
+_var {update_title} = _sipcfg shutdown_exe_title;
+
+//restore default
+_sipcfg shutdown_exe_title = "Please Wait. Prepare Update";
+_sipcfg shutdown_execute = "noexec";
+
+_file_write "[%time%][UserExperience][Update] Execute File :  {update_execute}";
+_file_write "[%time%][UserExperience][Update] Check File Exist if not back restart";
+
+_if(!_file_exist "{update_execute}")|_goto :BackRestartMode;
+_file_write "[%time%][UserExperience][Update] Start Update File :  {update_execute}";
+_file_write "[%time%][UserExperience][Update] Title :  {update_title}";
+
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-updater.txt";
+
+_file_write "[%time%][UserExperience][Update] Starting Update";
+
+_var {update_callback} = _script<"{update_execute}"> "autoupdate";
+
+_file_write "[%time%][UserExperience][Update] Update End";
+_file_write "[%time%][UserExperience][Update] Status :  {update_callback}";
+
+//Back Restart
+_goto :BackRestartMode;
+
+
+:ReCreateImage;
+_var {ReCreateImage} = "false";
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_script <"{SYS_ROOT}/sysfix.ca"> "new";
+_goto :BackCreateImage;
+
+
+:CrashNTVueErr;
+_file_write "[%time%][UserExperience][Error] Unexpected terminate .. ";
+_var {BUG_REPORT} = "ntvue.ca";
+_var {NATVC_CRASH_CODE} = "NTVUE_FATAL_ERROR";
+_var {NATVC_CRASH_MESSAGE} = "Ntvue Service unexpected exit ,  try use sysfix to repair your system";
+_return "device_crash";
+
+:USERFAIL_NOUSER;
+_file_write "[%time%][UserExperience][Error] Fail load user. user not exist";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-nouser.txt"
+_pause;
+_goto :BACKMAINTEXT;
+
+
+
+
+//Recovery Init
+:GORECOVERY;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :NORENOTICE;
+
+_script <"{SYS_ROOT}/ntvrebl.ca">;
+_clear;
+_cout "Restarting to Recovery";
+_return "user_restart";
+
+:NORENOTICE;
+_clear;
+_cout "System no recovery environment";
+_cout "Please try to use "refix" to repair";
+_pause;
+_goto :BACKMAINTEXT;
+
+:List_CurrentUserStatus;
+_clear;
+_cout "System Login Interface Report";
+_cout "Current Login User";
+_cout "";
+_cout "UserName: {NATVC_USERNAME} ";
+_cout "Whois: {NATVC_WHOIS} ";
+_cout "UserProfile: {NATVC_USERPROFILE}  ";
+_cout "";
+_cout "isAdmin: {NATVC_isAdmin}      ";
+_cout "AutoRun: {NATVC_UserAutoRun}  ";
+_cout "Service Mode :  {NSV_SERVICE_MODE}";
+_cout "";
+_cout "LOCAL LOGON APPLICATION";
+_cout _getfile;
+_pause;
+_goto :BACKMAINTEXT;
+$CSTP_FILE_RECORD_MARK_ID_END(/natvc.logon.interface.host.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc User Interface UI;
+$Setup=natvc.logon.interface.host.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.logon.interface.host.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.outofboxExp.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/ntvoobe.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/ntvoobe.ca);
+//NATVC Explorer
+//Enter User Experience
+_$directmode;
+_$nolog;
+
+_var {ToolsName} = "NATVC_OOBE_Service";
+
+//Only Run on oobe user
+
+_file_write "[%time%][OOBE] Loading";
+
+//MAIN UI EXP
+_if(!_cp("{NATVC_isAdmin}","1"))|_return "failuserauth";
+_if(!_cp("{NATVC_WHOIS}","oobe"))|_return "failuserauth";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {OOBEQUICK} = _sipcfg oobequick;
+
+//MAIN Header
+:SkipSecureDetect;
+:ReloadExplorer;
+_if(_cp("{OOBEQUICK}","1")) | _goto :Server Page;
+
+_clear;
+_sleep 2;
+
+//Open Load Screen..
+_typefile "{SYS_NROOT}/res/natvc-oobe-start.txt";
+_script <"{SYS_ROOT}/ntvani.ca"> "1";
+
+:BACKMAINCONSOLE;
+_file_write "[%time%][OOBE] Load Main";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-oobe-welcome.txt";
+_pause;
+_clear;
+
+//Open EULA.
+_typefile "{SYS_NROOT}/res/natvc-eula.txt";
+_pause;
+
+_var {OOBE_PAGE_STATUS} = "oobe_unknown";
+
+//Create New User
+:CreateUserPage;
+_clear;
+//Open NEW USER.
+_typefile "{SYS_NROOT}/res/natvc-oobe-user.txt";
+
+//WRITE MAIN NAME
+:RESET_FULLNAMETYPE;
+_prt "Write your full name >";
+_var _ARGS_NU_FULLNAME = _getline;
+_if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
+_if(_cp("_ARGS_NU_FULLNAME","@oobereload"))|_goto :ReloadExplorer;
+_if(_cp("_ARGS_NU_FULLNAME","@loaddebug"))|_return "oobeexit";
+_if(_cp("_ARGS_NU_FULLNAME","@oobecancel"))|_goto :ConfigCANCEL;
+_if(_cp("_ARGS_NU_FULLNAME","@recovery"))|_goto :ConfigRecovery;
+_if(_cp("_ARGS_NU_FULLNAME","@restart"))|_return "restart";
+_if(_cp("_ARGS_NU_FULLNAME","@shutdown"))|_return "shutdown";
+_if(_cp("_ARGS_NU_FULLNAME","@skipoobe"))|_goto :EndPageOOBE;
+
+
+//WRITE ID
+:FORBIDDEN;
+_prt "Write your user id (no space bar) >";
+_var _ARGS_NU_ID = _getline;
+
+_if(_cp("_ARGS_NU_ID","@oobereload"))|_goto :ReloadExplorer;
+
+_if(_cp("_ARGS_NU_ID",'SYSTEM'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'public'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'admin'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'oobe'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'default'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'{varspace.null}'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'@'))|_goto :FORBIDDEN;
+
+//GET PASSWORD
+:invalidPasswordType;
+_prt "Write your user password (If you do not want set password. press enter) >";
+_var _ARGS_NU_PSWD = _getline;
+_if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
+_if(_cp("_ARGS_NU_PSWD",'@servicemode'))|_goto :invalidPasswordType;
+
+_var _ARGS_NU_ADMIN = "1";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "newuser";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_goto :UserCreateFailed_RETRY;
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg default = "_ARGS_NU_ID";
+
+
+:EndPageOOBE;
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+_var {DepResult_A} = _sipcfg ModifySetupOOBEtoZero;
+_var {DepResult_B} = _sipcfg EnableFastBoot;
+
+//Write Register
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
+_if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
+
+_var {OOBE_PAGE_STATUS} = "oobe_done";
+_clear;
+//Open Endpage..
+_typefile "{SYS_NROOT}/res/natvc-oobe-end.txt";
+_pause;
+//Delete OOBE
+_var _ARGS_NU_FULLNAME = "NATVC User Out of box Experience";
+_var _ARGS_NU_ID = "oobe";
+_var _ARGS_NU_PSWD = "@rtoobe";
+_var _ARGS_NU_ADMIN = "1";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+
+_clear;
+
+_return "logoff";
+
+
+:Open_Shell;
+_script <"{SYS_ROOT}/rootshell.ca">;
+_goto :ReloadExplorer;
+
+
+//ERRPAGE
+:FAIL_CRASH;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "APPCRASH. Last Command :  {NATVC_USEREXP_GET}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to logoff";
+_pause;
+_return "user_logoff";
+
+
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "For system security reasons, current users cannot run Explorer";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to logoff";
+_pause;
+_return "user_logoff";
+
+:FAIL_NOSCRIPTAUTH;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "This User Authority is not allowed run any script";
+_cout "Please use administrator try again";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to Back";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+:NoRightCMD;
+_var {NATVC_USEREXP_GET} = "NOTSET";
+_goto :BACKMAINCONSOLE;
+
+
+:FAIL_USERERR;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "This User not allowed Run OOBE";
+_cout "You can run sysreset.ca first and restart your device";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to Back";
+_pause;
+_return "fail";
+
+
+:UserCreateFailed_RETRY;
+_clear;
+_cout "   Something went wrong";
+_cout "Your user is create failed";
+_cout "maybe your type is invalid";
+_cout "or type has Illegal Path";
+_pause:
+_goto :CreateUserPage;
+
+//Hidden
+:LoadDebugUser;
+
+_var _ARGS_NU_FULLNAME = "Debug User";
+_var _ARGS_NU_ID = "debugmode";
+_var _ARGS_NU_PSWD = "@rtoobe";
+_var _ARGS_NU_ADMIN = "1";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "newuser";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "login";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+
+_goto :ReloadExplorer;
+
+
+:ConfigCANCEL;
+_var {OOBE_PAGE_STATUS} = "oobe_shutdown";
+_return "shutdown";
+
+:ConfigRecovery;
+_var {OOBE_PAGE_STATUS} = "oobe_recovery";
+_return "restart";
+
+
+:Server Page;
+_clear;
+_cout "Config your device";
+_cout "";
+_cout "Set your server password";
+_prts "Administrator Password > ";
+_var {ServerPSWD} = _getline;
+_if(_cp("{ServerPSWD}",'@oobecancel'))|_goto :ConfigCANCEL;
+_if(_cp("{ServerPSWD}",'@restart'))|_return "restart";
+_if(_cp("{ServerPSWD}",'@shutdown'))|_return "shutdown";
+_if(_cp("{ServerPSWD}",'{varspace.null}'))|_goto :MustPassword;
+
+_sipcfg.open "{SYS_USERPATH}/admin/userconfig";
+
+_sipcfg UserPassword = "{ServerPSWD}";
+_sipcfg DisableUser = "0";
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg default = "admin";
+
+_clear;
+_cout "Please wait ...";
+_cout "Apply your settings ...";
+_cout "";
+_script <"{SYS_ROOT}/ntvani.ca"> "1";
+
+_clear;
+_goto :EndPageOOBE;
+
+
+:MustPassword;
+_clear;
+_cout "For Security reason, you must set password";
+_cout "This user is system manager";
+_pause;
+_goto :Server Page;
+$CSTP_FILE_RECORD_MARK_ID_END(/ntvoobe.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc OOBE Services;
+$Setup=natvc.outofboxExp.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.outofboxExp.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.textreader.modern.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/natvc.textreader.modern.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/natvc.textreader.modern.ca);
+_$directmode;
+_$nolog;
+
+_var {ACCESS_URL} = _getargs;
+
+_if(_file_exist "{ACCESS_URL}")|_goto :NEXPLORER MAIN;
+
+_clear;
+_cout "NEW Text File Reader";
+_cout "----------------------------------------------------------------";
+_cout "@FILE DIR   | > <Not Open>";
+_cout "----------------------------------------------------------------";
+
+_cout "Open files";
+_prts "File >";
+_var {ACCESS_URL} = _getline;
+_if(_cp("{ACCESS_URL}","exit"))|_return "close";
+_if(_cp("{ACCESS_URL}",".exit"))|_return "close";
+_if(_cp("{ACCESS_URL}","opensyslog"))|_var {ACCESS_URL} = "{SYS_LOG}";
+_goto :NEXPLORER MAIN;
+
+
+
+:NEXPLORER MAIN;
+_clear;
+_cout "NEW Text File Reader";
+_cout "----------------------------------------------------------------";
+_cout "@FILE DIR   | >{ACCESS_URL}";
+_cout "----------------------------------------------------------------";
+
+_prts "Loading Pages ...";
+
+_if(!_file_exist "{ACCESS_URL}")|_goto :FailLoad;
+
+_prts "\r                                              \r";
+_textprint "{ACCESS_URL}";
+
+:EndloadPage;
+_cout "----------------------------------------------------------------";
+_prts "File >";
+_var {ACCESS_URL} = _getline;
+_if(_cp("{ACCESS_URL}","exit"))|_return "close";
+_if(_cp("{ACCESS_URL}",".exit"))|_return "close";
+_if(_cp("{ACCESS_URL}","opensyslog"))|_var {ACCESS_URL} = "{SYS_LOG}";
+_goto :NEXPLORER MAIN;  
+
+//Get Main
+
+
+//ERROR PAGE
+:FailLoad;
+_cout "   Error Load page";
+_cout "   File Not Exist";
+_cout "";
+_cout "";
+_cout "";
+_goto :EndloadPage;
+$CSTP_FILE_RECORD_MARK_ID_END(/natvc.textreader.modern.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Textreader;
+$Setup=natvc.textreader.modern.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+[System Explorer] QL Exit Result :  ok
+[21:07:21][SystemExplorer] check callback operate
+[21:07:22][SystemExplorer] OpenLibrary(Config Get) Return value is "{varspace.null}" 
+[21:07:22][SystemExplorer] No Operate need execute. back main console
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.textreader.modern.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.userinterface.explorer.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_sipcfg.open "{AppData}/AppEnvReport.txt";
+_sipcfg AppName = "Natvc Explorer";
+_sipcfg Reload = "logoff";
+
+_cover <"{AppDir}/UserExplorer.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=User Explorer Interface UI;
+$Setup=natvc.userinterface.explorer.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/UserExplorer.ca);
+//NATVC Explorer
+//Enter User Experience
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_sipcfg.open "{NATVC_USERPROFILE}/userconfig";
+_if(_cp(_sipcfg nouserexplorer,"true"))|_goto :FailStartupUserExplorer_ConfigBlocked;
+
+_var {bool_isAutoRunExec} = "0";
+
+_file_write "[%time%][SystemExplorer] Load Explorer";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+
+_var {Explorer_Title} = _sipcfg explorer_title;
+
+_if(_cp("{NATVC_EXPLORER}","{NATVC_ROOTSHELL}"))|_goto :SAFEMODE_Notifications;
+:SafeMode_Apply;
+
+_var {NATVC_USER_MENU_CONFIG} = "{NATVC_USERPROFILE}/usermenu";
+_var {NATVC_USER_INDEX} = "{NATVC_USERPROFILE}/userindex";
+_if(!_file_exist "{NATVC_USER_INDEX}") | _file_copy ("{SYS_USERPATH}/default/userindex","{NATVC_USER_INDEX}");
+
+//MAIN UI EXP
+
+_file_write "[%time%][SystemExplorer] Check user status";
+
+_if(_cp("{bool_isAutoRunExec}","1"))|_goto :SkipDetectAutoRun;
+_if(_file_exist "{NATVC_USERPROFILE}/autorun")|_goto :PROCE_AutoRun;
+
+:SkipDetectAutoRun;
+_if(!_file_exist "{NATVC_USERPROFILE}/startcomplete")|_goto :LOAD_STARTREADER;
+
+
+//Detect Start Reader
+
+:ReloadExplorer;
+_var {ToolsName} = "NATVC Explorer";
+_free {varspace.null};
+
+
+_sipcfg.open "{SYS_NROOT}/Themes/NtvexpThemes.txt";
+
+_var {NTVEXP_AD_1} = _sipcfg TitleA;
+_var {NTVEXP_AD_2} = _sipcfg TitleB;
+_var {NTVEXP_AD_3} = _sipcfg TitleC;
+_var {NTVEXP_AD_4} = _sipcfg TitleD;
+_var {NTVEXP_AD_5} = _sipcfg TitleE;
+
+
+_file_write "[%time%][SystemExplorer] Load Main";
+
+_clear;
+_if(_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_typefile "{SYS_NROOT}/res/natvc-explorer.txt";
+
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Explorer Resources load fail";
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Fail load user interface {SYS_NROOT}/res/natvc-explorer.txt";
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "";
+
+:BACKMAINCONSOLE;
+_var {ntvue.logontime} = _getclock;
+_var {ntvue.logondate} = _getdate;
+_var {rs_pathexec} = "{SYS_ROOT}";
+_file_open "{SYS_LOG}";
+_cout "";
+_prt "{Explorer_Title}";
+_var {NATVC_USEREXP_GET} = _getline;
+
+_file_write "[%time%][SystemExplorer] User Execute Command -->  {NATVC_USEREXP_GET}";
+
+//Check EXP is allow?
+_if(!_file_exist "{NATVC_USERPROFILE}/useroptban")|_file_copy("{SYS_USERPATH}/default/useroptban","{NATVC_USERPROFILE}/useroptban")
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{NATVC_USEREXP_GET}";
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :bancmd;
+
+//Other
+_if(_cp("{NATVC_USEREXP_GET}",'{varspace.null}'))|_goto :ReloadExplorer;
+_if(_cp("{NATVC_USEREXP_GET}",".rs"))|_goto :rs_restart;
+_if(_cp("{NATVC_USEREXP_GET}",".bm"))|_goto :bm_restart;
+_if(_cp("{NATVC_USEREXP_GET}",".re"))|_goto :GORECOVERY;
+_if(_cp("{NATVC_USEREXP_GET}",".adv"))|_goto :LoadAdvancedBootOpt;
+_if(_cp("{NATVC_USEREXP_GET}",".shell")) | _goto :Open_RootShellCon;
+_if(_cp("{NATVC_USEREXP_GET}","reload"))|_goto :ReloadExplorer;
+_if(_cp("{NATVC_USEREXP_GET}","logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_GET}","shutdown"))|_return "user_shutdown";
+
+_if(_cp("{NATVC_USEREXP_GET}","@shutdown"))|_var {Next_startup_fast_boot} = "-1";
+_if(_cp("{NATVC_USEREXP_GET}","@shutdown"))|_return "user_shutdown";
+
+_if(_cp("{NATVC_USEREXP_GET}","restart"))|_return "user_restart";
+_if(_cp("{NATVC_USEREXP_GET}","user_logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_GET}","lock"))|_return "user_lock";
+_if(_cp("{NATVC_USEREXP_GET}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_GET}","user_restart"))|_return "user_restart";
+_if(_cp("{NATVC_USEREXP_GET}","hiber"))|_return "user_hiber";
+_if(_cp("{NATVC_USEREXP_GET}","sysfix"))|_goto :RunSysFixMode;
+_if(_cp("{NATVC_USEREXP_GET}","bootopt"))|_goto :RunBootOPT;
+_if(_cp("{NATVC_USEREXP_GET}","menu")) | _goto :Open_Menu;
+_if(_cp("{NATVC_USEREXP_GET}","software")) | _goto :Open_Software;
+_if(_cp("{NATVC_USEREXP_GET}","linkmgr"))|_goto :LinkManager;
+_if(_cp("{NATVC_USEREXP_GET}","about"))|_goto :About;
+_if(_cp("{NATVC_USEREXP_GET}","help")) | _goto :ListHelper;
+_if(_cp("{NATVC_USEREXP_GET}","fdl_debug.crashtest")) | _goto :CrashTest;
+
+//Detect Direct Run MNA
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_USEREXP_GET}";
+_if(_cp("{mna_Result}","noapp"))|_goto :CheckIndexMode;
+_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
+_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
+_goto :Run Command;
+
+
+:CheckIndexMode;
+_sipcfg.open "{NATVC_USER_INDEX}";
+_var {NATVC_Execute_Program} = _sipcfg {NATVC_USEREXP_GET};
+_if(_cp("{NATVC_Execute_Program}",'{varspace.null}')) | _goto :SkipTestSOFTWARE;
+_if(_file_exist "{NATVC_Execute_Program}") | _goto :Exec_Script;
+_if(!_file_exist "{NATVC_Execute_Program}") | _goto :TestMNAWork;
+
+
+:TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Execute_Program}";
+_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
+_if(_cp("{mna_Result}","noapp"))|_goto :SkipTestSOFTWARE;
+//RunOKStatus
+_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
+_goto :Run Command;
+
+
+:SkipTestSOFTWARE;
+_file_write "[%time%][SystemExplorer][Error] userLink Return a Error -->  Unknown Command";
+_cout "{NATVC_USEREXP_GET} :  Not Command or execute tool.";
+_goto :BACKMAINCONSOLE;
+
+:ListHelper;
+_clear
+_cout "";
+_typefile "{SYS_NROOT}/res/natvc-explorer-help.txt";
+_goto :BACKMAINCONSOLE;
+
+
+
+//Function
+:About;
+_clear;
+_typefile "{NATVC_ABOUTS_TEXT}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:LinkManager;
+_file_write "[%time%][SystemExplorer] Open Link Manager";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{SYS_ROOT}/linkmgr.ca">;
+_goto :BACKMAINCONSOLE;
+
+
+
+:Open_RootShellCon;
+_file_write "[%time%][SystemExplorer] Open Root Shell Mode";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{SYS_ROOT}/rootshell.ca">;
+
+_goto :Run Command;
+
+
+:Open_Software;
+_prt "Open Software Link > ";
+_var {NATVC_USEREXP_GET} = _getline;
+_sipcfg.open "{NATVC_CONFIG_SOFTWARE}";
+_var {NATVC_Execute_Program} = _sipcfg {NATVC_USEREXP_GET};
+_if(_cp("{NATVC_Execute_Program}",'{varspace.null}')) | _goto :SkipTestSOFTWARE;
+
+_if(_file_exist "{NATVC_Execute_Program}") | _goto :Exec_Script;
+_if(!_file_exist "{NATVC_Execute_Program}") | _goto :SoftwareErrorNotFound;
+
+_goto :BACKMAINCONSOLE;
+
+
+
+:IndexNotWork;
+_cout "This Index :  {NATVC_USEREXP_GET} seems not work";
+_cout "Execute File Not Found";
+_cout "Index Link :  "{NATVC_USEREXP_GET}" .";
+_cout "File Address  :  "{NATVC_Execute_Program}" .";
+_goto :BACKMAINCONSOLE;
+
+
+
+:SoftwareErrorNotFound;
+_cout "Software Error";
+_cout "Execute File Not Found";
+_cout "on config/SOFTWARE ... ";
+_cout "Software Link :  {NATVC_USEREXP_GET} .";
+_cout "File Address  :  {NATVC_Execute_Program} .";
+_goto :BACKMAINCONSOLE;
+
+
+
+:Exec_Script;
+//AutoConfig Load;
+_file_write "[%time%][SystemExplorer] Execute Script {NATVC_Execute_Program}";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{NATVC_Execute_Program}">;
+_file_write "[%time%][SystemExplorer] Program is exit. callback is :  "{NATVC_USEREXP_RUN_CALLBACK}"  ";
+_cout "";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","reload"))|_goto :ReloadExplorer;
+
+:Run Command;
+
+_file_write "[%time%][SystemExplorer] check callback operate";
+
+//Check EXP is allow?
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{NATVC_USEREXP_RUN_CALLBACK}";
+
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_file_write "[%time%][SystemExplorer] OpenLibrary(Config Get) Return value is "{callback_temp}" ";
+
+_if(_cp("{callback_temp}","false")) | _goto :bancmd;
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".rs"))|_goto :rs_restart;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".bm"))|_goto :bm_restart;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".re"))|_goto :GORECOVERY;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".shell")) | _goto :Open_RootShellCon;
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","reload"))|_goto :ReloadExplorer;
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown"))|_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))|_return "user_restart";
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","lock"))|_return "user_lock";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","user_restart"))|_return "user_restart";
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","hiber"))|_return "user_hiber";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","sysfix"))|_goto :RunSysFixMode;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","bootopt"))|_goto :RunBootOPT;
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","menu")) | _goto :Open_Menu;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","software")) | _goto :Open_Software;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","linkmgr"))|_goto :LinkManager;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","about"))|_goto :About;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","help")) | _goto :ListHelper;
+
+_file_write "[%time%][SystemExplorer] No Operate need execute. back main console";
+
+_goto :BACKMAINCONSOLE;
+
+
+
+:Open_Menu;
+//Exec Open Menu
+_file_write "[%time%][SystemExplorer] Open User Menu";
+_if(_cp("{NATVC_USERMENU}","0"))|_goto :FAIL_MENULOST;
+
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{NATVC_USERMENU}">;
+
+_file_write "[%time%][SystemExplorer] User Menu Callback -->  {NATVC_USEREXP_RUN_CALLBACK}";
+
+//Check EXP is allow?
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{NATVC_USEREXP_RUN_CALLBACK}";
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :bancmd;
+
+//_cout "{NATVC_USEREXP_RUN_CALLBACK}";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","reload"))|_goto :ReloadExplorer;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown"))|_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))|_return "user_restart";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","hiber"))|_return "user_hiber";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","sysfix"))|_goto :RunSysFixMode;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","bootopt"))|_goto :RunBootOPT;
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","cmenu"))|_goto :BACKMAINCONSOLE;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".rs"))|_goto :rs_restart;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".bm"))|_goto :bm_restart;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".re"))|_goto :GORECOVERY;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".shell")) | _goto :Open_RootShellCon;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","software"))| _goto :Open_Software;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","about"))| _goto :About;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","linkmgr"))|_goto :LinkManager;
+_goto :CheckIndexMode;
+
+
+
+
+//Restart Device
+:rs_restart;
+//Restart and Open Root Shell
+_file_write "[%time%][SystemExplorer] Execute -->  Restart and boot with rootshell";
+_var {boot_rsmode} = "true";
+_return "user_restart";
+
+
+
+:bm_restart;
+//Restart and Open Root Shell
+_file_write "[%time%][SystemExplorer] Execute -->  Restart and boot with rootshell";
+_var bvm_bm = "true";
+_return "user_restart";
+
+
+:RunBootOPT;
+//Restart and Open Root Shell
+_file_write "[%time%][SystemExplorer] Execute -->  Restart and Load System boot Option";
+_var {NBFMenu} = "true";
+_return "user_restart";
+
+
+:RunSysFixMode;
+//Restart and Check system 
+_file_write "[%time%][SystemExplorer] Execute -->  Restart and run system automatic repair";
+_var {checksysfix} = "true";
+_return "user_restart";
+
+
+//ERRPAGE
+:FAIL_CRASH;
+_clear;
+_file_write "[%time%][SystemExplorer][Error] AppCrash on {NATVC_USEREXP_GET}";
+_cout "NATVC Explorer Console";
+_cout "APPCRASH. Last Command :  {NATVC_USEREXP_GET}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to logoff";
+_pause;
+_return "user_logoff";
+
+
+
+:NoRightCMD;
+_var {NATVC_USEREXP_GET} = "NOTSET";
+_goto :BACKMAINCONSOLE;
+
+
+
+:FAIL_MENULOST;
+_file_write "[%time%][SystemExplorer][Error] Load UserMenu failed :  FAIL_MENULOST";
+_clear;
+_cout "NATVC Explorer Console";
+_cout "User Menu Error";
+_cout "File Missing : {NATVC_USERMENU}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to Back";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:ERRARFileMis;
+_clear;
+_cout "Cannot Load Explorer auto run";
+_cout "file missing :   {Explorer_AutoRun}";
+_cout "press enter to back CLI";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:bancmd;
+_file_write "[%time%][SystemExplorer] Command is disabled by administrator";
+_cout "This command is disabled by administrator";
+_cout "";
+_goto :BACKMAINCONSOLE;
+
+:GORECOVERY;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :NORENOTICE;
+
+_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">;
+
+_return "user_restart";
+
+
+:LoadAdvancedBootOpt;
+_var {NATVC_A_RE} = "true";
+_return "user_restart";
+
+
+:NORENOTICE;
+_cout "System no recovery environment";
+_cout "Please try to use "refix" to repair";
+_goto :BACKMAINCONSOLE;
+
+:PROCE_AutoRun;
+//Process Task
+_var {bool_isAutoRunExec} = "1";
+_sipcfg.open "{NATVC_USERPROFILE}/autorun";
+_var {Explorer_AutoRun} = _sipcfg task;
+_clear;
+_if(!_file_exist "{Explorer_AutoRun}")|_goto :ERRARFileMis;
+_var {NATVC_Execute_Program} = "{Explorer_AutoRun}";
+_goto :Exec_Script;
+
+:CrashTest;
+_var {FAILSYS_MBU} = "true";
+_return "failsys";
+
+
+:SAFEMODE_Notifications;
+_clear;
+_cout "----------------------------------------------------";
+_cout "  Natvc is running on safe mode.";
+_cout "  By default, the explorer will not run automatically.";
+_cout "  The explorer allows the configuration of programs that start automatically.";
+_cout "  We do not recommend running Explorer in safe mode.";
+_cout "";
+_cout "  If you want to continue running in safe mode, please enter:  runassafemode";
+_cout "----------------------------------------------------";
+_prts "Explorer Notification >";
+_var {APPLY_SAFE} = _getline;
+
+_if(!_cp("{APPLY_SAFE}","runassafemode"))|_return "cancel";
+
+_goto :SafeMode_Apply;
+
+
+:LOAD_STARTREADER;
+_if(_file_exist "{NATVC_USERPROFILE}/autorun")|_goto :SkipDisplayStartRead;
+
+_clear;
+_typefile "{SYS_NROOT}/res/start-read.txt";
+_cout "";
+_pause;
+:SkipDisplayStartRead;
+
+_sipcfg.open "{NATVC_USERPROFILE}/startcomplete"
+_sipcfg SNA = "true";
+_goto :ReloadExplorer;
+
+
+:FailStartupUserExplorer_ConfigBlocked;
+_clear;
+_cout "Natvc User Explorer.  Error";
+_cout "Security Reason.";
+_cout "The Local Security had Blocked User Explorer";
+_cout "Explorer Cannot startup";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/UserExplorer.ca);
+[System Explorer] QL Exit Result :  ok
+[18:44:04][SystemExplorer] check callback operate
+[18:44:04][SystemExplorer] OpenLibrary(Config Get) Return value is "{varspace.null}" 
+[18:44:04][SystemExplorer] No Operate need execute. back main console
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.userinterface.explorer.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.userinterface.file.explorer.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/fx.system.file.explorer.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/fx.system.file.explorer.ca);
+_$directmode;
+_$nolog;
+
+//Explorer Main
+
+_sipcfg.open "{NATVC_USERPROFILE}/userconfig";
+_if(_cp(_sipcfg noexplorer,"true"))|_goto :FailStartupFileExplorer_ConfigBlocked;
+
+//Load Cache File Map
+_var {ToolsName} = "EXPLORER";
+
+_var {EXPLORER_WORK_DIR} = _getargs;
+
+//Load Default Maps
+_if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
+
+_var {USE_NUM_SELECT_FOLDER} = "0";
+_if(_file_exist "{NATVC_USERPROFILE}/USE_NUM_SELECT_FOLDER")|_var {USE_NUM_SELECT_FOLDER} = "1";
+
+_free {EXPLORER_WORK_DIR_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST_LAST};
+
+//Open File Manager
+//CONSOLE
+
+_var {CopyFileName_Cache} = "{noselect_files}";
+_var {CopyFileNameTag_Cache} = "{ORGNAMEDIR}";
+_var {CopyFileDelete_Cache} = "0";
+
+_var {CopyDirName_Cache} = "{noselect_files}";
+_var {CopyDirNameTag_Cache} = "{ORGNAMEDIR}";
+_var {CopyDirDelete_Cache} = "0";
+
+_var {EXPLORER_WORK_DIR_LAST} = "{nolastdir}";
+_var {EXPLORER_WORK_DIR_LAST_LAST} = "{nolastdir}";
+_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{nolastdir}";
+
+:RELOADCONSOLE;
+_var {NumTarget} = "0";
+_file_del "{temp}/Explorer_cacheList.txt";
+_if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
+_clear;
+_cout "@---- File Explorer -------------------------------------------";
+_cout "| DIR:  {EXPLORER_WORK_DIR}";
+_cout "---------------------------------------------------------------";
+_file_list ("{temp}/Explorer_cacheList.txt","{EXPLORER_WORK_DIR}");
+_file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}/","");
+_if(_file_exist "{temp}/Explorer_cacheList.txt")|_textprint "{temp}/Explorer_cacheList.txt";
+_if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No File at here";
+_cout "---------------------------------------------------------------";
+_cout "type dir name to opendir,type file name to edit file";
+_cout "command :   "rmdir"  "mkdir"  "cpdir" "cutdir" "cd"  "paste"  "exit"  ";
+_if(_cp("{USE_NUM_SELECT_FOLDER}","1"))|_cout "Number Select Folder/File is Enabled. You can type number to select";
+_cout "";
+_prt "Explorer >";
+_var {UserTypeGet} = _getline;
+//Process User Command
+:ReProcessCommand
+//_cout "Recyclic {UserTypeGet}";
+//_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","LineError"))|_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","FileNotExist"))|_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","{varspace.null}"))|_cout "Refresh Explorer";
+_if(_cp("{UserTypeGet}","{varspace.null}"))|_ms_sleep "100";
+_if(_cp("{UserTypeGet}","{varspace.null}"))|_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","ntsh"))|_goto :OpenNtshConsole;
+
+_if(_cp("{UserTypeGet}",".."))|_goto :GotoLastDIR;
+_if(_cp("{UserTypeGet}","..."))|_var {EXPLORER_WORK_DIR} = "{NODIR}";
+_if(_cp("{UserTypeGet}","rmdir"))|_goto :RemoveDir;
+_if(_cp("{UserTypeGet}","mkdir"))|_goto :MakeDir;
+_if(_cp("{UserTypeGet}","cpdir"))|_goto :CopyDirMD;
+_if(_cp("{UserTypeGet}","cutdir"))|_goto :CutDirMD;
+_if(_cp("{UserTypeGet}","cd"))|_goto :CdDir;
+_if(_cp("{UserTypeGet}","debug.levelprint"))|_goto :DEBUG_LVPTR;
+//paste
+_if(_cp("{UserTypeGet}","paste"))|_goto :PasteFileOrDir;
+
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST}";
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST}";
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST} = "{EXPLORER_WORK_DIR}";
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+
+_if(_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :FileEdit_Manager;
+
+
+_if(_cp("{UserTypeGet}","exit"))|_return "ok";
+_if(_cp("{UserTypeGet}",".exit"))|_return "ok";
+
+_if(_cp("{USE_NUM_SELECT_FOLDER}","0"))|_goto :RELOADCONSOLE;
+
+_if(_cp("{UserTypeGet}","overline"))|_goto :RELOADCONSOLE;
+
+//Is Num
+_if (_cp("{NumTarget}","1"))|_goto :RELOADCONSOLE;
+_var {NumTarget} = "1";
+_var {UserTypeGet} = _file_read ("{temp}/Explorer_cacheList.txt","{UserTypeGet}");
+_goto :ReProcessCommand;
+
+
+_goto :Explorer_Crash;
+
+
+
+:Explorer_Crash;
+_clear;
+_cout "Natvc Explorer Error. stop working";
+_cout "File Operate failed":
+_pause;
+_return "crash";
+
+
+:CopyDirMD;
+_cout "";
+_cout "Type Dir you want Copy";
+_prt "Copy Dir>";
+_var {UserTypeGet} = _getline;
+
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_cout "No This dir";
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_pause;
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
+
+_var {CopyDirName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_var {CopyDirNameTag_Cache} = "{UserTypeGet}";
+_var {CopyDirDelete_Cache} = "0";
+
+_var {CopyFileName_Cache} = "{noselect_files}";
+_var {CopyFileNameTag_Cache} = "{ORGNAMEDIR}";
+_var {CopyFileDelete_Cache} = "0";
+
+_goto :RELOADCONSOLE;
+
+
+:CopyDirMD;
+_cout "";
+_cout "Type Dir you want Cut";
+_prt "Cut Dir>";
+_var {UserTypeGet} = _getline;
+
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_cout "No This dir";
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_pause;
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
+
+_var {CopyDirName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_var {CopyDirNameTag_Cache} = "{UserTypeGet}";
+_var {CopyDirDelete_Cache} = "1";
+
+_goto :RELOADCONSOLE;
+
+
+
+
+:GotoLastDIR;
+_var {EXPLORER_WORK_DIR} = "{EXPLORER_WORK_DIR_LAST}";
+_var {EXPLORER_WORK_DIR_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST}";
+_var {EXPLORER_WORK_DIR_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST_LAST}";
+_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{nolastdir}";
+_goto :RELOADCONSOLE;
+
+:RemoveDir;
+_cout "";
+_cout "Type Dir you want remove";
+_prt "Remove Dir>";
+_var {UserTypeGet} = _getline;
+_dir_remove "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_goto :RELOADCONSOLE;
+
+:MakeDir;
+_cout "";
+_cout "Type Dir you want Make";
+_prt "Make Dir>";
+_var {UserTypeGet} = _getline;
+_dir_make "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_goto :RELOADCONSOLE;
+
+:CdDir;
+_cout "";
+_cout "Type Dir";
+_prt "Dir>";
+_var {UserTypeGet} = _getline;
+_var {EXPLORER_WORK_DIR} = "{UserTypeGet}";
+_goto :RELOADCONSOLE;
+
+
+:FileEdit_Manager;
+_cout "";
+_cout "What do you want do";
+_cout "File {EXPLORER_WORK_DIR}/{UserTypeGet}";
+_cout "command :  "copy" "del" "cut" "open"  "exit"   ";
+_prt "file>";
+_var {GETOPT} = _getline;
+_if(_cp("{GETOPT}","copy"))|_var {CopyFileName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_if(_cp("{GETOPT}","copy"))|_var {CopyFileNameTag_Cache} = "{UserTypeGet}";
+_if(_cp("{GETOPT}","copy"))|_var {CopyFileDelete_Cache} = "0";
+
+_if(_cp("{GETOPT}","copy"))|_var {CopyDirName_Cache} = "{noselect_files}";
+_if(_cp("{GETOPT}","copy"))|_var {CopyDirDelete_Cache} = "0";
+
+_if(_cp("{GETOPT}","copy"))|_cout "file is copy. use "paste" command to paste here  ";
+
+_if(_cp("{GETOPT}","del"))|_goto :delMode;
+
+_if(_cp("{GETOPT}","cut"))|_var {CopyFileName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_if(_cp("{GETOPT}","cut"))|_var {CopyFileNameTag_Cache} = "{UserTypeGet}";
+_if(_cp("{GETOPT}","cut"))|_var {CopyFileDelete_Cache} = "1";
+
+_if(_cp("{GETOPT}","cut"))|_var {CopyDirName_Cache} = "{noselect_files}";
+_if(_cp("{GETOPT}","cut"))|_var {CopyDirDelete_Cache} = "0";
+
+_if(_cp("{GETOPT}","cut"))|_cout "file is cut. use "paste" command to paste here  ";
+
+_if(_cp("{GETOPT}","open"))|_goto :OpenFileForOpeate;
+
+_goto :RELOADCONSOLE;
+
+
+
+
+
+:delMode;
+_file_del "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_if(!_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
+_cout "Delete Fail";
+_cout "This file is using ?.  or you haven`t auth to delete this file";
+_pause;
+_goto :RELOADCONSOLE;
+
+
+
+:OpenFileForOpeate;
+
+
+//Check EXP is allow?
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{UserTypeGet}";
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :FailLoadProgram;
+
+
+_clear;
+_cout "How do you want open this file";
+_cout "File :   {EXPLORER_WORK_DIR}/{UserTypeGet}";
+_cout "";
+_cout "     1. Run Calcium Application"; //OK
+_cout "     2. Open with Text reader";  //OK
+_cout "     3. Open with Config Editor";  //OK
+_cout "     4. Exit";
+_prt "Select Open Method >";
+_var {OpenMethod} = _getline;
+
+_var {ROOTSHELL_CALLBACK} = "Null";
+_var {rs_pathexec} = "{EXPLORER_WORK_DIR}";
+
+_if(_cp("{OpenMethod}","1"))|_var {ROOTSHELL_CALLBACK} = _script <"{SYS_ROOT}/run.ca"> "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+
+_if(_cp("{OpenMethod}","2"))|_script <"{SYS_ROOT}/textreader.ca"> "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+
+_if(_cp("{OpenMethod}","3"))|_goto :RunRegeditProMode;
+
+_if(_cp("{ROOTSHELL_CALLBACK}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{ROOTSHELL_CALLBACK}","user_restart"))|_return "user_restart";
+_if(_cp("{ROOTSHELL_CALLBACK}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ROOTSHELL_CALLBACK}","shutdown"))|_return "user_shutdown";
+_if(_cp("{ROOTSHELL_CALLBACK}","restart"))|_return "user_restart";
+_if(_cp("{ROOTSHELL_CALLBACK}","logoff"))|_return "user_logoff";
+
+_if(_cp("{ROOTSHELL_CALLBACK}","notworkonusermode"))|_cout "This Application cannot running on User Mode";
+_if(_cp("{ROOTSHELL_CALLBACK}","noauth"))|_cout "This Application cannot running in current user";
+_if(_cp("{ROOTSHELL_CALLBACK}","failuserauth"))|_cout "This Application cannot running in current user";
+
+_if(!_cp("{ROOTSHELL_CALLBACK}","Null"))|_pause;
+
+_goto :RELOADCONSOLE;
+
+
+
+:FailLoadProgram;
+_cout "For System Security. your device is not allowed run this program";
+_pause;
+_goto :RELOADCONSOLE;
+
+:RunRegeditProMode;
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :NotAlloweEdit;
+_var {RegOpenFile} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_goto :RELOADCONSOLE;
+
+
+:NotAlloweEdit;
+_clear;
+_cout "Open Editor Require System Administrator";
+_pause;
+_goto :RELOADCONSOLE;
+
+:PasteFileOrDir;
+_if(!_cp("{CopyDirName_Cache}","{noselect_files}"))|_goto :CopyDirMode;
+_if(!_cp("{CopyFileName_Cache}","{noselect_files}"))|_goto :CopyFileMode;
+_cout "No File/Dir on Paste Board";
+_pause
+_goto :RELOADCONSOLE;
+
+:CopyDirMode;
+_var {XCOPY_A} = "{CopyDirName_Cache}";
+_var {XCOPY_B} = "{EXPLORER_WORK_DIR}/{CopyDirNameTag_Cache}";
+_script <"{SYS_ROOT}/xcopy.ca">;
+_free {XCOPY_A};
+_free {XCOPY_B};
+
+_if(_cp("{CopyDirDelete_Cache}","1"))|_dir_remove "{CopyDirName_Cache}";
+
+
+_goto :RELOADCONSOLE;
+
+
+
+:CopyFileMode;
+_file_copy ("{CopyFileName_Cache}","{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}");
+_if(_cp("{CopyFileDelete_Cache}","1"))|_file_del "{CopyFileName_Cache}";
+
+_if(!_file_exist "{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}")|_cout "Copy Fail..";
+_if(!_file_exist "{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}")|_pause;
+
+_goto :RELOADCONSOLE;
+
+:OpenNtshConsole;
+_clear;
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_cout "failed to detect nativeshell core Application";
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_pause;
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_goto :RELOADCONSOLE;
+_script <"{SYS_ROOT}/nativeshell.ca"> "{EXPLORER_WORK_DIR}";
+_goto :RELOADCONSOLE;
+
+:DEBUG_LVPTR;
+_clear;
+_cout "Top :   {EXPLORER_WORK_DIR}";
+_cout "2   :   {EXPLORER_WORK_DIR_LAST}";
+_cout "3   :   {EXPLORER_WORK_DIR_LAST_LAST}";
+_cout "4   :   {EXPLORER_WORK_DIR_LAST_LAST_LAST}";
+_cout "Debug Toolkit";
+_pause;
+_goto :RELOADCONSOLE;
+
+
+:FailStartupFileExplorer_ConfigBlocked;
+_clear;
+_cout "File Explorer.  Error";
+_cout "Security Reason.";
+_cout "The Local Security had Blocked File Explorer";
+_cout "Explorer Cannot startup";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/fx.system.file.explorer.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Natvc File Explorer;
+$Setup=natvc.userinterface.file.explorer.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+[System Explorer] QL Exit Result :  ok
+[18:49:49][SystemExplorer] check callback operate
+[18:49:49][SystemExplorer] OpenLibrary(Config Get) Return value is "{varspace.null}" 
+[18:49:49][SystemExplorer] No Operate need execute. back main console
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.userinterface.file.explorer.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.userinterface.startmenu.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/usermenu.ca">;
+_cout "natvc.userinterface.startmenu.mna";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Start Menu;
+$Setup=natvc.userinterface.startmenu.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/usermenu.ca);
+//NATVC USER MENU
+// BASE USER Function
+_$directmode;
+_$nolog;
+
+_var {ToolsName} = "USERMENU";
+
+//MAIN TYPE
+//USER MENU
+
+_file_write "[%time%][UserMenu] User {NATVC_WHOIS} open Menu";
+
+_if(!_file_exist "{NATVC_USER_MENU_CONFIG}") | _goto :ERR_NOCONFIG;
+
+//Load Menu
+_file_write "[%time%][UserMenu] Load config :  {NATVC_USER_MENU_CONFIG}";
+_sipcfg.open "{NATVC_USER_MENU_CONFIG}";
+_var {Menu_Type} = _sipcfg MENU_TYPE;
+
+_if(!_file_exist "{Menu_Type}") | _goto :ERR_NOMType;
+
+_clear;
+_typefile "{Menu_Type}";
+_file_write "[%time%][UserMenu] LoadMain";
+
+:BACKMAINCONSOLE;
+_cout "";
+_prt "$ User Start Menu > ";
+_file_write "[%time%][UserMenu] Wait user Operation";
+_var {NATVC_USEREXP_GET} = _getline;
+
+_file_write "[%time%][UserMenu] User Execute Command -->  {NATVC_USEREXP_GET}";
+_goto :RET_RAW;
+
+//Function
+:RET_RAW;
+_file_write "[%time%][UserMenu] userLib return {NATVC_USEREXP_GET}";
+
+_if(_cp("{NATVC_USEREXP_GET}","{varspace.null}"))|_return "cmenu";
+
+_return "{NATVC_USEREXP_GET}";
+
+//ERRPAGE
+:ERR_NOCONFIG;
+_file_write "[%time%][UserMenu][Error] Fail Load User Menu: ";
+_file_write "[%time%][UserMenu][Error] Missing Config :  {NATVC_USER_MENU_CONFIG} ";
+_cout "------------------------------------";
+_cout "NATVC User Menu";
+_cout "Fail Load. CONFIG File";
+_cout "Missing Config File :  {NATVC_USER_MENU_CONFIG}";
+_cout "AppCrash";
+_cout "------------------------------------";
+_return "@@appcrash@natvc@usermenu@_failconfig";
+
+:ERR_NOMType;
+_file_write "[%time%][UserMenu][Error] Fail Load User Menu: ";
+_file_write "[%time%][UserMenu][Error] Missing Resource :  {Menu_Type} ";
+_cout "------------------------------------";
+_cout "NATVC User Menu";
+_cout "Fail Load Resource {Menu_Type}";
+_cout "Missing Config File :  {Menu_Type}";
+_cout "AppCrash";
+_cout "------------------------------------";
+_return "@@appcrash@natvc@usermenu@_failresource";
+$CSTP_FILE_RECORD_MARK_ID_END(/usermenu.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.userinterface.startmenu.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc_fdl.dev_toolkit.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -8275,6 +10320,35 @@ $AppVersion=1002;
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc_fdl.nexplorer.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/DriverStore/FAT32.Driver/fat32.ntvdrv);
+_$directmode;
+
+_if(!_cp("Win32","{hal_api.SystemBase}"))|_return "failed:SystemDirectory!";
+_var / = "\";
+
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/DriverStore/FAT32.Driver/fat32.ntvdrv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/DriverStore/NTFSOptimi.Driver/ntfs.ntvdrv);
+_$directmode;
+
+_if(!_cp("Win32","{hal_api.SystemBase}"))|_return "failed:SystemDirectory!";
+_var / = "\";
+
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/DriverStore/NTFSOptimi.Driver/ntfs.ntvdrv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/DriverStore/WindowsCommander.Driver/wcmd.ntvdrv);
+_$directmode;
+
+_if(!_cfgedit EnableSystemCommand)|_return "failed:NotEnableCommandFunc!";
+_if(!_cp("Win32","{hal_api.SystemBase}"))|_return "failed:CannotFindSystemInputIO!";
+_system "clear";
+
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/DriverStore/WindowsCommander.Driver/wcmd.ntvdrv);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/DriverStore/WindowsConsoleApplication.Driver/wcaopt.ntvdrv);
+_$directmode;
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/DriverStore/WindowsConsoleApplication.Driver/wcaopt.ntvdrv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/fdl_labc.ca);
 _$directmode;
 _$nolog;
@@ -8323,6 +10397,47 @@ _if(_cp("{NSV_SERVICE_MODE}","true"))|_return "ok";
 _cout "The program is running on user mode";
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/isServiceMode.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/mna-applaunchertemple/example.mapp);
+_$directmode;
+
+_var {AppLauncherName} = "{packageName}";
+_var {Unexpected_error_feedback} = "{varspace.null}";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+_clear;
+_cout "Failed to load {AppLauncherName}.";
+_cout "Repair this package or edit to other package";
+_cout "Easy Convert MNA Program";
+_pause;
+_return "{Unexpected_error_feedback}";
+
+//Copyright FDL 2025 
+//MNA Apps Launcher
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/mna-applaunchertemple/example.mapp);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/MNADebug/mnalauncher.ca);
+_$directmode;
+_clear;
+_cout "Type AppName to startup";
+_cout "PKGNAME>";
+_var {mnalauncher} = _getline;
+
+_var {mnafeedback} = _script <"{SYS_ROOT}/run.ca"> "{mnalauncher}";
+_clear;
+_cout "Program exit with code:  {mnafeedback}";
+_pause;
+_exit;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/MNADebug/mnalauncher.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -8331,7 +10446,7 @@ _$directmode;
 _$nolog;
 
 //ok
-//_cover <"{AppDir}/YourOwnApps.ca">;
+//_cover <"{AppDir}/YourOwnApps.ca"> "{MNAPI_Argument}";
 _cout "Example App";
 _return "FailLoadUserInterface";
 
@@ -8349,6 +10464,8 @@ $AppVersion=1001;
 //Copyright FoxaXu 2025
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+
+//FOR SYSTEM DEMO
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemRNU/Services/supershell.nsv);
 //Natvc Service Config
@@ -8372,6 +10489,10 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/LogonUI.txt);
 This file is the login verification file for the Natvc system
 Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/LogonUI.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/TaskUserExecute/USERDAT);
+//task for user execute
+//when system power off or restart
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/TaskUserExecute/USERDAT);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/userconfig);
 //NATVC USER CONFIG
 $UserName=SYSTEM;//User ID
@@ -8379,6 +10500,9 @@ $isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
 $AutoRun=@servicemode;
 $DisableUser=0; // User is Disabled 0/1
 $UserPassword=@nopswd; // UserPassword
+
+$noexplorer=true;
+$nouserexplorer=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/useroptban);
 //User Ban Operation
@@ -8401,22 +10525,22 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=Natvc Liquid;
-$TitleB=Welcome to Natvc 15 Liquid OS;
-$TitleC=💧 Natvc 15 Liquid | Lightweight • AI-Enhanced • Secure • Fast;
+$TitleA=Project Natvc CodeName Orange;
+$TitleB={SYS_RELEASE_Channel};
+$TitleC=Orange OS ?;
 
 //Part 2
-$TitleD=Open Menu type "menu";
-$TitleE=Try to type "help" to list command;
+$TitleD=Open Menu type "menu" (TEST SYSTEM);
+$TitleE=Try to type "help" to list command (DO NOT INSTALL THIS OS ON WORK DEVICE);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvexpThemes.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
 //Logon Themes
 
 //Copyright FoxaXu
 
-$TitleA=Natvc Liquid;
-$TitleB=Welcome to Natvc 15 Liquid OS;
-$TitleC=💧 Natvc 15 Liquid | Lightweight • AI-Enhanced • Secure • Fast;
+$TitleA=Project Natvc CodeName Orange;
+$TitleB={SYS_RELEASE_Channel};
+$TitleC=Orange OS ?;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Program/$PROGRAM_ROOT.txt);
 PROGRAM
@@ -8460,7 +10584,7 @@ $devinfo={SYS_ROOT}/devinfo.ca;
 $update={SYS_ROOT}/ntvupd.ca;
 $filemgr={SYS_ROOT}/filemgr.ca;
 $filecstp={SYS_ROOT}/filecstp.ca;
-$ntsh={SYS_ROOT}/NativeShell.ca;
+$ntsh={SYS_ROOT}/nativeshell.ca;
 $confedit={SYS_ROOT}/confedit.ca;
 $usersettings={SYS_ROOT}/usersettings.ca;
 $nbfmgr={SYS_ROOT}/nbfmgr.ca;
