@@ -87,10 +87,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8051;
+$SYS_KERNEL_VID=8102;
 $SYS_REG_NAME=16.0;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=Build.251029.4;
+$SYS_RELEASE_Channel=Pre_Release.251031.Update(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -578,19 +578,19 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nbf/res/nbfshell.txt);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nbf/res/nbfshell.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-abouts.txt);
 =======================================================
-                  About {ToolsName}
+                  📦 About {ToolsName}
 =======================================================
 
-      FDL. {SYS_NAME} {SYSNAME}
+      🖥️ FDL. {SYS_NAME} {SYSNAME}
 
-      System Version: {SYS_RELEASE_Channel}
-      [Inside Version: {SYSNAME}.{SYS_KERNEL_VID}]
+      🔧 System Version : {SYS_RELEASE_Channel}  
+      🧬 [Inside Version: {SYSNAME}.{SYS_KERNEL_VID}]
 
-      (c) FoxaXu Dev Lab. All rights reserved.
+      © FoxaXu Dev Lab. All rights reserved.
 
-      According to the End User License Agreement (EULA),
-      this product is licensed to:
-          {NATVC_USERNAME} ({NATVC_WHOIS})
+      📜 According to the End User License Agreement (EULA),  
+      this product is licensed to:  
+          👤 {NATVC_USERNAME} ({NATVC_WHOIS})
 
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-abouts.txt);
@@ -621,20 +621,20 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-cpw.txt);
 =======================================================
-                 Natvc Recovery
+                 🛠️ Natvc Recovery
 =======================================================
 
-   Your Device not support this NATVC Version
+⚠️ Your device does not support this NATVC version
 
-     Your Platform CLFMV :   {CalciumL_FMV}
-     Requirement CLFMV   :   {NATVC_FMV_REQ} or Later
+   🧩 Your Platform CLFMV   : {CalciumL_FMV}  
+   🔒 Requirement CLFMV     : {NATVC_FMV_REQ} or later
 
 -------------------------------------------------------
 
-   type 1 to start Natvc  
-   type 2 to shutdown (Default)
+💡 Type 1 to start Natvc  
+🛑 Type 2 to shutdown (Default)
 
-                 System Recovery
+                 🔄 System Recovery
 =======================================================
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-cpw.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
@@ -651,61 +651,49 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-crash.txt);
                   Details   : ({BUG_REPORT})
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-crash.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-repair.txt);
-=======================================================
-                 🔧 Natvc Recovery Utility
-=======================================================
+🔧 Natvc Recovery Utility
 
-⚠️ Automatic repair couldn't repair your PC  
-🛠️ SystemImage is corrupted
+⚠️ Automatic repair was unable to fix your PC  
+🛠️ System image appears to be corrupted
 
--------------------------------------------------------
-   Affected File:
-   {SYSFIX_DIR}/{ReadCache}
--------------------------------------------------------
+Affected File:  
+{SYSFIX_DIR}/{ReadCache}
 
-💡 Options:
-   • Press Enter to run the System Fix Tool  
-   • Or choose to Shutdown or Reinstall the System
+────────────────────────────────────────────
 
-=======================================================
-                   🧩 System Recovery
-=======================================================
+💡 Options:  
+• Press Enter to run the System Fix Tool  
+• Or choose to Shutdown or Reinstall the System
+
+🔄 System Recovery
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-repair.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-fail-startup.txt);
-=======================================================
-         ⚙️ Advanced Boot Options Menu
-=======================================================
+⚙️ Advanced Boot Options Menu
 
-🖥️ System Boot Menu: {SystemStartupNotification}
+System Boot Status: {SystemStartupNotification}
 
-🔽 Please select an option:
+Please select an option:
 
-   [1] 🚀 Start up Normal (Default)  
-   [s] 🛠️ Run System Repair  
-   [2] 🔐 Load Safe Mode (Root Shell)  
-   [3] 🔄 Restart & Select Boot Device  
-   [4] ⏻ Shutdown  
-   [5] 🧩 Load Recovery
+  1. Start up normally (Default)  
+  s. Run system repair  
+  2. Load Safe Mode (Root Shell)  
+  3. Restart and select boot device  
+  4. Shutdown  
+  5. Load recovery environment
 
-💡 Type a number/key and press [ENTER] to select
-
-=======================================================
+💡 Type the number or key, then press [ENTER] to continue
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-fail-startup.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-recovery-error.txt);
-=======================================================
-                   🧩 Recovery Mode
-=======================================================
+🧩 Recovery Mode
 
 ⚠️ System boot failed  
 🗂️ Missing or corrupted file detected:  
    {REV_Missing_File}
 
--------------------------------------------------------
+────────────────────────────────────────────
 
 🔁 Press any key to restart  
-💡 Your device needs recovery to continue
-
-=======================================================
+💡 Recovery is required to continue using your device
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-recovery-error.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
 //Volume Loader
@@ -1529,23 +1517,28 @@ _$directmode;
 _clear;
 //MAKE DISK
 :ReloadDM;
+
+_free {SelectVolumeMode};
+_var {AUserType} = _getargs;
+_if(_cp("{AUserType}","$selectvolume"))|_var {SelectVolumeMode} = "true";
+
 _if(_cp("{netvdisk.api_disk_address}",'{netvdisk.api_disk_address}'))|_goto :CannotFoundINputIO;
 _if(!_dir_exist "{netvdisk.api_disk_address}")|_goto :CreateNewDiskTarget;
 _clear;
 //Load Main
-
 :RELOADCONSOLE;
-_var {NumTarget} = "0";
+
 _file_del "{temp}/Explorer_cacheList.txt";
 _var {EXPLORER_WORK_DIR} = "{netvdisk.api_disk_address}";
 _clear;
+_if(_cp("{SelectVolumeMode}","true"))|_cout "## Please Select a Volume";
 _cout "#---- DISK MANAGER -------------------------------------------";
 _cout "| VDISK Address :   {EXPLORER_WORK_DIR}";
 _cout "#-------------------------------------------------------------";
 _file_list ("{temp}/Explorer_cacheList.txt","{EXPLORER_WORK_DIR}");
 _file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}/","");
 _if(_file_exist "{temp}/Explorer_cacheList.txt")|_textprint "{temp}/Explorer_cacheList.txt";
-_if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No Partition";
+_if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No Volume. type 'new' to create volume";
 _cout "---------------------------------------------------------------";
 //MANAGER CONSOLE
 _cout "Command :  'new' 'exit' 'clean'  ";
@@ -1625,6 +1618,7 @@ _cout "Manage This Volume";
 _cout "Address :  {netvdisk.api_disk_address}/{UserType}";
 _cout "What do you want to do";
 _cout "Command :  'remove'  'clean'  'backup'  'restore'  'exit' ";
+_if(_cp("{SelectVolumeMode}","true"))|_cout "Type 'apply' to select this volume ";
 _prt "Type >";
 _var {Menu_Type} = _getline;
 _if(_cp("{Menu_Type}","remove"))|_goto :removeVolume;
@@ -1632,6 +1626,7 @@ _if(_cp("{Menu_Type}","clean"))|_goto :cleanVolume;
 _if(_cp("{Menu_Type}","backup"))|_goto :backupVolume;
 _if(_cp("{Menu_Type}","restore"))|_goto :restoreVolume;
 _if(_cp("{Menu_Type}","exit"))|_goto :RELOADCONSOLE;
+_if(_cp("{Menu_Type}","apply"))|_return "{netvdisk.api_disk_address}/{UserType}";
 _goto :ManageApi;
 
 :removeVolume;
@@ -2459,43 +2454,43 @@ _var {PlayRate} = _-("{PlayRate}","1");
 _if(_<=("{PlayRate}","0"))|_goto :NullRequest;
 
 //Play Again
-_prts "\r                                          \r        █                            ";
+_prts "\r                                                \r            █                            ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r        ████                         ";
+_prts "\r                                                \r            ████                         ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r        ████████                     ";
+_prts "\r                                                \r            ████████                     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r        ████████████                 ";
+_prts "\r                                                \r            ████████████                 ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r        ████████████████             ";
+_prts "\r                                                \r            ████████████████             ";
+_ms_sleep {PLAYAVGTIME};
+ 
+_prts "\r                                                \r            ████████████████████         ";
+_ms_sleep {PLAYAVGTIME}; 
+
+_prts "\r                                                \r                ████████████████████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r        ████████████████████         ";
+_prts "\r                                                \r                    ████████████████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r            ████████████████████     ";
+_prts "\r                                                \r                        ████████████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                ████████████████     ";
+_prts "\r                                                \r                            ████████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                    ████████████     ";
+_prts "\r                                                \r                                ████     ";
 _ms_sleep {PLAYAVGTIME};
 
-_prts "\r                                          \r                        ████████     ";
-_ms_sleep {PLAYAVGTIME};
+_prts "\r                                                \r                                   █     ";
+_ms_sleep {PLAYAVGTIME}; 
 
-_prts "\r                                          \r                            ████     ";
-_ms_sleep {PLAYAVGTIME};
-
-_prts "\r                                          \r                               █     ";
-_ms_sleep {PLAYAVGTIME};
-
-_prts "\r                                          \r                                     ";
+_prts "\r                                                \r                                     ";
 _prts "\r";
 _ms_sleep "200";
 
@@ -3002,6 +2997,7 @@ _file_write "[%time%][NATVC Boot Loader][Error] last shutdown is unexpected";
 _var {SystemStartupNotification} = "System last shutdown is unexpected.";
 
 :SkipProcessUnexp;
+_if(_cp("{RE_ENV}","true")) | _goto :DONOTTYPEADVUIONRE;
 _file_write "[%time%][NATVC Boot Loader] Load Advanced Boot Option .. ";
 _clear;
 _typefile "{NATVC_Fail_Startup}";
@@ -3016,6 +3012,7 @@ _if( _cp ("{boot_set}" , "5") )| _goto :GORECOVERY;
 _file_write "[%time%][Kernel] Startup Recovery :  Normal Boot";
 _clear;
 _if(_cp("{NoGUIBootOpt}","1"))| _goto :SkipLoadUIBoot3;
+:DONOTTYPEADVUIONRE;
 _typefile "{NATVC_BOOTUI}";
 :SkipLoadUIBoot3;
 
@@ -3786,30 +3783,35 @@ _return "{appfeedback}";
 :FailStartupProgram_PKGFALSE;
 //Load Old Textreader
 
-_var {ACCESS_URL} = _getargs;
+_$directmode;
+_$nolog;
+
+_var {ACCESS_URL} = "{MNAPI_Argument}";
 
 _if(_file_exist "{ACCESS_URL}")|_goto :NEXPLORER MAIN;
 
 _clear;
-_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID}) (New Text reader Available)";
+_cout "Text File Reader (Old)";
 _cout "----------------------------------------------------------------";
-_cout "@FILE DIR   | > <Not Open>";
+_cout "#  FILE DIR   | > <Not Open>";
 _cout "----------------------------------------------------------------";
 
 _cout "Open files";
-_prts "File >";
+_prts "File (type open to select file)>";
 _var {ACCESS_URL} = _getline;
 _if(_cp("{ACCESS_URL}","exit"))|_return "close";
 _if(_cp("{ACCESS_URL}",".exit"))|_return "close";
+_if(_cp("{ACCESS_URL}","opensyslog"))|_var {ACCESS_URL} = "{SYS_LOG}";
+_if(_cp("{ACCESS_URL}","open"))|_goto :OPENPAGE;
 _goto :NEXPLORER MAIN;
 
 
 
 :NEXPLORER MAIN;
 _clear;
-_cout "Text File Reader   ({SYSNAME}.{SYS_KERNEL_VID}) (New Text reader Available)";
+_cout "Text File Reader (Old)";
 _cout "----------------------------------------------------------------";
-_cout "@FILE DIR   | >{ACCESS_URL}";
+_cout "#  FILE DIR   | > {ACCESS_URL}";
 _cout "----------------------------------------------------------------";
 
 _prts "Loading Pages ...";
@@ -3821,10 +3823,12 @@ _textprint "{ACCESS_URL}";
 
 :EndloadPage;
 _cout "----------------------------------------------------------------";
-_prts "File >";
+_prts "File (type open to select file)>";
 _var {ACCESS_URL} = _getline;
 _if(_cp("{ACCESS_URL}","exit"))|_return "close";
 _if(_cp("{ACCESS_URL}",".exit"))|_return "close";
+_if(_cp("{ACCESS_URL}","opensyslog"))|_var {ACCESS_URL} = "{SYS_LOG}";
+_if(_cp("{ACCESS_URL}","open"))|_goto :OPENPAGE;
 _goto :NEXPLORER MAIN;  
 
 //Get Main
@@ -3840,8 +3844,10 @@ _cout "";
 _goto :EndloadPage;
 
 
-//Copyright FDL 2025 
-//MNA Apps Launcher
+:OPENPAGE;
+_var {ACCESS_URL} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefile";
+_if(_cp("{ACCESS_URL}","ok"))|_return "appexit";
+_goto :NEXPLORER MAIN;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/textreader.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usersvc.ca);
 //NATVC SYSTEM
@@ -4121,6 +4127,8 @@ _if(_cp("{XCOPY_B}",'{XCOPY_B}'))|_goto :ListHelp;
 
 _dir_list ("{TempListFiles}","{XCOPY_A}");
 _file_replace "{TempListFiles}" ("{XCOPY_A}","");
+_var {SecondFiliter} = _str_replace "{XCOPY_A}" ("\","/");
+_file_replace "{TempListFiles}" ("{SecondFiliter}","");
 
 _if(!_file_exist "{TempListFiles}")|_goto :listfileError;
 
@@ -4172,8 +4180,18 @@ Do not manually delete this file, as losing this file will cause the system to i
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/LogonUI.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/TaskUserExecute/startupTask.ca);
 _$directmode;
+_if(!_file_exist "{OriginDisk}/{REAutoExec}")|_goto :FailLoadREProg;
 _var {TaskAutoConfigNtvRe} = _script <"{OriginDisk}/{REAutoExec}">;
 _return "{TaskAutoConfigNtvRe}";
+
+
+:FailLoadREProg;
+_clear;
+_cout "Natvc Recovery Enviroment. Error";
+_cout "Failed load {OriginDisk}/{REAutoExec}";
+_cout "This Enviroment Config has error";
+_pause;
+_return "user_restart";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemUser/TaskUserExecute/startupTask.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/TaskUserExecute/USERDAT);
 //task for user execute
