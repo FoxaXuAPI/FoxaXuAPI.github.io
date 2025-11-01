@@ -23,6 +23,8 @@ _return "ok";
 _clear;
 _typefile "{SYS_NROOT}/SystemUpdate/nusp/res-installcli.txt";
 
+_script <"{SYS_ROOT}/mnareset.ca"> "uninstallonly";
+
 _var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/installer/";
 _var {XCOPY_B} = "{NATVC_DISK}";
 
@@ -31,7 +33,7 @@ _if(_dir_exist "script/vdisk/Recovery")|_goto :UpdateRE;
 
 _script <"{SYS_NROOT}/SystemUpdate/nusp/xcopy.ca">;
 _script <"{SYS_ROOT}/autobl.ca"> "{NATVC_DISK}";
-_script <"{SYS_ROOT}/mnareset.ca">;
+_script <"{SYS_ROOT}/mnareset.ca"> "installonly";
 _return "user_restart";
 
 
@@ -50,7 +52,7 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.1.02; 
+$USV=1.2.01; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
@@ -408,6 +410,8 @@ _if(_cp("{XCOPY_B}",'{XCOPY_B}'))|_goto :ListHelp;
 
 _dir_list ("{TempListFiles}","{XCOPY_A}");
 _file_replace "{TempListFiles}" ("{XCOPY_A}","");
+//_var {SecondFiliter} = _str_replace "{XCOPY_A}" ("\","/");
+//_file_replace "{TempListFiles}" ("{SecondFiliter}","");
 
 _if(!_file_exist "{TempListFiles}")|_goto :listfileError;
 
