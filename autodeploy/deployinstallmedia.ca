@@ -3,10 +3,10 @@ _$nolog;
 
 //Repair Text Save Format CRLF to LF
 
-_cout "Downloading Install Media";
+_cout "Downloading Install media";
 _cout "Please wait ";
 
-_url_get ("http://fdl-cds.dev.foxaxu.com/autodeploy/Media.cstp","script/media.cstp");
+_url_get ("http://fdl-cds.dev.foxaxu.com/autodeploy/media.cstp","script/media.cstp");
 
 _if(!_file_exist "script/media.cstp")|_goto :FailDownloadURL;
 
@@ -18,7 +18,7 @@ _file_del "script/media.cstp";
 
 _cout "";
 _cout "Complete";
-_cout "Setup Media is already";
+_cout "Setup media is already";
 _pause;
 _return "0";
 
@@ -27,4 +27,5 @@ _return "0";
 _cout "download failed. file not found";
 _cout "deploy failed.  ";
 _pause;
+
 _return "1";
