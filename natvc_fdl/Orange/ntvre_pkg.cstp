@@ -87,10 +87,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8102;
-$SYS_REG_NAME=16.0;
+$SYS_KERNEL_VID=8116;
+$SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=Pre_Release.251031.Update(1);
+$SYS_RELEASE_Channel=GAC_Release.251101.Rev(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -3489,6 +3489,9 @@ _sipcfg OSDIR="{osvolume}";
 _cout "Recovery Environment is OK";
 _if(_cp("{BootMethod}","nbfload"))|_cout "Boot dat file is copy on script/vdisk/nbf/nbf/recovery";
 _if(_cp("{BootMethod}","boot"))|_cout "Boot dat file is copy on script/vdisk/sysboot/nbf/recovery";
+
+_sipcfg.open "nul";
+_file_open "{SYS_LOG}";
 
 _return "true";
 
