@@ -28,6 +28,8 @@ $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 $RestartExecuteMemReset=1;
+$EnableNatvcDebugReport=false;
+
 
 //SysRepairService
 $DisableSysRepiar=false;
@@ -87,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8116;
+$SYS_KERNEL_VID=8123;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=GAC_Release.251101.Rev(1);
+$SYS_RELEASE_Channel=GAC_Release.251105.Rev(2);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -2587,6 +2589,7 @@ _if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerWarning;
 //Check last startup;
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _var {RestartExecuteMemReset} = _sipcfg RestartExecuteMemReset;
+_var {EnableNatvcDebugReport} = _sipcfg EnableNatvcDebugReport;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
 
 _var {last_startup} = _sipcfg last_startup;

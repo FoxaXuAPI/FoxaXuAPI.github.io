@@ -57,6 +57,8 @@ $SystemRE_Status=false;
 $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 $RestartExecuteMemReset=1;
+$EnableNatvcDebugReport=false;
+
 
 //SysRepairService
 $DisableSysRepiar=false;
@@ -125,10 +127,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8116;
+$SYS_KERNEL_VID=8123;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=GAC_Release.251101.Rev(1);
+$SYS_RELEASE_Channel=GAC_Release.251105.Rev(2);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -4006,6 +4008,25 @@ _free {OS_CALLBACK};
 _free {Mem_tmp};
 _free {MNAPI_Argument};
 
+_free {EnableNatvcDebugReport};
+
+_free {WaitNSTKCode};
+_free {TaskAutoConfigNtvRe};    
+_free {UserTypeE};
+_free {SetupVolume};
+_free {UserType};
+_free {SelectVolumeMode};
+_free {AUserType};
+_free {DetailVersion};
+_free {InstallName};
+_free {SETUPVOLUME};
+_free {rs_pathexec_cache};
+_free {TempLoadRE};
+_free {tempdisk};
+_free {ospack};     
+_free {useropt};
+
+
 //COMPLETE
 _cout "Reset Memory Succeed";
 _file_write "[Memory Reset] Memory Reset succeed";
@@ -5255,6 +5276,7 @@ _if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerWarning;
 //Check last startup;
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _var {RestartExecuteMemReset} = _sipcfg RestartExecuteMemReset;
+_var {EnableNatvcDebugReport} = _sipcfg EnableNatvcDebugReport;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
 
 _var {last_startup} = _sipcfg last_startup;
@@ -7692,6 +7714,25 @@ _cout "Require User Password wrong. ";
 _pause;
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/services.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/setimagedebug.ca);
+_$directmode;
+
+//CHECK STATUS
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {UserType} = _sipcfg EnableNatvcDebugReport;
+
+_cout "Current Debug status is {UserType}";
+_cout "Do you want switch debug mode? (y/n)";
+_if(_cp(_getline,"y"))|_goto :ApplyMode;
+_return "cancel";
+
+:ApplyMode;
+_if(_cp("{UserType}","false"))|_sipcfg EnableNatvcDebugReport = "true";
+_if(_cp("{UserType}","true"))|_sipcfg EnableNatvcDebugReport = "false";
+_cout "Complete";
+_sleep "2";
+_return "restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/setimagedebug.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/shutdown.ca);
 _$directmode;
 _$nolog;
@@ -7955,6 +7996,7 @@ _sipcfg last_startup = "0";
 _sipcfg last_shutdown = "0";
 _sipcfg SystemRE_Dir = "{NoReEnv}";
 _sipcfg SystemRE_Status = "false";
+_sipcfg EnableNatvcDebugReport = "false";
 
 //Recovery Admin 
 _sipcfg.open "{SYS_USERPATH}/admin/userconfig";
@@ -8043,6 +8085,7 @@ _sipcfg last_startup = "0";
 _sipcfg last_shutdown = "0";
 _sipcfg SystemRE_Dir = "{NoReEnv}";
 _sipcfg SystemRE_Status = "false";
+_sipcfg EnableNatvcDebugReport = "false";
 
 //Recovery Admin 
 _sipcfg.open "{SYS_USERPATH}/admin/userconfig";
@@ -9473,7 +9516,8 @@ _if(!_cp("{sys_autologin}","@"))| _goto :AutoLoginUserA;
 
 :BACKMAINTEXT;
 //GET LOGON THEMES
-
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "Natvc Debug Mode";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "System detail  {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
 _var {ntvue.logontime} = _getclock;
 _var {ntvue.logondate} = _getdate;
 
@@ -10293,6 +10337,9 @@ _if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Explorer Resources
 _if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Fail load user interface {SYS_NROOT}/res/natvc-explorer.txt";
 _if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "";
 
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "Natvc Debug Mode";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "System detail  {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+
 :BACKMAINCONSOLE;
 _var {ntvue.logontime} = _getclock;
 _var {ntvue.logondate} = _getdate;
@@ -10679,10 +10726,6 @@ _cout "Explorer Cannot startup";
 _pause;
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/UserExplorer.ca);
-[System Explorer] QL Exit Result :  ok
-[18:44:04][SystemExplorer] check callback operate
-[18:44:04][SystemExplorer] OpenLibrary(Config Get) Return value is "{varspace.null}" 
-[18:44:04][SystemExplorer] No Operate need execute. back main console
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.userinterface.explorer.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.userinterface.file.explorer.mna);
 Calcium_Text_Pack_File  New Format
