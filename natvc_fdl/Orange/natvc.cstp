@@ -127,10 +127,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8123;
+$SYS_KERNEL_VID=8126;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=GAC_Release.251105.Rev(2);
+$SYS_RELEASE_Channel=Stable_Release.251106.Rev(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -8268,6 +8268,34 @@ _var {ACCESS_URL} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefile";
 _if(_cp("{ACCESS_URL}","ok"))|_return "appexit";
 _goto :NEXPLORER MAIN;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/textreader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/troubleshoot.ca);
+_$directmode;
+
+_var {AppLauncherName} = "natvc.troubleshoot.tookit.mna";
+_var {Unexpected_error_feedback} = "{varspace.null}";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+_clear;
+_cout "Failed to load {AppLauncherName}.";
+_cout "Repair this package or edit to other package";
+_cout "Easy Convert MNA Program";
+_pause;
+_return "{Unexpected_error_feedback}";
+
+//Copyright FDL 2025 
+//MNA Apps Launcher
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/troubleshoot.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/usermenu.ca);
 _$directmode;
 
@@ -10246,6 +10274,154 @@ $AppVersion=1001;
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.textreader.modern.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.troubleshoot.tookit.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/dispatch.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/dispatch.ca);
+_$directmode;
+
+//DISPATCH
+_var {UserType} = _getargs;
+
+_file_write "[TroubleShooter] Find Error Code :  {UserType}";
+_if(_file_exist "{AppDir}/tbst/{UserType}.ca")|_cover <"{AppDir}/tbst/{UserType}.ca">;
+
+_clear;
+_cout "Natvc Troubleshooter";
+_cout "not find reslove script on {AppDir}/tbst";
+_cout "try to update your troubleshooter version. and run again";
+_cout "Error Code:  {UserType}";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/dispatch.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/doc/openutf8.txt);
+Open Calcium Shell
+
+type command _cfgedit EnforceUTF-8 = true
+
+close all calcium program and Shutdown Natvc and re click startup script
+$CSTP_FILE_RECORD_MARK_ID_END(/doc/openutf8.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=System TroubleShooter;
+$Setup=natvc.troubleshoot.tookit.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/tbst/networkerror.ca);
+_$directmode;
+
+//Run Microsoft Network Tester
+_file_write "[TroubleShooter][NetworkCheck] start run microsoft connect tester";
+_if(_cp(_url_msg "http://www.msftconnecttest.com/connecttest.txt","Microsoft Connect Test"))|_goto :NetworkOK;
+
+_file_write "[TroubleShooter][NetworkCheck] Network Connection is false";
+_clear;
+
+_cout "Natvc Troubleshooter";
+_cout "You are disconnected. check your internet and try again";
+_cout "Network false";
+_pause;
+_return "false";
+
+
+:NetworkOK;
+_file_write "[TroubleShooter][NetworkCheck] Network Connection is true";
+_clear;
+_cout "Natvc Troubleshooter";
+_cout "Your connect is done. may be our server problem";
+_cout "You can access https://foxaxu.com/contact to report this problem for us";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/tbst/networkerror.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/tbst/networkerror_ipv6.ca);
+_$directmode;
+
+//Run Microsoft Network Tester
+_file_write "[TroubleShooter][NetworkCheck] start run microsoft connect tester(IPv6)";
+_if(_cp(_url_msg "http://ipv6.msftconnecttest.com/connecttest.txt","Microsoft Connect Test"))|_goto :NetworkOK;
+
+_file_write "[TroubleShooter][NetworkCheck] Network Connection is false";
+_clear;
+
+_cout "Natvc Troubleshooter";
+_cout "You don`t have vaild ipv6 address . check your internet and try again";
+_cout "Network false";
+_pause;
+_return "false";
+
+
+:NetworkOK;
+_file_write "[TroubleShooter][NetworkCheck] Network Connection is true";
+_clear;
+_cout "Natvc Troubleshooter";
+_cout "Your IPv6 connect is done. may be our server problem";
+_cout "You can access https://foxaxu.com/contact to report this problem for us";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/tbst/networkerror_ipv6.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/tbst/ui_type_error.ca);
+_$directmode;
+//Check Calcium UTF8 mode is enabled?
+
+//Get Local Calcium_settings.cfg 
+_file_write "[TroubleShooter][UITypeCheck] Checking Calcium Settings";
+_if(!_file_exist "calcium_settings.cfg")|_goto :FileLost;
+_sipcfg.open "calcium_settings.cfg";
+_if(!_cp(_sipcfg EnforceUTF-8,"true"))|_goto :UTF8Disabled;
+_file_write "[TroubleShooter][NetworkCheck] UTF 8 is enabled";
+_clear;
+_cout "Natvc Troubleshooter";
+_cout "UTF 8 Mode is Enabled";
+_cout "If you have ui type error . Please try to use other console application run calcium";
+_cout "Support Console:  OpenTTY. Windows Terminal. GNOME Terminal.";
+_cout "Notice: Natvc 15 start use emoji and other font to type ui. not Support Legacy Windows Command Prompt";
+_cout "Notice: Not Support early than Windows 8 versions of windows type normal ui";
+_pause;
+_return "false";
+
+
+
+
+
+:UTF8Disabled;
+_file_write "[TroubleShooter][NetworkCheck] UTF 8 is disabled";
+_clear;
+_cout "Natvc Troubleshooter";
+_cout "UTF 8 Mode is disabled";
+_cout "view this page to learn how to open EnforceUTF-8";
+_cout "{AppDir}/doc/openutf8.txt";
+_pause;
+_return "false";
+
+
+:FileLost;
+_file_write "[TroubleShooter][NetworkCheck] Failed load calcium settings";
+_clear;
+_cout "Natvc Troubleshooter";
+_cout "Cannot open calcium_settings.cfg";
+_cout "view this page to learn how to open EnforceUTF-8";
+_cout "{AppDir}/doc/openutf8.txt";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/tbst/ui_type_error.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.troubleshoot.tookit.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.userinterface.explorer.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -11576,7 +11752,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvexpThemes.txt);
 
 $TitleA=Natvc 16 Orange;
 $TitleB={SYS_RELEASE_Channel};
-$TitleC=If you have see any bugs. report for us;
+$TitleC=Welcome to Orange World;
 
 //Part 2
 $TitleD=Open Menu type "menu";
@@ -11587,9 +11763,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Themes/NtvueThemes.txt);
 
 //Copyright FoxaXu
 
-$TitleA=Project Natvc CodeName Orange;
+$TitleA=Natvc 16 Orange;
 $TitleB={SYS_RELEASE_Channel};
-$TitleC=Orange OS ?;
+$TitleC=Welcome to Orange World;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Themes/NtvueThemes.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Program/$PROGRAM_ROOT.txt);
 PROGRAM
