@@ -73,6 +73,10 @@ Thank you for your patience.
 $CSTP_FILE_RECORD_MARK_ID_END(/res-installcli.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/res-maincli.txt);
  Please select an option:
+   Notice, your version is no longer supported. 
+   If there are no serious vulnerabilities in the future, this version will be the final release.
+   If you need to receive the latest updates, please update to Natvc 16.
+
   (1) Check for Updates
   (2) Run Disk Cleanup
   (3) Remove All Old Unsupported Elements
