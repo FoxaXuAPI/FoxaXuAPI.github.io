@@ -3,10 +3,14 @@ _$directmode;
 _var {SystemCodeName} = "Orange";
 _var {ImageName} = "Natvc 16 Orange (DIY Image)";
 _var {DetailVersion} = "-1";
+_var {ReqCLFMV} = "2500";
 
 _var {GetMediaSavePath} = _getargs;
+_if(_cp("{GetMediaSavePath}","empty"))|_goto :SELECTAPPLYIMAGE;
 
+:REAPPLYIMAGE;
 _cout "Natvc Media Create Tools";
+_cout "IMAGE :  {ImageName}. ";
 _cout "Please wait. media is downloading...";
 
 _dir_remove "{GetMediaSavePath}";
@@ -15,9 +19,15 @@ _dir_make "{GetMediaSavePath}/$MCT~Temp";
 
 _if(!_dir_exist "{GetMediaSavePath}")|_goto :CREATDIRFAIL;
 
-if(!_url_get ("https://fdl-cds.dev.foxaxu.com/media/onst.cstp","{GetMediaSavePath}/$MCT~Temp/onst.cstp"))|_goto :NetworkError;
-if(!_url_get ("https://fdl-cds.dev.foxaxu.com/natvc_fdl/{SystemCodeName}/natvc.cstp","{GetMediaSavePath}/$MCT~Temp/natvc.cstp"))|_goto :NetworkError;
-if(!_url_get ("https://fdl-cds.dev.foxaxu.com/natvc_fdl/{SystemCodeName}/ntvre_pkg.cstp","{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp"))|_goto :NetworkError;
+_url_get ("https://fdl-cds.dev.foxaxu.com/media/onst.cstp","{GetMediaSavePath}/$MCT~Temp/onst.cstp");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/onst.cstp")|_goto :NetworkError;
+
+_url_get ("https://fdl-cds.dev.foxaxu.com/natvc_fdl/{SystemCodeName}/natvc.cstp","{GetMediaSavePath}/$MCT~Temp/natvc.cstp");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/natvc.cstp")|_goto :NetworkError;
+
+_url_get ("https://fdl-cds.dev.foxaxu.com/natvc_fdl/{SystemCodeName}/ntvre_pkg.cstp","{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp")|_goto :NetworkError;
+
 
 _cout "Extract file to make media";
 
@@ -25,6 +35,7 @@ _cout "Extract file to make media";
 _file_uncstp ("{GetMediaSavePath}/$MCT~Temp/onst.cstp","{GetMediaSavePath}");
 _file_uncstp ("{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp","{GetMediaSavePath}/Recovery");
 _file_copy ("{GetMediaSavePath}/$MCT~Temp/natvc.cstp","{GetMediaSavePath}/sources/natvc.cstp");
+_file_copy ("{GetMediaSavePath}/Recovery/ntvre.cstp","{GetMediaSavePath}/sources/boot.cstp");
 
 //Clear Temp
 _file_del "{GetMediaSavePath}/$MCT~Temp/onst.cstp";
@@ -37,7 +48,9 @@ _if(!_file_exist "{GetMediaSavePath}/sources/setupindex.txt")|_goto :FILEMISS;
 
 //Write Image Name
 _sipcfg.open "{GetMediaSavePath}/sources/setupindex.txt";
-_sipcfg 
+_sipcfg InstallerPackageName = "{ImageName}";
+_sipcfg DetailVersion = "{DetailVersion}";
+_sipcfg RequireClfmvMin = "{ReqCLFMV}";
 
 _cout "Your Setup Media is Ready. ";
 _cout "Select boot volume : {GetMediaSavePath} when bvm startup";
@@ -67,3 +80,8 @@ _cout "Create Failed";
 _cout "Verify file error";
 _pause;
 _return "false";
+
+:SELECTAPPLYIMAGE;
+_cout "Type Image you want saved";
+_var {GetMediaSavePath} = _getline;
+_goto :REAPPLYIMAGE;
