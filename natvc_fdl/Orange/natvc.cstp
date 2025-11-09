@@ -127,10 +127,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8131;
+$SYS_KERNEL_VID=8132;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=GAC_Release.251109.Rev(1);
+$SYS_RELEASE_Channel=GAC_Release.251109.Rev(2);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -6307,6 +6307,7 @@ _if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_goto :
 :ReinitService;
 _var {ToolsName} = "Natvc Logon Process";
 _file_write "[%time%][Natvc Logon] Attempt Load User Logon Service";
+_if(!_file_exist "{SYS_NROOT}/SECURITY/SYSTEM.nuslc")|_goto :ReloginSystemUser;
 _var {ntvl_process} = _script <"{SYS_ROOT}/services.ca"> "ntvue_user_logon_interface";
 //Process NULI Result
 _file_write "[%time%][Natvc Logon] User Logon Service is stop. code:  {ntvl_process}";
@@ -6375,6 +6376,15 @@ _if(_cp ("{WaitNSTKCode}","user_restart"))|_return "$reboot";
 _if(_cp ("{WaitNSTKCode}","shutdown"))|_return "$shutdown";
 _if(_cp ("{WaitNSTKCode}","restart"))|_return "$reboot";
 _goto :BackNSTK;
+
+
+:ReloginSystemUser;
+_var {UserSVCBUFFER} = "KernelModeDetect";
+_file_write "[%time%][Natvc Logon] User:  SYSTEM. Security file Abnormal. Start relogin";
+
+_script <"{SYS_ROOT}/usersvc.ca"> "SYSTEM";
+
+_goto :ReinitService;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvlogon.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvperf.ca);
 _$directmode;
