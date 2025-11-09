@@ -89,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8126;
+$SYS_KERNEL_VID=8131;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=Stable_Release.251106.Rev(1);
+$SYS_RELEASE_Channel=GAC_Release.251109.Rev(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -115,6 +115,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/USERS);
 //PUBLIC USER DATA
 //USERPATH DIR
 $default=@;
+$defaultPassword=@;
 
 //WARNING:  THIS CONFIG FILE IS SYSTEM FILE
 //changes may cause system fail to boot.
@@ -4251,7 +4252,7 @@ $diskclean={SYS_ROOT}/diskclean.ca;
 $run={SYS_ROOT}/runexec.ca;
 $explorer={SYS_ROOT}/explorer.ca;
 $diskmgr={SYS_ROOT}/diskmgr.ca;
-$expand=natvc.file.expand.manager;
+$expand=natvc.file.expand.manager.mna;
 $devtool=natvc_fdl.dev_toolkit.mna;
 $nexp=natvc_fdl.nexplorer.mna;
 $softmgr=mnacore.pkgmanager.mna;

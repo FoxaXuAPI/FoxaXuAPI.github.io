@@ -127,10 +127,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8126;
+$SYS_KERNEL_VID=8131;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=Stable_Release.251106.Rev(1);
+$SYS_RELEASE_Channel=GAC_Release.251109.Rev(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -161,6 +161,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/USERS);
 //PUBLIC USER DATA
 //USERPATH DIR
 $default=@;
+$defaultPassword=@;
 
 //WARNING:  THIS CONFIG FILE IS SYSTEM FILE
 //changes may cause system fail to boot.
@@ -471,6 +472,66 @@ _cout "Press any key to exit";
 _pause;
 _return "failLdr";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/quickload.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/rmall.ca);
+_$directmode;
+_$nolog;
+
+_cout "";
+_cout "Removing all modern apps";
+
+_var {IntLoad_ForMNA_R} = "1";
+
+//Add New Package list files
+_file_del "{NATVC_CONFIG}/mnalist";
+
+_dir_list ("{NATVC_CONFIG}/mnalist","{SYS_NROOT}/SystemPackage");
+_file_replace "{NATVC_CONFIG}/mnalist" ("{SYS_NROOT}/SystemPackage/","");
+
+
+:MNARESETRESCAN;
+_var {ReadCache} = _file_read ("{NATVC_CONFIG}/mnalist","{IntLoad_ForMNA_R}");
+
+_if(_cp("{ReadCache}","FileNotExist"))|_goto :FailAddsPkgList;
+
+_if(_cp("{ReadCache}","overline")) | _goto :MNARESETRESCAN_OK;
+
+//Verify
+_file_write "[RestoreMNA] Restore Package :  {ReadCache}";
+
+//_cout "Restore package {SYS_NROOT}/SystemPackage/{ReadCache}";
+_cout "";
+_cout "Progress Restore... {IntLoad_ForMNA_R}    Please wait";
+
+_if(!_file_exist "{SYS_NROOT}/SystemPackage/{ReadCache}")|_goto :MNA_NullPackRestore;
+
+_script <"{SYS_NROOT}/mnacore/uninstallenf.ca"> "{ReadCache}";
+
+:BACKCTRESTORE;
+
+_var {IntLoad_ForMNA_R} = _+("{IntLoad_ForMNA_R}","1");
+_goto :MNARESETRESCAN;
+
+:MNARESETRESCAN_OK;
+//complete MNA Restore
+_cout "";
+_cout "";
+_cout "Restarting your device.";
+_file_del "{NATVC_CONFIG}/mnalist";
+_return "user_restart";
+
+:FailAddsPkgList;
+_cout "";
+_cout "App cannot installed because package list is missing";
+_cout "";
+_return "ok";
+
+:MNA_NullPackRestore;
+_cout "";
+_cout "App cannot be installed because package {ReadCache} not found";
+_goto :BACKCTRESTORE;
+
+//LL
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/mnacore/rmall.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/mnacore/uninstall.ca);
 _$directmode;
 _$nolog;
@@ -4025,6 +4086,8 @@ _free {TempLoadRE};
 _free {tempdisk};
 _free {ospack};     
 _free {useropt};
+_free {IsOOBEComplete};
+_free {IsSystemRunningOnSafeMode};
 
 
 //COMPLETE
@@ -4605,6 +4668,7 @@ _$nolog;
 _clear;
 _var {update_title} = "Starting Deploy Service";
 _typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+_if(_cp("{IsSystemRunningOnSafeMode}","1"))|_goto :FailedToDeployOnSafemode;
 
 _sipcfg.open "{SYS_NROOT}/config/DeploySettings";
 
@@ -4670,14 +4734,20 @@ _sipcfg.open "{SYS_NROOT}/config/DeploySettings";
 
 _clear;
 
+
+:RELOAD_OOBEMAIN;
 _var {PRE_AUTOENTRY_PASSWORD} = "@rtoobe";
+_var {UserSVCBUFFER} = "KernelModeDetect";
 
 _file_write "[%time%][NatvcDeploy] Load OOBE Main";
 
+_var {IsOOBEComplete} = "0";
 _var {OOBEDEGBUG} = _script <"{NATVC_USERSVC}"> "oobe";
+_file_write "[%time%][NatvcDeploy] oobe user is logoff with code :  {OOBEDEGBUG}";
 
 _file_write "[%time%][NatvcDeploy] OOBE User Logoff .  status code :  {OOBEDEGBUG}";
 _file_write "[%time%][NatvcDeploy] OOBE Page Status  : {OOBE_PAGE_STATUS}";
+_file_write "[%time%][NatvcDeploy] OOBE Complete Status  : {IsOOBEComplete}";
 
 _if(_cp("{OOBE_PAGE_STATUS}","oobe_shutdown"))|_goto :OOBE_CANCEL_PREP;
 _if(_cp("{OOBE_PAGE_STATUS}","oobe_recovery"))|_return "oobe_recovery";
@@ -4689,6 +4759,8 @@ _file_write "[%time%][NatvcDeploy] OOBE Service Closed";
 :SkipRunOOBEService;
 
 :EndPageOOBE;
+_if(_cp("{IsOOBEComplete}","0"))|_goto :FailedLoadOOBE;
+
 _sipcfg.open "{SYS_NROOT}/config/DeploySettings";
 _var {DepResult_A} = _sipcfg ModifySetupOOBEtoZero;
 _var {DepResult_B} = _sipcfg EnableFastBoot;
@@ -4700,6 +4772,7 @@ _if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
 _free {DepResult};
 _free {DepResult_A};
 _free {DepResult_B};
+_script <"{SYS_NROOT}/mnacore/uninstallenf.ca"> "natvc.outofboxExp.mna";
 
 _return "Complete";
 
@@ -4729,6 +4802,26 @@ _cout "ERROR :  DEPLOY_NO_AUTH";
 _file_write "[%time%][NatvcDeploy] Service Unexpected Terminate.";
 _pause;
 _return "user_restart";
+
+
+:FailedToDeployOnSafemode;
+_clear;
+_cout "Natvc Deploy Error";
+_cout "System is booting with safemode";
+_cout "Before System complete deploy. Do not use safemode";
+_cout "Press enter to restart with normal boot";
+_pause;
+_var {IsSystemRunningOnSafeMode} = "0";
+_var {boot_rsmode} = "false";
+_return "user_restart";
+
+:FailedLoadOOBE;
+_clear;
+_cout "Natvc Deploy Error";
+_cout "OOBE is not complete.";
+_cout "Press enter to reload oobe services";
+_pause;
+_goto :RELOAD_OOBEMAIN;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvdeploy.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvexp.ca);
 _$directmode;
@@ -6358,12 +6451,14 @@ _return "{appfeedback}";
 :FailStartupProgram_PKGFALSE;
 //Load OLD UserExperence
 
-
+// NATVC User Experience
 // Default UI or LogonUI
+_$directmode;
+_$nolog;
 
 //Execute
 
-_var {ToolsName} = "UserExperience (Old)";
+_var {ToolsName} = "UserExperience (Legacy)";
 
 _file_write "[%time%][UserExperience] Load User Experience Main";
 
@@ -6399,7 +6494,7 @@ _if(!_cp("{OSLoad_UseFastBoot}","1"))|_goto :SkipLoadAllFSB;
 _file_write "[%time%][UserExperience] System is trying Save Hiberfile for next startup fast boot";
 _file_write "[%time%][UserExperience] Make VarSpace Snapshot.";
 
-_envsave "{NATVC_DISK}/hiberfile.txt";
+_if(!_cp("{IsSystemRunningOnSafeMode}","1"))|_envsave "{NATVC_DISK}/hiberfile.txt";
 
 _file_write "[%time%][UserExperience] File Dump on {NATVC_DISK}/hiberfile.txt";
 
@@ -6444,7 +6539,8 @@ _if(!_cp("{sys_autologin}","@"))| _goto :AutoLoginUserA;
 
 :BACKMAINTEXT;
 //GET LOGON THEMES
-
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "Natvc Debug Mode";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "System detail  {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
 _var {ntvue.logontime} = _getclock;
 _var {ntvue.logondate} = _getdate;
 
@@ -6544,8 +6640,11 @@ _file_write "[%time%][Logon Interface] Set Auto Execute Program";
 
 _var {NATVC_EXPLORER} = {NATVC_ROOTSHELL};
 _var {boot_rsmode} = "false";
+_var {IsSystemRunningOnSafeMode} = "1";
 _var {DEF_Title} = "NATVC SafeMode";
 _var {IsAutoLogin} = "false";
+
+_file_del "{NATVC_DISK}/hiberfile.txt";
 
 _goto :BACKMAINTEXT;
 
@@ -6879,7 +6978,7 @@ _return "{appfeedback}";
 _$directmode;
 _$nolog;
 
-_var {ToolsName} = "NATVC_OOBE_Service (Old)";
+_var {ToolsName} = "NATVC_OOBE_Service";
 
 //Only Run on oobe user
 
@@ -6978,6 +7077,7 @@ _if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
 _if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
 
 _var {OOBE_PAGE_STATUS} = "oobe_done";
+_var {IsOOBEComplete} = "1";
 _clear;
 //Open Endpage..
 _typefile "{SYS_NROOT}/res/natvc-oobe-end.txt";
@@ -8020,6 +8120,7 @@ _dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
 _file_del "{SYS_NROOT}/LOCAL_SERVICE/userindex";
 
 _dir_remove "{NATVC_DISK}/Users/admin/Temp";
+_dir_remove "{NATVC_DISK}/Users/admin/AppData";
 _file_del "{NATVC_DISK}/Users/admin/userindex";
 _file_del "{NATVC_DISK}/Users/admin/startcomplete";
 
@@ -8109,6 +8210,7 @@ _dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
 _file_del "{SYS_NROOT}/LOCAL_SERVICE/userindex";
 
 _dir_remove "{NATVC_DISK}/Users/admin/Temp";
+_dir_remove "{NATVC_DISK}/Users/admin/AppData";
 _file_del "{NATVC_DISK}/Users/admin/userindex";
 _file_del "{NATVC_DISK}/Users/admin/startcomplete";
 
@@ -9339,7 +9441,7 @@ $AppVersion=1001;
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.configeditor.system.mna);
-$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.file.expand.manager);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.file.expand.manager.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
 $CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
@@ -9431,15 +9533,15 @@ $CSTP_FILE_RECORD_MARK_ID_END(/file.expand.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
 //SIPCFG Package Data
 $AppName=File Expand Manager;
-$Setup=natvc.file.expand.manager;
+$Setup=natvc.file.expand.manager.mna;
 $AppProperties=userapps; // systemapps or userapps
 
-$AppVersion=1001;
+$AppVersion=1002;
 
 //Copyright FoxaXu 2025
 //Default Package
 $CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
-$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.file.expand.manager);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemPackage/natvc.file.expand.manager.mna);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemPackage/natvc.logon.interface.host.mna);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
@@ -9499,7 +9601,7 @@ _if(!_cp("{OSLoad_UseFastBoot}","1"))|_goto :SkipLoadAllFSB;
 _file_write "[%time%][UserExperience] System is trying Save Hiberfile for next startup fast boot";
 _file_write "[%time%][UserExperience] Make VarSpace Snapshot.";
 
-_envsave "{NATVC_DISK}/hiberfile.txt";
+_if(!_cp("{IsSystemRunningOnSafeMode}","1"))|_envsave "{NATVC_DISK}/hiberfile.txt";
 
 _file_write "[%time%][UserExperience] File Dump on {NATVC_DISK}/hiberfile.txt";
 
@@ -9645,8 +9747,11 @@ _file_write "[%time%][Logon Interface] Set Auto Execute Program";
 
 _var {NATVC_EXPLORER} = {NATVC_ROOTSHELL};
 _var {boot_rsmode} = "false";
+_var {IsSystemRunningOnSafeMode} = "1";
 _var {DEF_Title} = "NATVC SafeMode";
 _var {IsAutoLogin} = "false";
+
+_file_del "{NATVC_DISK}/hiberfile.txt";
 
 _goto :BACKMAINTEXT;
 
@@ -9914,14 +10019,14 @@ _$directmode;
 _$nolog;
 
 //ok
-_cover <"{AppDir}/ntvoobe.ca">;
+_cover <"{AppDir}/natvc_oobeservices.ca">;
 _cout "Example App";
 _return "FailLoadUserInterface";
 
 
 //ExpamleApps
 $CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/ntvoobe.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/natvc_oobeservices.ca);
 //NATVC Explorer
 //Enter User Experience
 _$directmode;
@@ -10026,6 +10131,7 @@ _if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
 _if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
 
 _var {OOBE_PAGE_STATUS} = "oobe_done";
+_var {IsOOBEComplete} = "1";
 _clear;
 //Open Endpage..
 _typefile "{SYS_NROOT}/res/natvc-oobe-end.txt";
@@ -10165,7 +10271,7 @@ _cout "For Security reason, you must set password";
 _cout "This user is system manager";
 _pause;
 _goto :Server Page;
-$CSTP_FILE_RECORD_MARK_ID_END(/ntvoobe.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/natvc_oobeservices.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
 //SIPCFG Package Data
 $AppName=Natvc OOBE Services;
@@ -11818,7 +11924,7 @@ $diskclean={SYS_ROOT}/diskclean.ca;
 $run={SYS_ROOT}/runexec.ca;
 $explorer={SYS_ROOT}/explorer.ca;
 $diskmgr={SYS_ROOT}/diskmgr.ca;
-$expand=natvc.file.expand.manager;
+$expand=natvc.file.expand.manager.mna;
 $devtool=natvc_fdl.dev_toolkit.mna;
 $nexp=natvc_fdl.nexplorer.mna;
 $softmgr=mnacore.pkgmanager.mna;
