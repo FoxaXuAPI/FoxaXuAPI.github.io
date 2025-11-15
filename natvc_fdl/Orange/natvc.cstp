@@ -72,7 +72,7 @@ $last_startup=0;
 $last_shutdown=0;
 
 //Explorer
-$explorer_title=User Explorer >;
+$explorer_title=${NATVC_WHOIS}::Explorer>;
 
 //NTVANI
 $offani=false;
@@ -127,10 +127,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8132;
+$SYS_KERNEL_VID=8142;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=GAC_Release.251109.Rev(2);
+$SYS_RELEASE_Channel=GAC_Release.251114.Rev(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -142,6 +142,8 @@ $NATVC_EXPLORER=ntvexp.ca;
 $NATVC_BOOT_DLOAD=1;
 $NATVC_SHUTDOWN_SECURE=0;  //Set 1 Enabled . 0 Disabled.
 $NATVC_CRASH_EXECUTE=$reboot;  //Set $shutdown or $reboot . 
+$NATVC_CRASH_AUTOREBOOT=0;
+$NATVC_CRASH_AUTOREBOOT_TIME=15;
 
 //Resource File
 $NATVC_ABOUTS_TEXT={SYS_NROOT}/res/natvc-abouts.txt;
@@ -1619,39 +1621,41 @@ Type "autorun" to configure user auto-run settings
 or select an option above
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-user-settings-main.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-UserMenu.txt);
-👤 Welcome, {NATVC_USERNAME} ({NATVC_WHOIS})  
-🖥️ System: {SYS_NAME} {SYSNAME}
-
-📂 Explorer Commands  
+👤 User Session
 ────────────────────────────────────────────
-• reload       → Refresh Explorer  
-• logoff       → Logout current user  
-• shutdown     → Shutdown device  
-• restart      → Restart device  
-• hiber        → Hibernate system  
-• software     → Open software manager
+User: {NATVC_USERNAME}
+Identity: {NATVC_WHOIS}
+System: {SYS_NAME} {SYS_VERSION}
 
-🛠️ System Commands  
+📁 Session & Explorer
 ────────────────────────────────────────────
-• .rs          → Restart to Safe Mode  
-• .re          → Restart to Recovery Mode  
-• .bm          → Restart to Boot Menu  
-• .adv         → Restart to Advanced Options  
-• .shell       → Open Root Shell  
-• linkmgr      → Manage Explorer Links
+reload       · Refresh Explorer view
+logoff       · End current user session
+shutdown     · Power off the device
+restart      · Reboot the system
+hiber        · Hibernate system
+software     · Launch Software Manager
 
-🧰 Tools & Utilities  
+⚙️ System & Recovery
 ────────────────────────────────────────────
-• aboutsys     → View system information  
-• update       → Check for updates  
-• confedit     → Edit system configuration  
-• usersetting  → Manage user settings  
-• sysfix       → Run system repair  
-• filemgr      → Launch file manager  
-• filepack     → Open file archive tool
+.rs      · Restart to Safe Mode
+.re      · Restart to Recovery Mode
+.bm      · Restart to Boot Menu
+.adv     · Restart to Advanced Options
+.shell   · Launch Root Shell
+linkmgr  · Manage Explorer Links
 
-💡 Tip  
-Use `linkmgr` to manage program shortcuts and launcher links
+🧰 Utilities & Tools
+────────────────────────────────────────────
+aboutsys     · Display system information
+update       · Check for system updates
+confedit     · Edit system configuration
+usersetting  · Modify user preferences
+sysfix       · Run system repair tool
+filemgr      · Open File Manager
+filepack     · Access file archive tool
+
+💡 Tip: Use the linkmgr utility to manage application shortcuts and launcher links
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-UserMenu.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/start-read.txt);
 =======================================================
@@ -2095,6 +2099,8 @@ _var {sysmaindrv} = "{select_boot_partion}";
 
 _if(!_file_exist "$sys_def_disk/sysboot/bootmgr.ca")|_goto :NewLegBootloader;
 
+_file_copy ("{SYS_NROOT}/sysboot/boot","$sys_def_disk/sysboot/boot");
+_file_copy ("{SYS_NROOT}/sysboot/bootmgr.ca","$sys_def_disk/sysboot/bootmgr.ca");
 _file_copy("{SYS_NROOT}/sysboot/NBF-Temple","$sys_def_disk/sysboot/nbf/{FileLoadName}");
 
 _sipcfg.open "$sys_def_disk/sysboot/nbf/{FileLoadName}";
@@ -2141,6 +2147,8 @@ _var {sysmaindrv} = "{select_boot_partion}";
 
 _if(!_file_exist "$sys_def_disk/nbf/bootmgr.nbf")|_goto :NewBootloader;
 
+_file_copy ("{SYS_NROOT}/nbf/nbfload","$sys_def_disk/nbf/nbfload");
+_file_copy ("{SYS_NROOT}/nbf/bootmgr.nbf","$sys_def_disk/nbf/bootmgr.nbf");
 _file_copy("{SYS_NROOT}/nbf/NBF-Temple","$sys_def_disk/nbf/nbf/{FileLoadName}");
 
 _sipcfg.open "$sys_def_disk/nbf/nbf/{FileLoadName}";
@@ -4088,6 +4096,10 @@ _free {ospack};
 _free {useropt};
 _free {IsOOBEComplete};
 _free {IsSystemRunningOnSafeMode};
+_free {NATVC_CRASH_AUTOREBOOT};
+_free {NATVC_CRASH_AUTOREBOOT_TIME};
+_free {sys_autologin_prepswd};
+_free {PRE_AUTOENTRY_PASSWORD};
 
 
 //COMPLETE
@@ -5291,7 +5303,7 @@ _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvexp.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvkernel.ca);
 _$directmode;
-_$nolog;
+_$no_err_report; //avoid load missing resources report error
 
 //NATVC KERNEL
 //NATVC LOAD
@@ -5539,6 +5551,8 @@ _file_write "[%time%][Kernel][Boot] Shutdown Secure Mode is :  {NATVC_SHUTDOWN_S
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading Base Kernel ... ";
 
 _var {NATVC_CRASH_EXECUTE} = _sipcfg NATVC_CRASH_EXECUTE;
+_var {NATVC_CRASH_AUTOREBOOT} = _sipcfg NATVC_CRASH_AUTOREBOOT;
+_var {NATVC_CRASH_AUTOREBOOT_TIME} = _sipcfg NATVC_CRASH_AUTOREBOOT_TIME;
 
 _var {NATVC_ABOUTS_TEXT} = _sipcfg NATVC_ABOUTS_TEXT;
 
@@ -5693,8 +5707,11 @@ _if(!_file_exist "{SYS_ROOT}/krnlrep.ca")|_goto :SkipKRP;
 _script <"{SYS_ROOT}/krnlrep.ca"> "kernelmode";
 :SkipKRP;
 
-_cout "                 Press enter to Continue";
-_pause;
+_if(!_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_cout "                 Press enter to Continue";
+_if(!_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_pause;
+_if(_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_cout "                 System will automatic reboot in {NATVC_CRASH_AUTOREBOOT_TIME} seconds";
+_if(_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_sleep "{NATVC_CRASH_AUTOREBOOT_TIME}";
+
 _file_write "[%time%][Kernel] Crash Report is saved on :  {SYS_NROOT}/MiniRep/CrashReport-{CurrentDate}-{LOG_REPSTR}.txt";
 _file_write "[%time%][Kernel] try to contact develop and send them this file";
 _file_write "[%time%][Kernel] System Closed(unexpected)";
@@ -6468,7 +6485,7 @@ _$nolog;
 
 //Execute
 
-_var {ToolsName} = "UserExperience (Legacy)";
+_var {ToolsName} = "UserExperience (SystemFiles)";
 
 _file_write "[%time%][UserExperience] Load User Experience Main";
 
@@ -6543,6 +6560,7 @@ _if(_cp("{IsAutoLogin}","false"))|_goto :SkipDetectAL;
 
 _sipcfg.open "{NATVC_CONFIG_USERS}";
 _var {sys_autologin} = _sipcfg default;
+_var {sys_autologin_prepswd} = _sipcfg defaultPassword;
 _if(!_cp("{sys_autologin}","@"))| _goto :AutoLoginUserA;
 
 :SkipDetectAL;
@@ -6600,6 +6618,8 @@ _file_write "[%time%][Logon Interface] Load System User";
 _if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting User Service";
   //_cout "Waitting User Service";
 _var {NATVC_isAdmin} = "2";
+_if(!_cp("{sys_autologin_prepswd}","@"))|_var {PRE_AUTOENTRY_PASSWORD} = "{sys_autologin_prepswd}";
+_if(!_cp("{sys_autologin_prepswd}","@"))|_var {sys_autologin_prepswd} = "@";
 _var {USER_UE_CALLBACK} = _script <"{NATVC_USERSVC}"> "{USER_REQ_LOGON}";
 
 _if(_cp("{USER_UE_CALLBACK}","loginfail"))|_goto :BACKMAINTEXT;
@@ -8137,6 +8157,7 @@ _file_del "{NATVC_DISK}/Users/admin/startcomplete";
 
 _sipcfg.open "{NATVC_CONFIG_USERS}";
 _sipcfg default = '@';
+_sipcfg defaultPassword = '@';
 
 _cout "OOBE = "1"";
 _cout "Restart Your Device.";
@@ -8226,6 +8247,7 @@ _file_del "{NATVC_DISK}/Users/admin/startcomplete";
 
 _sipcfg.open "{NATVC_CONFIG_USERS}";
 _sipcfg default = '@';
+_sipcfg defaultPassword = '@';
 
 _cout "OOBE = "1"";
 _cout "Restart Your Device.";
@@ -9575,7 +9597,7 @@ _$nolog;
 
 //Execute
 
-_var {ToolsName} = "UserExperience";
+_var {ToolsName} = "UserExperience (Modern)";
 
 _file_write "[%time%][UserExperience] Load User Experience Main";
 
@@ -9650,6 +9672,7 @@ _if(_cp("{IsAutoLogin}","false"))|_goto :SkipDetectAL;
 
 _sipcfg.open "{NATVC_CONFIG_USERS}";
 _var {sys_autologin} = _sipcfg default;
+_var {sys_autologin_prepswd} = _sipcfg defaultPassword;
 _if(!_cp("{sys_autologin}","@"))| _goto :AutoLoginUserA;
 
 :SkipDetectAL;
@@ -9707,6 +9730,8 @@ _file_write "[%time%][Logon Interface] Load System User";
 _if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting User Service";
   //_cout "Waitting User Service";
 _var {NATVC_isAdmin} = "2";
+_if(!_cp("{sys_autologin_prepswd}","@"))|_var {PRE_AUTOENTRY_PASSWORD} = "{sys_autologin_prepswd}";
+_if(!_cp("{sys_autologin_prepswd}","@"))|_var {sys_autologin_prepswd} = "@";
 _var {USER_UE_CALLBACK} = _script <"{NATVC_USERSVC}"> "{USER_REQ_LOGON}";
 
 _if(_cp("{USER_UE_CALLBACK}","loginfail"))|_goto :BACKMAINTEXT;

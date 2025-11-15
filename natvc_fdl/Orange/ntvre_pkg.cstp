@@ -43,7 +43,7 @@ $last_startup=0;
 $last_shutdown=0;
 
 //Explorer
-$explorer_title=User Explorer >;
+$explorer_title=${NATVC_WHOIS}::Explorer>;
 
 //NTVANI
 $offani=false;
@@ -89,10 +89,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8132;
+$SYS_KERNEL_VID=8142;
 $SYS_REG_NAME=16.1;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=GAC_Release.251109.Rev(2);
+$SYS_RELEASE_Channel=GAC_Release.251114.Rev(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -104,6 +104,8 @@ $NATVC_EXPLORER=ntvexp.ca;
 $NATVC_BOOT_DLOAD=1;
 $NATVC_SHUTDOWN_SECURE=0;  //Set 1 Enabled . 0 Disabled.
 $NATVC_CRASH_EXECUTE=$reboot;  //Set $shutdown or $reboot . 
+$NATVC_CRASH_AUTOREBOOT=0;
+$NATVC_CRASH_AUTOREBOOT_TIME=15;
 
 //Resource File
 $NATVC_ABOUTS_TEXT={SYS_NROOT}/res/natvc-abouts.txt;
@@ -1004,6 +1006,8 @@ _var {sysmaindrv} = "{select_boot_partion}";
 
 _if(!_file_exist "$sys_def_disk/sysboot/bootmgr.ca")|_goto :NewLegBootloader;
 
+_file_copy ("{SYS_NROOT}/sysboot/boot","$sys_def_disk/sysboot/boot");
+_file_copy ("{SYS_NROOT}/sysboot/bootmgr.ca","$sys_def_disk/sysboot/bootmgr.ca");
 _file_copy("{SYS_NROOT}/sysboot/NBF-Temple","$sys_def_disk/sysboot/nbf/{FileLoadName}");
 
 _sipcfg.open "$sys_def_disk/sysboot/nbf/{FileLoadName}";
@@ -1050,6 +1054,8 @@ _var {sysmaindrv} = "{select_boot_partion}";
 
 _if(!_file_exist "$sys_def_disk/nbf/bootmgr.nbf")|_goto :NewBootloader;
 
+_file_copy ("{SYS_NROOT}/nbf/nbfload","$sys_def_disk/nbf/nbfload");
+_file_copy ("{SYS_NROOT}/nbf/bootmgr.nbf","$sys_def_disk/nbf/bootmgr.nbf");
 _file_copy("{SYS_NROOT}/nbf/NBF-Temple","$sys_def_disk/nbf/nbf/{FileLoadName}");
 
 _sipcfg.open "$sys_def_disk/nbf/nbf/{FileLoadName}";
@@ -2512,7 +2518,7 @@ _return "fail play";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvani.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvkernel.ca);
 _$directmode;
-_$nolog;
+_$no_err_report; //avoid load missing resources report error
 
 //NATVC KERNEL
 //NATVC LOAD
@@ -2760,6 +2766,8 @@ _file_write "[%time%][Kernel][Boot] Shutdown Secure Mode is :  {NATVC_SHUTDOWN_S
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading Base Kernel ... ";
 
 _var {NATVC_CRASH_EXECUTE} = _sipcfg NATVC_CRASH_EXECUTE;
+_var {NATVC_CRASH_AUTOREBOOT} = _sipcfg NATVC_CRASH_AUTOREBOOT;
+_var {NATVC_CRASH_AUTOREBOOT_TIME} = _sipcfg NATVC_CRASH_AUTOREBOOT_TIME;
 
 _var {NATVC_ABOUTS_TEXT} = _sipcfg NATVC_ABOUTS_TEXT;
 
@@ -2914,8 +2922,11 @@ _if(!_file_exist "{SYS_ROOT}/krnlrep.ca")|_goto :SkipKRP;
 _script <"{SYS_ROOT}/krnlrep.ca"> "kernelmode";
 :SkipKRP;
 
-_cout "                 Press enter to Continue";
-_pause;
+_if(!_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_cout "                 Press enter to Continue";
+_if(!_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_pause;
+_if(_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_cout "                 System will automatic reboot in {NATVC_CRASH_AUTOREBOOT_TIME} seconds";
+_if(_cp("{NATVC_CRASH_AUTOREBOOT}","1"))|_sleep "{NATVC_CRASH_AUTOREBOOT_TIME}";
+
 _file_write "[%time%][Kernel] Crash Report is saved on :  {SYS_NROOT}/MiniRep/CrashReport-{CurrentDate}-{LOG_REPSTR}.txt";
 _file_write "[%time%][Kernel] try to contact develop and send them this file";
 _file_write "[%time%][Kernel] System Closed(unexpected)";
