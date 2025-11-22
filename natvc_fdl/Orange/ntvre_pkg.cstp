@@ -18,6 +18,7 @@ Calcium_Text_Pack_File  New Format
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/config/SETUP);
 //NATVC SETUP ADVANCED
 $oobe=1;
+$ModernAppReady=0;
 $SystemDeploy={SYS_ROOT}/ntvdeploy.ca;
 $callexec={SYS_ROOT}/oobe.ca;
 $oobequick=0;
@@ -29,7 +30,6 @@ $SystemRE_Dir={NoReEnv};
 $FastBoot=0;
 $RestartExecuteMemReset=1;
 $EnableNatvcDebugReport=false;
-
 
 //SysRepairService
 $DisableSysRepiar=false;
@@ -52,10 +52,13 @@ $offani=false;
 $whitelist=0;
 $whitelist_file={NATVC_CONFIG}/vaild_command;
 
+//Kernel
+$DisableKernelSecurityLevel=false;
+$EnableSystemUserProtection=true;
+
 //Shutdown Execute
 $shutdown_execute=noexec;
 $shutdown_exe_title=Please Wait. Prepare Update;
-
 
 //Startup Execute
 $startup_execute=noexec;
@@ -89,10 +92,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8142;
-$SYS_REG_NAME=16.1;
+$SYS_KERNEL_VID=8229;
+$SYS_REG_NAME=16.2;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=GAC_Release.251114.Rev(1);
+$SYS_RELEASE_Channel=Release.20251122.REV(2);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -123,9 +126,11 @@ $defaultPassword=@;
 //changes may cause system fail to boot.
 
 //UserData
-//SYSTEM is Kernel User. Do Not Set this user
+//SYSTEM is Kernel User. Do not attempt to modify any settings related to system users.
 $SYSTEM=Natvc/SystemUser;
-
+$Local_Driver_Security_User=Natvc/SystemManager/Local_Driver_Security_User;
+$Local_Low=Natvc/SystemManager/Local_Low;
+$TrustedServices=Natvc/SystemManager/TrustedServices;
 
 //admin is default system admin user
 $admin=Users/admin;
@@ -162,6 +167,15 @@ $rootshell=true;
 $args=true;
 $run=true;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/config/vaild_command);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/drivers/a_drvcheckenv.ntvdrv);
+_$directmode;
+
+_file_write "[Natvc Driver Enviroment Report] Temp Address {temp} {Temp} {SystemTemp}";
+_file_write "[Natvc Driver Enviroment Report] Driver User : {NATVC_WHOIS} {NATVC_isAdmin} {NATVC_USERPROFILE}";
+_file_write "[Natvc Driver Enviroment Report] System Directory :  {SYS_ROOT}  {SYS_NROOT}";
+
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/drivers/a_drvcheckenv.ntvdrv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/drivers/cstkrnl.ntvdrv);
 _$directmode;
 _var {CalciumK} = "true";
@@ -171,7 +185,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/drivers/netvdisk.ntvdrv);
 _$directmode;
 
 //Load Net Vdisk 
-_if(!_file_exist "script/bvm/DefaultDisk")|_return "NetVDiskError:INACCESSABLE_VDISK_ADDRESS";
+_if(!_file_exist "script/bvm/DefaultDisk")|_file_write "[netvdisk] Error. Critical Error Detected :  INACCESSABLE_BVM_DATA";
+_if(!_file_exist "script/bvm/DefaultDisk")|_file_write "[netvdisk] Driver unloaded. Netvdisk is Running on safemode";
+_if(!_file_exist "script/bvm/DefaultDisk")|_return "drv_load_ok";
 _sipcfg.open "script/bvm/DefaultDisk";
 _var {netvdisk.api_disk_address} = _sipcfg defaultdisk;
 _var {netvdisk.api_disk_address} = _str_replace "{netvdisk.api_disk_address}" ('{path}/',"");
@@ -700,6 +716,24 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/res/natvc-recovery-error.txt);
 🔁 Press any key to restart  
 💡 Recovery is required to continue using your device
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/res/natvc-recovery-error.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/Service/sddload.nsv);
+//Natvc Service Config
+
+//PROGRAM
+$Execute={SYS_ROOT}/drvload.ca;
+$Argument=Kernel_Load_Driver;
+
+//RUNAS USER
+$UserID=Local_Driver_Security_User;
+$UserPassword=@nopswd;
+
+$SetServiceStatusTrue=true;
+
+//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
+//Natvc Service
+
+//System Driver loaD Service
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/Service/sddload.nsv);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/sysboot/boot);
 //Volume Loader
 $DefaultLoader={BootVolume}/bootmgr.ca;
@@ -1524,6 +1558,10 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/diskmgr.ca);
 _$directmode;
 
 _clear;
+
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
 //MAKE DISK
 :ReloadDM;
 
@@ -1680,6 +1718,12 @@ _goto :RELOADCONSOLE;
 _cout "File Not Exist";
 _pause;
 _goto :RELOADCONSOLE;
+
+
+:FAIL_DISALLOW;
+_cout "Up your auth to open this tool";
+_pause;
+_return "noauth";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/diskmgr.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/drvload.ca);
 _$directmode;
@@ -2227,13 +2271,19 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ls.ca);
 _$directmode;
 _$nolog;
 
-_file_list ("{temp}/lstool.txt","{rs_pathexec}");
+_var {UserType} = _getargs;
 
-_file_replace "{temp}/lstool.txt" ("{rs_pathexec}","");    
+_if(_dir_exist "{UserType}")|_var {UserType_A} = "{UserType}";
+_if(!_dir_exist "{UserType}")|_var {UserType_A} = "{rs_pathexec}";
+
+
+_file_list ("{temp}/lstool.txt","{UserType_A}");
+
+_file_replace "{temp}/lstool.txt" ("{UserType_A}","");    
 
 _cout "";
 _cout "List all files";
-_cout "Directory :   {rs_pathexec}";
+_cout "Directory :   {UserType_A}";
 _cout "";
 
 _textprint "{temp}/lstool.txt";
@@ -2538,7 +2588,7 @@ _var {NATVC_BOOTUI} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-bootui.txt";
 _var {NATVC_Compiler_Warning} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-cpw.txt";
 _var {NATVC_Fail_Startup} = "{NATVC_DISK}/{Boot_OSPATH}/res/natvc-fail-startup.txt";
 
-_var {NATVC_FMV_REQ} = "1957";
+_var {NATVC_FMV_REQ} = "2401";
 
 _var {NATVC_CONFIG} = "{NATVC_DISK}/{Boot_OSPATH}/config/";
 
@@ -2597,6 +2647,8 @@ _if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerWarning;
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _var {RestartExecuteMemReset} = _sipcfg RestartExecuteMemReset;
 _var {EnableNatvcDebugReport} = _sipcfg EnableNatvcDebugReport;
+_var {DisableKernelSecurityLevel} = _sipcfg DisableKernelSecurityLevel;
+_var {EnableSystemUserProtection} = _sipcfg EnableSystemUserProtection;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
 
 _var {last_startup} = _sipcfg last_startup;
@@ -2787,10 +2839,16 @@ _script <"{SYS_ROOT}/ntvani.ca">;
 
 //END
 //Load System Driver
+_if(_cp("{EnableSystemUserProtection}","true"))|_file_write "[%time%][SECURITY] System User Protection is Enabled";
+_if(_cp("{EnableSystemUserProtection}","true"))|_script <"{SYS_NROOT}/SystemManager/initSystemUser.ca">;
 _if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadSystemDRV;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Drivers...";
 _if(!_file_exist "{SYS_ROOT}/drvload.ca")|_goto :FailedCrashDrvMissing;
-_var {drvload_callback} = _script <"{SYS_ROOT}/drvload.ca"> "Kernel_Load_Driver";
+
+_var {NATVC_isAdmin} = "2";
+_var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "Local_Driver_Security_User";
+_var {drvload_callback} = _script <"{SYS_ROOT}/services.ca"> "sddload";
+
 _if(!_cp("{drvload_callback}","ok"))|_goto :FailedCrashDrvLoader;
 
 :SkipLoadSystemDRV;
@@ -2847,7 +2905,22 @@ _var {UserSVCBUFFER} = "KernelModeDetect";
 
 _if(_cp("{Shutdown_Data}","1")) |_dir_remove "{SYS_NROOT}/SECURITY";
 
+_if(_cp("{DisableKernelSecurityLevel}","true"))|_file_write "[%time%][Kernel][Boot] Kernel Security Level is Disabled";
+_if(_cp("{DisableKernelSecurityLevel}","true"))|_goto :SkipLoadKSL;
+
+_file_write "[%time%][SECURITY] Load Kernel Security Level";
+
+_var {NATVC_isAdmin} = "2";
+_var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "Local_Low";
+
+_var {NATVC_isAdmin} = "2";
+_var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "TrustedServices";
+
+:SkipLoadKSL;
+
+_var {NATVC_isAdmin} = "2";
 _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "SYSTEM";
+
 
 _if(_cp("{K_SERVICE_CALLBACK}","user_logoff")) | _goto :SHUTDOWN_OK;
 _if(_cp("{K_SERVICE_CALLBACK}","user_shutdown")) | _goto :SHUTDOWN_OK;
@@ -3484,7 +3557,12 @@ _$nolog;
 _var {ReDir} = _getargs;
 
 _if(!_file_exist "{ReDir}/Recovery/re.nbf")|_goto :NoNRBLoad;
+_if(_cp("{BootMethod}","nbfload"))|_goto :CheckWithNew;
+_if(_cp("{BootMethod}","boot"))|_goto :CheckWithOld;
 
+
+//MainCreateProcess
+:StartCreateRELoader;
 _if(_cp("{BootMethod}","nbfload"))|_file_copy("{SYS_NROOT}/nbf/NBF-Temple","script/vdisk/nbf/nbf/recovery");
 _if(_cp("{BootMethod}","boot"))|_file_copy("{SYS_NROOT}/nbf/NBF-Temple","script/vdisk/sysboot/nbf/recovery");
 
@@ -3525,6 +3603,26 @@ _return "true";
 _cout "Recovery Environment Fix Tool";
 _cout "args = Re Dir";
 _cout "May be you are not type vaild system recovery path";
+_return "false";
+
+
+
+
+
+:CheckWithNew;
+_if(!_dir_exist "script/vdisk/nbf/nbf")|_goto :NoBaseLoader;
+_goto :StartCreateRELoader;
+
+:CheckWithOld;
+_if(!_dir_exist "script/vdisk/sysboot/nbf")|_goto :NoBaseLoader;
+_goto :StartCreateRELoader;
+
+
+:NoBaseLoader;
+_cout "ReFix Error";
+_cout "NBF/Legacy Boot loader not created";
+_cout "Please fix system bootloader first";
+_pause;
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/refix.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/rmdir.ca);
@@ -3788,6 +3886,99 @@ _cout " OS :  {SYS_RELEASE_Channel} ";
 _goto :RESET SHELL MODE;
 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/rootshell.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/services.ca);
+_$directmode;
+_$nolog;
+
+//System Service
+
+_var {NSV_DATA} = _getargs;
+
+//Detect Service
+_if(!_file_exist "{NSV_DATA}")|_goto :TryFindOnLocalService;
+_goto :StartLoadService;
+
+:TryFindOnLocalService;
+_if(!_file_exist "{SYS_NROOT}/Service/{NSV_DATA}.nsv")|_goto :FailLoadService;
+
+_var {NSV_DATA} = "{SYS_NROOT}/Service/{NSV_DATA}.nsv";
+
+:StartLoadService;
+_var {ToolsName} = "Natvc Services";
+//Load Config Datas
+_sipcfg.open "{NSV_DATA}";
+_var {NSV_Execute} = _sipcfg Execute;
+_var {NSV_Argument} = _sipcfg Argument;
+
+_var {NSV_UserID} = _sipcfg UserID;
+_var {NSV_UserPassword} = _sipcfg UserPassword;
+_var {NSV_SET_SST} = _sipcfg SetServiceStatusTrue;
+
+//Login Current Users
+
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NSV_UserID}.nuslc")|_goto :UserNotAlreadyLogin;
+
+_var {Recovery_SvcUser} = "{NATVC_WHOIS}";
+
+_sipcfg.open "{SYS_NROOT}/SECURITY/{NSV_UserID}.nuslc";
+_var {PASSWD_VERIFY} = _sipcfg USERPASSWORD;
+_if(!_cp("{PASSWD_VERIFY}","{NSV_UserPassword}"))|_goto :FailPasswordWrong;
+
+_var {NATVC_USERNAME}      = _sipcfg USERNAME;
+_var {NATVC_WHOIS}         = _sipcfg USERID;
+_var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_var {NATVC_isAdmin}       = _sipcfg USERADMIN;
+_var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
+_var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
+_var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
+
+_if(_cp("{NSV_SET_SST}","true"))|_var {NSV_SERVICE_MODE} = "true";
+_file_write "[%time%][Services] Start Service :  {NSV_DATA}  User :  {NATVC_WHOIS}  Auth :  {NATVC_isAdmin} .";
+_file_write "[%time%][Services] Service Profile :  {NSV_Execute}  Argument : {NSV_Argument}";
+_file_write "[%time%][Services] Service Detect Mark is :  {NSV_SET_SST}";
+_var {CALLBACK_NSV} = _script <"{NSV_Execute}"> "{NSV_Argument}";
+_file_write "[%time%][Services] Stop Service :  {NSV_DATA}  .";
+_if(_cp("{NSV_SET_SST}","true"))|_var {NSV_SERVICE_MODE} = "false";
+
+_sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
+_var {NATVC_USERNAME}      = _sipcfg USERNAME;
+_var {NATVC_WHOIS}         = _sipcfg USERID;
+_var {NATVC_USERPROFILE}   = _sipcfg USERPROFILE;
+_var {NATVC_isAdmin}       = _sipcfg USERADMIN;
+_var {NATVC_UserAutoRun}   = _sipcfg AUTORUN;
+_var {NATVC_USER_PASSWORD} = _sipcfg USERPASSWORD;
+_var {NATVC_DisableUser}   = _sipcfg DISABLEUSER;
+
+_return "{CALLBACK_NSV}";
+
+
+
+
+:FailLoadService;
+_clear;
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Configuration File is missing";
+_pause;
+_return "false";
+
+:UserNotAlreadyLogin;
+_clear;
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Require User Not Logged.  Restart your device and try again";
+_pause;
+_return "false";
+
+:FailPasswordWrong;
+_clear;
+_sipcfg.open "{SYS_NROOT}/SECURITY/{Recovery_SvcUser}.nuslc";
+_cout "Natvc Service Start Failed";
+_cout "Require Service :   {NSV_DATA}";
+_cout "Require User Password wrong. ";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/services.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/sysfix.ca);
 Not RealFiles 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/sysfix.ca);
@@ -3886,6 +4077,7 @@ _$no_err_report;
 
 _if(_cp("{UserSVCBUFFER}","KernelModeDetect")) | _goto :SkipAuthCheck;
 
+_if(!_cp("{NATVC_isAdmin}","2"))|_file_write "[%time%][UserService] Access Denied. auth not enough";
 _if(!_cp("{NATVC_isAdmin}","2"))|_return "noauth";
 
 :SkipAuthCheck;
@@ -3919,6 +4111,7 @@ _var {NATVC_USERPROFILE} = "{NATVC_DISK}/{NATVC_USERPROFILE}";
 
 
 _var {temp} = "{NATVC_USERPROFILE}/Temp";
+_var {Temp} = "{NATVC_USERPROFILE}/Temp";
 _if(!_dir_exist "{temp}")|_dir_make "{temp}";
 
 
@@ -4202,6 +4395,60 @@ $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/xcopy.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemImage/SystemImageDir.txt);
 A 
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemImage/SystemImageDir.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemManager/initSystemUser.ca);
+_$directmode;
+//write user mode;
+//REWRITE USER DIR FOR MAKE SURE USER WORK DONE
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg SYSTEM = "Natvc/SystemUser";
+_sipcfg Local_Driver_Security_User = "Natvc/SystemManager/Local_Driver_Security_User";
+_sipcfg Local_Low = "Natvc/SystemManager/Local_Low";
+_sipcfg TrustedServices = "Natvc/SystemManager/TrustedServices";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemManager/initSystemUser.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemManager/Local_Driver_Security_User/detail.txt);
+This user is work for system driver load
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemManager/Local_Driver_Security_User/detail.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemManager/Local_Driver_Security_User/userconfig);
+//NATVC USER CONFIG
+$UserName=Local_Driver_Security_User;//User ID
+$isAdmin=2;//Admin Auther 0-User 1-Admin 2-System User
+$AutoRun=@servicemode;
+$DisableUser=0; // User is Disabled 0/1
+$UserPassword=@nopswd; // UserPassword
+
+$noexplorer=true;
+$nouserexplorer=true;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemManager/Local_Driver_Security_User/userconfig);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemManager/Local_Low/detail.txt);
+This user is work for Network Connection / download / run low level program
+Run For Low Auth Program on NATVC
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemManager/Local_Low/detail.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemManager/Local_Low/userconfig);
+//NATVC USER CONFIG
+$UserName=Local_Low;//User ID
+$isAdmin=0;//Admin Auther 0-User 1-Admin 2-System User
+$AutoRun=@servicemode;
+$DisableUser=0; // User is Disabled 0/1
+$UserPassword=@nopswd; // UserPassword
+
+$noexplorer=true;
+$nouserexplorer=true;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemManager/Local_Low/userconfig);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemManager/TrustedServices/detail.txt);
+This user work for trusted user running(Dedicate);
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemManager/TrustedServices/detail.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemManager/TrustedServices/userconfig);
+//NATVC USER CONFIG
+$UserName=TrustedServices;//User ID
+$isAdmin=1;//Admin Auther 0-User 1-Admin 2-System User
+$AutoRun=@servicemode;
+$DisableUser=0; // User is Disabled 0/1
+$UserPassword=@nopswd; // UserPassword
+
+$noexplorer=true;
+$nouserexplorer=true;
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/SystemManager/TrustedServices/userconfig);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/SystemUser/LogonUI.txt);
 This file is the login verification file for the Natvc system
 Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
