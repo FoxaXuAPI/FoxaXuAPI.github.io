@@ -131,10 +131,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8229;
+$SYS_KERNEL_VID=8232;
 $SYS_REG_NAME=16.2;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=Release.20251122.REV(2);
+$SYS_RELEASE_Channel=Release.20251122.REV(3).PT;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -749,13 +749,16 @@ _cout _sipcfg shutdown_execute;
 _prt "            Startup Execute:   ";
 _cout _sipcfg startup_execute;
 _cout "    Third party Task";
+
 _prt "            Restart Pending :   ";
-_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_prt "TRUE";
-_if(!_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_prt "FALSE";
-_cout "";
-_prt "            Startup Pending:   ";
 _if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca")|_prt "TRUE";
 _if(!_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca")|_prt "FALSE";
+_cout "";
+
+_prt "            Startup Pending:   ";
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_prt "TRUE";
+_if(!_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_prt "FALSE";
+
 _cout "";
 _cout "";
 _prt "            Current User Auto Run:    ";
@@ -5702,11 +5705,16 @@ _if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerWarning;
 :BackToTryBoot;
 
 //Check last startup;
+:RELOADSETUP;
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _var {RestartExecuteMemReset} = _sipcfg RestartExecuteMemReset;
 _var {EnableNatvcDebugReport} = _sipcfg EnableNatvcDebugReport;
 _var {DisableKernelSecurityLevel} = _sipcfg DisableKernelSecurityLevel;
+_if(_cp("{DisableKernelSecurityLevel}","{varspace.null}"))|_sipcfg DisableKernelSecurityLevel = "false";
+_if(_cp("{DisableKernelSecurityLevel}","{varspace.null}"))|_goto :RELOADSETUP;
 _var {EnableSystemUserProtection} = _sipcfg EnableSystemUserProtection;
+_if(_cp("{EnableSystemUserProtection}","{varspace.null}"))|_sipcfg EnableSystemUserProtection = "true";
+_if(_cp("{EnableSystemUserProtection}","{varspace.null}"))|_goto :RELOADSETUP;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
 
 _var {last_startup} = _sipcfg last_startup;
@@ -5902,6 +5910,9 @@ _if(_cp("{EnableSystemUserProtection}","true"))|_script <"{SYS_NROOT}/SystemMana
 _if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadSystemDRV;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Drivers...";
 _if(!_file_exist "{SYS_ROOT}/drvload.ca")|_goto :FailedCrashDrvMissing;
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_if(!_cp(_sipcfg Local_Driver_Security_User,"Natvc/SystemManager/Local_Driver_Security_User"))|_goto :ENFORCE_STARTUP_SUPT;
 
 _var {NATVC_isAdmin} = "2";
 _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "Local_Driver_Security_User";
@@ -6361,6 +6372,13 @@ _return "configMiss";
 :LoadHALFailed;
 _file_write "[%time%][Kernel][Boot][ERROR] Load HAL failed ..";
 _return "Load HAL failed";
+
+:ENFORCE_STARTUP_SUPT;
+_file_write "[%time%][Kernel][Boot]Enforce Load System User Protection Service.";
+_file_write "[%time%][Kernel][Boot]System need restart to continue.";
+_file_write "[%time%][SECURITY] System User Protection Loaded";
+_script <"{SYS_NROOT}/SystemManager/initSystemUser.ca">;
+_goto :RESTART_OK;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvkernel.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvload.ca);
 _$directmode;
@@ -8302,9 +8320,9 @@ _clear;
 
 _file_write "[%time%][SysFix] From {SYSFIX_DIR}";
 
-_file_open "{SYS_NROOT}/SysRepairLogfile.log";
+_file_open "{NATVC_DISK}/{SYS_LOG_PATH}/SysRepairLogfile.log";
 
-_if(_file_exist "{SYS_NROOT}/SysRepairLogfile.log")|_file_del "{SYS_NROOT}/SysRepairLogfile.log";
+_if(_file_exist "{NATVC_DISK}/{SYS_LOG_PATH}/SysRepairLogfile.log")|_file_del "{NATVC_DISK}/{SYS_LOG_PATH}/SysRepairLogfile.log";
 
 _file_write "System Repiar Log File Start on %time%";
 
@@ -8341,6 +8359,7 @@ _if(!_file_exist "{SYSFIX_DIR}/{ReadCache}")|_goto :FailFix;
 _prts "\r                                                           \r Fixed: {SYS_ROOT}/{ReadCache}";
 _var {Int_Total_BreakFile} = _+("{Int_Total_BreakFile}","1");
 _ms_sleep 300;
+_dir_full "{SYS_ROOT}/{ReadCache}";
 _file_copy("{SYSFIX_DIR}/{ReadCache}","{SYS_ROOT}/{ReadCache}");
 _file_write "[ERROR] {ReadCache} :  There is corruption in this file and attempts to repair it";
 _file_write "[ERROR] Fix File :  {ReadCache}";
@@ -8359,6 +8378,7 @@ _typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
 
 _if(_cp("{Int_Total_BreakFile}","0"))|_cout "Scan Complete. No file was corruption";
 _if(!_cp("{Int_Total_BreakFile}","0"))|_cout "Scan Complete. Total {Int_Total_BreakFile} files was fixed";
+_cout "System Repair Log :   {NATVC_DISK}/{SYS_LOG_PATH}/SysRepairLogfile.log";
 _free {Int_Total_BreakFile};
 _ms_sleep 6500;
 
@@ -8418,6 +8438,7 @@ _if(_cp("{ReadCache}","overline")) | _goto :COMPLETE;
 
 //CopyFile
 _if(!_file_exist "{SYS_ROOT}/{ReadCache}")|_goto :SetupFailDirectory;
+_dir_full "{SYSFIX_DIR}/{ReadCache}";
 _file_copy("{SYS_ROOT}/{ReadCache}","{SYSFIX_DIR}/{ReadCache}");
 _prts "\r                                                           \r Copying: {SYS_ROOT}/{ReadCache}";
 

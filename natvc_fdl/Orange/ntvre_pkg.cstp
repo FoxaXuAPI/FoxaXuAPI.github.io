@@ -92,10 +92,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8229;
+$SYS_KERNEL_VID=8232;
 $SYS_REG_NAME=16.2;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=Release.20251122.REV(2);
+$SYS_RELEASE_Channel=Release.20251122.REV(3).PT;
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -2644,11 +2644,16 @@ _if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerWarning;
 :BackToTryBoot;
 
 //Check last startup;
+:RELOADSETUP;
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _var {RestartExecuteMemReset} = _sipcfg RestartExecuteMemReset;
 _var {EnableNatvcDebugReport} = _sipcfg EnableNatvcDebugReport;
 _var {DisableKernelSecurityLevel} = _sipcfg DisableKernelSecurityLevel;
+_if(_cp("{DisableKernelSecurityLevel}","{varspace.null}"))|_sipcfg DisableKernelSecurityLevel = "false";
+_if(_cp("{DisableKernelSecurityLevel}","{varspace.null}"))|_goto :RELOADSETUP;
 _var {EnableSystemUserProtection} = _sipcfg EnableSystemUserProtection;
+_if(_cp("{EnableSystemUserProtection}","{varspace.null}"))|_sipcfg EnableSystemUserProtection = "true";
+_if(_cp("{EnableSystemUserProtection}","{varspace.null}"))|_goto :RELOADSETUP;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Detect System Status";
 
 _var {last_startup} = _sipcfg last_startup;
@@ -2844,6 +2849,9 @@ _if(_cp("{EnableSystemUserProtection}","true"))|_script <"{SYS_NROOT}/SystemMana
 _if(_cp("{boot_rsmode}","true"))|_goto :SkipLoadSystemDRV;
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Loading System Drivers...";
 _if(!_file_exist "{SYS_ROOT}/drvload.ca")|_goto :FailedCrashDrvMissing;
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_if(!_cp(_sipcfg Local_Driver_Security_User,"Natvc/SystemManager/Local_Driver_Security_User"))|_goto :ENFORCE_STARTUP_SUPT;
 
 _var {NATVC_isAdmin} = "2";
 _var {K_SERVICE_CALLBACK} = _script <"{NATVC_USERSVC}"> "Local_Driver_Security_User";
@@ -3303,6 +3311,13 @@ _return "configMiss";
 :LoadHALFailed;
 _file_write "[%time%][Kernel][Boot][ERROR] Load HAL failed ..";
 _return "Load HAL failed";
+
+:ENFORCE_STARTUP_SUPT;
+_file_write "[%time%][Kernel][Boot]Enforce Load System User Protection Service.";
+_file_write "[%time%][Kernel][Boot]System need restart to continue.";
+_file_write "[%time%][SECURITY] System User Protection Loaded";
+_script <"{SYS_NROOT}/SystemManager/initSystemUser.ca">;
+_goto :RESTART_OK;
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/System/ntvkernel.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/System/ntvload.nbf);
 _$directmode;
