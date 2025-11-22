@@ -131,10 +131,10 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Natvc;
-$SYS_KERNEL_VID=8232;
+$SYS_KERNEL_VID=8235;
 $SYS_REG_NAME=16.2;
 $SYS_KERNEL_CODENAME=Orange;
-$SYS_RELEASE_Channel=Release.20251122.REV(3).PT;
+$SYS_RELEASE_Channel=Stable.20251122.REV(1);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -802,6 +802,7 @@ $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nativeshell/SMT-Disable-KernelSecurityLevel
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nativeshell/SMT-Disable-SystemRepair.ca);
 _$directmode;
 //System Manager Tools
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg DisableSysRepiar = "true";
 _return "ok";
@@ -825,6 +826,7 @@ _$directmode;
 //System Manager Tools
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg DisableSysRepiar = "false";
+_cout "Restart your device to create system image";
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nativeshell/SMT-Enable-SystemRepair.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nativeshell/SMT-Enable-SystemUserProtection.ca);
@@ -834,6 +836,32 @@ _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _sipcfg EnableSystemUserProtection = "true";
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nativeshell/SMT-Enable-SystemUserProtection.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nativeshell/SMT-Get.ca);
+_$directmode;
+//Native Shell Get Module
+_cout "  $ System Security Policy";
+_cout "    Security Function";
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+
+_prt "            Kernel Security Level (KSL):   ";
+_if(_cp(_sipcfg DisableKernelSecurityLevel,"true"))|_cout "false";
+_if(_cp(_sipcfg DisableKernelSecurityLevel,"false"))|_cout "true";
+
+_prt "            System User Protection (SUP):   ";
+_if(_cp(_sipcfg EnableSystemUserProtection;,"true"))|_cout "true";
+_if(_cp(_sipcfg EnableSystemUserProtection,"false"))|_cout "false";
+
+_prt "            System Repair and Check (SRC):   ";
+_if(_cp(_sipcfg DisableSysRepiar;,"true"))|_cout "false";
+_if(_cp(_sipcfg DisableSysRepiar,"false"))|_cout "true";
+
+_cout "";
+_cout "Natvc Security Policy";
+_cout "The output only indicates whether the security policy is enabled in the settings."; 
+_cout "To verify, please check the system logs.";
+_cout "";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Natvc/nativeshell/SMT-Get.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Natvc/nativeshell/System-Report.ca);
 _$directmode;
 //Native Shell Get Module
