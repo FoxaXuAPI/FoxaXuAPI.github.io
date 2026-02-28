@@ -148,7 +148,7 @@ _if(!_cp("{PackageLatest}","{SYS_KERNEL_VID}"))|_goto :UpdateDetectStatus;
 
 _clear;
 _cout "Status :  OK Good";
-_cout "You are using latest version of NATVC {PackageLatest}";
+_cout "You are using latest version of Coral {PackageLatest}";
 _cout "we are collect your problem and resolve these bug";
 _cout "We Recommand Check Update every week";
 _cout "Version  {SYSNAME}.{SYS_KERNEL_VID}";
