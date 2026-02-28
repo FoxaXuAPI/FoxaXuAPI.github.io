@@ -52,7 +52,7 @@ $package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.2.01; 
+$USV=1.2.02; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
@@ -107,7 +107,7 @@ _return "ok";
 
 :FailReDownload;
 _clear;
-_cout "Natvc Recovery Element Download Failed";
+_cout "Coral Recovery Element Download Failed";
 _pause;
 _return "netfail";
 $CSTP_FILE_RECORD_MARK_ID_END(/re_deploy.ca);
@@ -119,7 +119,7 @@ _$nolog;
 //Detect Current System
 
 _clear;
-_cout "Natvc Update Service Package    -Setup Host";
+_cout "Coral Update Service Package    -Setup Host";
 _cout "Running ....     Checking your system";
 
 _var {updatehost_args} = _getargs;
