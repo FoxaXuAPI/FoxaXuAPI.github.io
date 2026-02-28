@@ -1,0 +1,4 @@
+//Natvc Orange
+$latestversion={SYS_KERNEL_VID};
+//Summer is over. Now is Autumn
+//Super Suger Orange
