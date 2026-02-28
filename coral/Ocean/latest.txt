@@ -1,4 +1,3 @@
-//Natvc Orange
+// Coral Ocean
 $latestversion={SYS_KERNEL_VID};
-//Summer is over. Now is Autumn
-//Super Suger Orange
+// Coral Update id
