@@ -47,9 +47,9 @@ $CSTP_FILE_RECORD_MARK_ID_END(/modernsetup.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/OSDAT);
 //Natvc Update Service Package
 //Register File
-$latest=http://fdl-cds.dev.foxaxu.top/natvc_fdl/{SYS_KERNEL_CDU}/latest.txt;
-$package=http://fdl-cds.dev.foxaxu.top/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
-$REpackage=http://fdl-cds.dev.foxaxu.top/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
+$latest=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/latest.txt;
+$package=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/natvc.cstp;
+$REpackage=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
 $USV=1.2.02; 
