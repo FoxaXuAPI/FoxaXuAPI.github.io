@@ -47,9 +47,9 @@ $CSTP_FILE_RECORD_MARK_ID_END(/modernsetup.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/OSDAT);
 //Natvc Update Service Package
 //Register File
-$latest=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/latest.txt;
-$package=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
-$REpackage=http://fdl-cds.dev.foxaxu.com/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
+$latest=http://fdl-cds.dev.foxaxu.top/natvc_fdl/{SYS_KERNEL_CDU}/latest.txt;
+$package=http://fdl-cds.dev.foxaxu.top/natvc_fdl/{SYS_KERNEL_CDU}/natvc.cstp;
+$REpackage=http://fdl-cds.dev.foxaxu.top/natvc_fdl/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
 $USV=1.2.02; 
@@ -261,7 +261,7 @@ _var {USV_DAT} = _sipcfg USV;
 :ReloadMainCLI;
 _sipcfg.open "{NATVC_CONFIG_SETUP}";
 _clear;
-_cout "Natvc Update Service Package";
+_cout "Coral Update";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "An Exist Update is waitting for restart";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "If you want install another update.please restart your device and install later";
 _if(!_cp(_sipcfg shutdown_execute,"noexec"))|_cout "   type "c" to cancel update Natvc";
