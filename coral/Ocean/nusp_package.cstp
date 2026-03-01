@@ -183,7 +183,7 @@ _if(_dir_exist "script/vdisk/Recovery")|_url_get("{PkgREDownload}","{SYS_NROOT}/
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp")|_goto :FailDownload;
 _cout "Setup Host is Extracting files";
 _file_uncstp("{SYS_NROOT}/SystemUpdate/downloading/latest.cstp","{SYS_NROOT}/SystemUpdate/installer");
-_if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Coral/System/ntvkernel.ca")|_goto :ExtractError;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Coral/System/croskrnl.ca")|_goto :ExtractError;
 
 //Start Installer
 _script <"{SYS_NROOT}/SystemUpdate/nusp/modernsetup.ca"> "usermode";
