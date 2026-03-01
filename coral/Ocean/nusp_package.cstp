@@ -52,7 +52,7 @@ $package=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/install.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.2.02; 
+$USV=1.4.01(CoralOptimi); 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
@@ -454,3 +454,4 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/xcopy.ca);
+
