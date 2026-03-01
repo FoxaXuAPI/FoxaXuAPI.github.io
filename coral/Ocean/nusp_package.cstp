@@ -48,7 +48,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/OSDAT);
 //Natvc Update Service Package
 //Register File
 $latest=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/latest.txt;
-$package=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/natvc.cstp;
+$package=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/install.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
@@ -62,7 +62,7 @@ $CSTP_FILE_RECORD_MARK_ID_END(/OSDAT);
 $CSTP_FILE_RECORD_MARK_ID_START(/res-installcli.txt);
  Please wait...
    Update Service is installing the latest version of Natvc.
-   After installation, your Natvc will be updated to {PackageLatest}.
+
 
  Do not turn off your device during the process.
  Make sure your device is connected to a stable power source.
@@ -183,7 +183,7 @@ _if(_dir_exist "script/vdisk/Recovery")|_url_get("{PkgREDownload}","{SYS_NROOT}/
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp")|_goto :FailDownload;
 _cout "Setup Host is Extracting files";
 _file_uncstp("{SYS_NROOT}/SystemUpdate/downloading/latest.cstp","{SYS_NROOT}/SystemUpdate/installer");
-_if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Natvc/System/ntvkernel.ca")|_goto :ExtractError;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Coral/System/ntvkernel.ca")|_goto :ExtractError;
 
 //Start Installer
 _script <"{SYS_NROOT}/SystemUpdate/nusp/modernsetup.ca"> "usermode";
@@ -351,9 +351,9 @@ _$nolog;
 //Remove Filiter Files
 
 _dir_remove "{SYS_NROOT}/SystemUpdate/installer/Users/admin";
-_file_del "{SYS_NROOT}/SystemUpdate/installer/Natvc/config/SETUP";
-_file_del "{SYS_NROOT}/SystemUpdate/installer/Natvc/config/USERS";
-_file_del "{SYS_NROOT}/SystemUpdate/installer/Natvc/config/SOFTWARE";
+_file_del "{SYS_NROOT}/SystemUpdate/installer/Coral/config/SETUP";
+_file_del "{SYS_NROOT}/SystemUpdate/installer/Coral/config/USERS";
+_file_del "{SYS_NROOT}/SystemUpdate/installer/Coral/config/SOFTWARE";
 
 
 _return "PROCESS OK";
