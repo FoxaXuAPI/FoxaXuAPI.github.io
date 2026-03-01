@@ -31,7 +31,7 @@ $oobe=1;
 $ModernAppReady=0;
 $SystemDeploy={SYS_ROOT}/ntvdeploy.ca;
 $callexec={SYS_ROOT}/oobe.ca;
-$oobequick=1;
+$oobequick=0;
 
 //Shutdown Record  0 - false    1 - true
 $shutdown_record=1;
@@ -42,7 +42,7 @@ $RestartExecuteMemReset=1;
 $EnableNatvcDebugReport=false;
 
 //SysRepairService
-$DisableSysRepiar=true;
+$DisableSysRepiar=false;
 
 //BootDebug
 $DebugNoGUIBoot=0; //set 1 to print boot message. set 0 to display normal boot screen
@@ -56,7 +56,7 @@ $last_shutdown=0;
 $explorer_title=${NATVC_WHOIS}::Explorer>;
 
 //NTVANI
-$offani=true;
+$offani=false;
 
 //Command Manager
 $whitelist=0;
@@ -106,11 +106,11 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Coral;
-$SYS_KERNEL_VID=10124;
+$SYS_KERNEL_VID=10127;
 $SYS_REG_NAME=1.0;
 $SYS_KERNEL_CODENAME=Ocean;
 $SYS_RELEASE_Channel=26Q2.DEM;
-$SYS_BASE_VID=FoxaXuDevLab(R):Coral(R).1_0.26Q2.Ocean:project_reboot:milestone_5;
+$SYS_BASE_VID=FoxaXuDevLab(R):Coral(R).1_0.26Q2.Ocean:project_reboot:milestone_5(Preview Version);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -617,17 +617,17 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Coral/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/res/natvc-cpw.txt);
 =======================================================
-                 🛠️ Natvc Recovery
+                 🛠️ Recovery
 =======================================================
 
-⚠️ Your device does not support this NATVC version
+⚠️ Your device does not support this Coral version
 
    🧩 Your Platform CLFMV   : {CalciumL_FMV}  
    🔒 Requirement CLFMV     : {NATVC_FMV_REQ} or later
 
 -------------------------------------------------------
 
-💡 Type 1 to start Natvc  
+💡 Type 1 to start Coral  
 🛑 Type 2 to shutdown (Default)
 
                  🔄 System Recovery

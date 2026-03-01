@@ -19,7 +19,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Coral/config/DeploySettings);
 $AllowAdminUserDebug=false;
 
 //deploy system
-$DeployModernNatvcApps=false;
+$DeployModernNatvcApps=true;
 //WARNING. DISABLE This Switchs might made system cannot deploy
 //Some System Component require some mna package
 //You should install these package
@@ -61,7 +61,7 @@ $oobe=1;
 $ModernAppReady=0;
 $SystemDeploy={SYS_ROOT}/ntvdeploy.ca;
 $callexec={SYS_ROOT}/oobe.ca;
-$oobequick=1;
+$oobequick=0;
 
 //Shutdown Record  0 - false    1 - true
 $shutdown_record=1;
@@ -72,7 +72,7 @@ $RestartExecuteMemReset=1;
 $EnableNatvcDebugReport=false;
 
 //SysRepairService
-$DisableSysRepiar=true;
+$DisableSysRepiar=false;
 
 //BootDebug
 $DebugNoGUIBoot=0; //set 1 to print boot message. set 0 to display normal boot screen
@@ -86,7 +86,7 @@ $last_shutdown=0;
 $explorer_title=${NATVC_WHOIS}::Explorer>;
 
 //NTVANI
-$offani=true;
+$offani=false;
 
 //Command Manager
 $whitelist=0;
@@ -145,11 +145,11 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Coral;
-$SYS_KERNEL_VID=10124;
+$SYS_KERNEL_VID=10127;
 $SYS_REG_NAME=1.0;
 $SYS_KERNEL_CODENAME=Ocean;
 $SYS_RELEASE_Channel=26Q2.DEM;
-$SYS_BASE_VID=FoxaXuDevLab(R):Coral(R).1_0.26Q2.Ocean:project_reboot:milestone_5;
+$SYS_BASE_VID=FoxaXuDevLab(R):Coral(R).1_0.26Q2.Ocean:project_reboot:milestone_5(Preview Version);
 
 //System Index Kernel File
 $NATVC_USERSVC=usersvc.ca;
@@ -1388,17 +1388,17 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Coral/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/res/natvc-bootupdate.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/res/natvc-cpw.txt);
 =======================================================
-                 🛠️ Natvc Recovery
+                 🛠️ Recovery
 =======================================================
 
-⚠️ Your device does not support this NATVC version
+⚠️ Your device does not support this Coral version
 
    🧩 Your Platform CLFMV   : {CalciumL_FMV}  
    🔒 Requirement CLFMV     : {NATVC_FMV_REQ} or later
 
 -------------------------------------------------------
 
-💡 Type 1 to start Natvc  
+💡 Type 1 to start Coral  
 🛑 Type 2 to shutdown (Default)
 
                  🔄 System Recovery
@@ -1897,7 +1897,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/Coral/res/natvc-system-detail.txt);
 ────────────────────────────────────────────
 
 🔸 Powered by Calcium Script  
-🔸 Project BVM · Natvc_FDL
+🔸 Project BVM · Coral OS
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/res/natvc-system-detail.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/res/natvc-user-settings-main.txt);
 👤 Coral User Settings
@@ -13183,7 +13183,7 @@ $package=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/install.cstp;
 $REpackage=http://fdl-cds.dev.foxaxu.top/coral/{SYS_KERNEL_CDU}/ntvre_pkg.cstp;
 
 //NUSP DATA
-$USV=1.2.02; 
+$USV=1.4.01(CoralOptimi) Offline Package; 
 
 /DEV VERSION CODENAME
 $codename=build_anycore;
@@ -13314,7 +13314,7 @@ _if(_dir_exist "script/vdisk/Recovery")|_url_get("{PkgREDownload}","{SYS_NROOT}/
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/downloading/latest.cstp")|_goto :FailDownload;
 _cout "Setup Host is Extracting files";
 _file_uncstp("{SYS_NROOT}/SystemUpdate/downloading/latest.cstp","{SYS_NROOT}/SystemUpdate/installer");
-_if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Coral/System/ntvkernel.ca")|_goto :ExtractError;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/installer/Coral/System/croskrnl.ca")|_goto :ExtractError;
 
 //Start Installer
 _script <"{SYS_NROOT}/SystemUpdate/nusp/modernsetup.ca"> "usermode";
@@ -13585,6 +13585,7 @@ _cout "Xcopy Error";
 _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/xcopy.ca);
+
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/update.nusp_package.offline/nusp_package.cstp);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemUser/LogonUI.txt);
 This file is the login verification file for the Natvc system
