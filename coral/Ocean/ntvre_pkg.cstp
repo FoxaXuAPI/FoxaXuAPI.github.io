@@ -106,7 +106,7 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Coral;
-$SYS_KERNEL_VID=10127;
+$SYS_KERNEL_VID=10132;
 $SYS_REG_NAME=1.0;
 $SYS_KERNEL_CODENAME=Ocean;
 $SYS_RELEASE_Channel=26Q2.DEM;
@@ -1549,6 +1549,15 @@ _file_write "[%time%][NATVC Boot Loader] Last shutdown is normal.";
 _sipcfg shutdown = "1";
 
 :BackToNormalBoot;
+
+//Execute Memory Startup Clear
+_if(!_cp("{TaskStartupMemClear}","true"))|_goto :SkipEMSC;
+
+_if(_file_exist "{NATVC_DISK}/{Boot_OSPATH}/SystemResources/SystemStartup/StartupMemoryClear.ca")|_script <"{NATVC_DISK}/{Boot_OSPATH}/SystemResources/SystemStartup/StartupMemoryClear.ca"> "KernelResetMemory";
+_goto :RESTART_OK;
+
+//Complete
+:SkipEMSC;
 
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Starting Natvc...";
 
@@ -3555,7 +3564,7 @@ _script <"{SYS_ROOT}/usersvc.ca"> "SYSTEM";
 _goto :ReinitService;
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/System/ntvlogon.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/System/ntvrebl.ca);
-Not RealFiles 
+_return "true"; 
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/System/ntvrebl.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/System/refix.ca);
 _$directmode;
@@ -3989,7 +3998,7 @@ _pause;
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/System/services.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/System/sysfix.ca);
-Not RealFiles 
+_return "true"; 
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/System/sysfix.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/System/textreader.ca);
 _$directmode;
@@ -4450,6 +4459,7 @@ Do not manually delete this file, as losing this file will cause the system to i
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemUser/LogonUI.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemUser/TaskUserExecute/startupTask.ca);
 _$directmode;
+_var {TaskStartupMemClear} = "true";
 _if(!_file_exist "{OriginDisk}/{REAutoExec}")|_goto :FailLoadREProg;
 _var {TaskAutoConfigNtvRe} = _script <"{OriginDisk}/{REAutoExec}">;
 _return "{TaskAutoConfigNtvRe}";

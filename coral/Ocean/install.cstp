@@ -145,7 +145,7 @@ $SYS_USERDIR=Users;      //Natvc User Path Bind
 
 //System Messagex
 $SYS_NAME=Coral;
-$SYS_KERNEL_VID=10127;
+$SYS_KERNEL_VID=10132;
 $SYS_REG_NAME=1.0;
 $SYS_KERNEL_CODENAME=Ocean;
 $SYS_RELEASE_Channel=26Q2.DEM;
@@ -2986,6 +2986,15 @@ _sipcfg shutdown = "1";
 
 :BackToNormalBoot;
 
+//Execute Memory Startup Clear
+_if(!_cp("{TaskStartupMemClear}","true"))|_goto :SkipEMSC;
+
+_if(_file_exist "{NATVC_DISK}/{Boot_OSPATH}/SystemResources/SystemStartup/StartupMemoryClear.ca")|_script <"{NATVC_DISK}/{Boot_OSPATH}/SystemResources/SystemStartup/StartupMemoryClear.ca"> "KernelResetMemory";
+_goto :RESTART_OK;
+
+//Complete
+:SkipEMSC;
+
 _if(_cp("{NoGUIBootOpt}","1"))| _cout "Starting Natvc...";
 
 //Check Is Kernel Need Update
@@ -3755,7 +3764,7 @@ _if(_cp("{DC_ModeA}","auto"))|_goto :StartDiskClear;
 :BACKMAINCONSOLE;
 _clear;
 _cout "";
-_cout "Natvc Disk Clear    - {SYSNAME}.{SYS_KERNEL_VID}";
+_cout "Coral Disk Clear    - {SYSNAME}.{SYS_KERNEL_VID}";
 _cout "type y to start Clear";
 _cout "";
 _cout "";
@@ -3782,9 +3791,11 @@ _dir_remove "{SYS_NROOT}/SystemUpdate";
 
 _cout "Clear  Old Update Pack";
 _dir_remove "{NATVC_DISK}/CoralUpdate";
+_dir_remove "{NATVC_DISK}/NatvcUpdate";
 
 _cout "Clear  Old System Backups";
 _dir_remove "{NATVC_DISK}/Coral.old";
+_dir_remove "{NATVC_DISK}/Natvc";
 
 _cout "Clear  System Crash Reports";
 _dir_remove "{SYS_NROOT}/MiniRep";
@@ -4078,10 +4089,13 @@ _file_write "_var {GetEnvTyper} = "{SetEnvTyper}"; ";
 _file_write "_return "ok"; ";
 
 _script <"{temp}/envsetTemp.ca">;
-_file_del "{temp}/envsetTemp.ca";
 
 _cout "Env:   {GetEnvTyper} = {SetEnvTyper}";
+_free {GetEnvTyper};
+_free {SetEnvTyper};
 _pause;
+_file_del "{temp}/envsetTemp.ca";
+
 _goto :BackMainET;
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/System/envset.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/System/envtype.ca);
@@ -5218,11 +5232,6 @@ _free {BootMethod};
 _free {Status};
 _free {REV_Missing_File};
 _free {REV_ErrorCode};
-_free {NATVC_CONFIG};
-_free {NATVC_CONFIG_SYS};
-_free {NATVC_CONFIG_SOFTWARE};
-_free {NATVC_CONFIG_USERS};
-_free {NATVC_CONFIG_SETUP};
 _free {hal_api.SystemBase};
 _free {hal_api.common};
 _free {SystemTemp};
@@ -5487,7 +5496,7 @@ _$nolog;
 
 //Data int
 
-_var {ntsh_version} = "2601";
+_var {ntsh_version} = "2602";
 _var {ntsh_revision} = "1";
 
 //GET DIRECT 
@@ -5521,10 +5530,10 @@ _if (!_dir_exist "{CommandPath}")|_var {CommandPath} = "{SYS_NROOT}/nativeshell"
 
 
 //Main ntsh
-_cout "Natvc NativeShell.  User:{NATVC_WHOIS} ({NATVC_isAdmin})  Profile: {NATVC_USERPROFILE}";
+_cout "Coral NativeShell.  User:{NATVC_WHOIS} ({NATVC_isAdmin})  Profile: {NATVC_USERPROFILE}";
 _cout "Copyright FoxaXu_Dev_Lab (c).  All Rights Reserved.";
 _cout "";
-_cout "Install latest version of Natvc to get latest function. https://dev.foxaxu.com/Software/P_Natvc/";
+_cout "Install latest version of Coral to get latest function. https://www.foxaxu.top";
 _cout "NativeShell Config file :   {NATVC_CONFIG}/NativeConf";
 :TypeNewShell;
 _cout "";
@@ -5650,19 +5659,19 @@ _goto :exec_system_commander;
 :TypeNTSH_Helper;
 //_cout "";
 _cout "Themes:";
-_cout "Natvc NativeShell Help Center";
+_cout "Coral NativeShell Help Center";
 _cout "";
 _cout "What is NativeShell:";
-_cout "NativeShell is a new shell console for Natvc. to improve legacy console rootshell.";
+_cout "NativeShell is a new shell console for Coral. to improve legacy console rootshell.";
 _cout "NativeShell support much new function. some function is some software was required";
 _cout "Thanks your support";
 _cout "";
 _cout "This Help Center cannot tell you how to use nativeshell. but you can view more info";
-_cout "on internet. open link https://dev.foxaxu.com/Software/P_Natvc/NTSH";
+_cout "on internet. open link https://www.foxaxu.top";
 _cout "NativeShell is new project. if you have some problem. report to us. hello@foxaxu.com";
 _cout "";
 _cout "Online Help";
-_cout "You can find some message on Developer FoxaXu. link:  https://dev.foxaxu.com";
+_cout "You can find some message on Developer FoxaXu. link:  https://www.foxaxu.top";
 _cout "Some command need you have administrator. make sure run nativeshell as administrator";
 _cout "Type 'All-Command' to list all nativeshell command ";
 _cout "";
@@ -7592,11 +7601,11 @@ _clear;
 _cout "Download NUSP failed";
 _cout "Check your internet and try again";
 _pause;
-_if(_file_exist "{SYS_NROOT}/SystemRNU/update.nusp_package.offline/nusp_package.cstp")|_goto :LoadOfflinePackage;
+_if(_file_exist "{SYS_NROOT}/SystemResources/CoralUpdate-NUSPOfflinePackage/nusp_package.cstp")|_goto :LoadOfflinePackage;
 _return "ok";
 
 :LoadOfflinePackage;
-_file_uncstp ("{SYS_NROOT}/SystemRNU/update.nusp_package.offline/nusp_package.cstp","{SYS_NROOT}/SystemUpdate/nusp");
+_file_uncstp ("{SYS_NROOT}/SystemResources/CoralUpdate-NUSPOfflinePackage/nusp_package.cstp","{SYS_NROOT}/SystemUpdate/nusp");
 _goto :RELOADER;
 
 :NUSP_EXEC_FAIL;
@@ -10286,11 +10295,11 @@ _return "FailLoadUserInterface";
 $CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
 //SIPCFG Package Data
-$AppName=Natvc mna Package Manager;
+$AppName=Coral Modern AppPackage Manager;
 $Setup=mnacore.pkgmanager.mna;
 $AppProperties=systemapps; // systemapps or userapps
 
-$AppVersion=1012;
+$AppVersion=10131;
 
 //Copyright FoxaXu 2025
 //Default Package
@@ -10338,7 +10347,7 @@ _clear;
 _cout "Type software package file";
 _prt "Type Package>";
 _var {UserTypeSetup} = _getline;
-_if(_cp("{UserTypeSetup}","setupdebug"))|_var {UserTypeSetup} = "{SYS_NROOT}/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna";
+_if(_cp("{UserTypeSetup}","setupdebug"))|_var {UserTypeSetup} = "{SYS_NROOT}/SystemResources/ModernApp-TemplePackage/mna.apptemple.mna";
 _script<"{SYS_NROOT}/mnacore/install.ca"> "{UserTypeSetup}";
 _pause;
 _goto :BACKMAINCONSOLE;
@@ -10583,11 +10592,11 @@ _return "user_noauth";
 $CSTP_FILE_RECORD_MARK_ID_END(/natvc.configeditor.system.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
 //SIPCFG Package Data
-$AppName=Natvc System Config Editor;
+$AppName=System Config Editor;
 $Setup=natvc.configeditor.system.mna;
 $AppProperties=systemapps; // systemapps or userapps
 
-$AppVersion=1001;
+$AppVersion=10131;
 
 //Copyright FoxaXu 2025
 //Default Package
@@ -10621,14 +10630,14 @@ _var {ToolsName} = "File Expand Tookit";
 
 :MainFileExplorer;
 _clear;
-_cout "Natvc File Cstp Tools ";
+_cout "Coral File Cstp Tools ";
 _cout "----File Cstp and Extract tools--------------";
 _cout "";
 _cout "    1. Extract Mode";
 _cout "    2. Pack Files";
 _cout "";
 _cout " File pack/unpack tools";
-_cout " Copyright FDL 2025";
+_cout " Copyright FDL 2026";
 _cout "---------------------------------------------";
 _cout "select mode . (use .exit cancel)" 
 _prts "$FileCstp >";
@@ -10688,7 +10697,7 @@ $AppName=File Expand Manager;
 $Setup=natvc.file.expand.manager.mna;
 $AppProperties=userapps; // systemapps or userapps
 
-$AppVersion=1002;
+$AppVersion=10131;
 
 //Copyright FoxaXu 2025
 //Default Package
@@ -11434,11 +11443,11 @@ _goto :Server Page;
 $CSTP_FILE_RECORD_MARK_ID_END(/natvc_oobeservices.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
 //SIPCFG Package Data
-$AppName=Natvc OOBE Services;
+$AppName=Modern Out of Box Experience;
 $Setup=natvc.outofboxExp.mna;
 $AppProperties=systemapps; // systemapps or userapps
 
-$AppVersion=1001;
+$AppVersion=10131;
 
 //Copyright FoxaXu 2025
 //Default Package
@@ -11746,7 +11755,7 @@ _if(!_file_exist "{NATVC_USERPROFILE}/startcomplete")|_goto :LOAD_STARTREADER;
 //Detect Start Reader
 
 :ReloadExplorer;
-_var {ToolsName} = "NATVC Explorer";
+_var {ToolsName} = "User Explorer Interface (Modern)";
 _free {varspace.null};
 
 
@@ -12303,7 +12312,7 @@ _goto :Explorer_Crash;
 
 :Explorer_Crash;
 _clear;
-_cout "Natvc Explorer Error. stop working";
+_cout "Coral Explorer Error. stop working";
 _cout "File Operate failed":
 _pause;
 _return "crash";
@@ -12565,7 +12574,7 @@ _return "{EXPLORER_WORK_DIR}/{UserTypeGet}";
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral.SystemFileManager.Modern.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
 //SIPCFG Package Data
-$AppName=Coral Explorer;
+$AppName=Coral File Explorer;
 $Setup=natvc.userinterface.file.explorer.mna;
 $AppProperties=systemapps; // systemapps or userapps
 
@@ -12592,7 +12601,7 @@ _return "FailLoadUserInterface";
 $CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
 //SIPCFG Package Data
-$AppName=Start Menu;
+$AppName=Modern Start Menu;
 $Setup=natvc.userinterface.startmenu.mna;
 $AppProperties=systemapps; // systemapps or userapps
 
@@ -12607,7 +12616,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/usermenu.ca);
 _$directmode;
 _$nolog;
 
-_var {ToolsName} = "USERMENU";
+_var {ToolsName} = "User Interface :   Start Menu";
 
 //MAIN TYPE
 //USER MENU
@@ -12906,229 +12915,7 @@ _script <"{AppDir}/settings.core.ca"> "system_info";
 _goto :MainMenu;
 $CSTP_FILE_RECORD_MARK_ID_END(/settings.ui.ca);
 $CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemPackage/natvc_fdl.systemsettings.mna);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/dmcanalysis/dmcay.ca);
-_$directmode;
-_cout "Dynamic Memory Control Analysis";
-_envsave "memorydump.txt";
-_cout "Memory is Dump to memorydump.txt";
-_pause;
-_envload "memorydump.txt";
-_cout "Memory Reloaded":
-_file_del "memorydump.txt";
-_return "ok";
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/dmcanalysis/dmcay.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/fdl_labc.ca);
-_$directmode;
-_$nolog;
-
-_clear;
-
-//M
-_cout "Welcome to Natvc FDL Version";
-_cout "FoxaXu_Dev_Lab";
-_cout "more info to visit :  https://devlab.foxaxu.com";
-_cout "";
-_cout "Thanks your support";
-_pause;
-_return "ok";
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/fdl_labc.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/Hardware_Test.ca);
-_$directmode;
-_$nolog;
-
-_clear;
-
-//M
-_if(!_=>("{CalciumL_FMV}","1891"))|_goto :HWCompilerWarning;
-_cout "Your Device support run Natvc_FDL";
-_cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
-_pause;
-_return "ok";
-
-
-:HWCompilerWarning;
-_cout "Your Device Not Support Natvc_FDL";
-_cout "Update your device";
-_cout "Natvc_FDL Require FMV : 1891    Your FMV :  {CalciumL_FMV}";
-_pause;
-_return "ok";
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/Hardware_Test.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/isServiceMode.ca);
-_$directmode;
-_$nolog;
-
-//Detect Service Mode;
-
-_if(_cp("{NSV_SERVICE_MODE}","true"))|_cout "The program is running on service mode";
-_if(_cp("{NSV_SERVICE_MODE}","true"))|_return "ok";
-
-_cout "The program is running on user mode";
-_return "ok";
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/isServiceMode.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/LogonTool/logonmgr_noblock.ca);
-_$directmode;
-
-//Login User Mode
-_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
-
-:RELOADCONSOLE;
-_file_del "{temp}/Explorer_cacheList.txt";
-_var {EXPLORER_WORK_DIR} = "{SYS_NROOT}/SECURITY";
-_clear;
-_cout "#---- Logon MANAGER -------------------------------------------";
-_cout "| NATVC User Logon Manager";
-_cout "#-------------------------------------------------------------";
-_file_list ("{temp}/Explorer_cacheList.txt","{EXPLORER_WORK_DIR}");
-_file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}/","");
-_file_replace "{temp}/Explorer_cacheList.txt" (".nuslc","");
-_if(_file_exist "{temp}/Explorer_cacheList.txt")|_textprint "{temp}/Explorer_cacheList.txt";
-_if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No Volume. type 'new' to create volume";
-_cout "---------------------------------------------------------------";
-//MANAGER CONSOLE
-_cout "Choose user to do operation";
-_prt "Select User >";
-_var {UserType} = _getline;
-//PROCESS
-
-_if(_file_exist "{EXPLORER_WORK_DIR}/{UserType}.nuslc")|_goto :ManageApi;
-_cout "Unknown User";
-_pause;
-_goto :RELOADCONSOLE;
-
-
-:NoAuthEditThisUser;
-_cout "Sorry This user is not allowed be manage";
-_cout "This is Natvc System Users";
-_pause;
-_goto :RELOADCONSOLE;
-
-:ManageApi;
-_cout "What Do you want do :";
-_cout "User :  {UserType}";
-_cout "'lf' - logoff user  'exit' - cancel";
-_cout "Choose option";
-_prt ">";
-_var {UserTypeA} = _getline;
-_if(_cp("{UserTypeA}","lf"))|_goto :LOGOFFSUCCEED;
-_if(_cp("{UserTypeA}","exit"))|_goto :RELOADCONSOLE;
-
-_goto :ManageApi;
-
-:LOGOFFSUCCEED;
-_file_del "{EXPLORER_WORK_DIR}/{UserType}.nuslc";
-_if(_cp("{UserType}","{NATVC_WHOIS}"))|_return "user_logoff";
-_goto :RELOADCONSOLE;
-
-
-:FAIL_DISALLOW;
-_cout "Up your auth to open this tool";
-_pause;
-_return "noauth";
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/LogonTool/logonmgr_noblock.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/mna-applaunchertemple/example.mapp);
-_$directmode;
-
-_var {AppLauncherName} = "{packageName}";
-_var {Unexpected_error_feedback} = "{varspace.null}";
-_var {MNAPI_Argument} = _getargs;
-_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
-
-_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
-_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
-_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
-_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
-_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
-
-_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
-_return "{appfeedback}";
-
-:FailStartupProgram_PKGFALSE;
-_clear;
-_cout "Failed to load {AppLauncherName}.";
-_cout "Repair this package or edit to other package";
-_cout "Easy Convert MNA Program";
-_pause;
-_return "{Unexpected_error_feedback}";
-
-//Copyright FDL 2025 
-//MNA Apps Launcher
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/mna-applaunchertemple/example.mapp);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/MNADebug/mnalauncher.ca);
-_$directmode;
-_clear;
-_cout "Type AppName to startup";
-_cout "PKGNAME>";
-_var {mnalauncher} = _getline;
-
-_var {mnafeedback} = _script <"{SYS_ROOT}/run.ca"> "{mnalauncher}";
-_clear;
-_cout "Program exit with code:  {mnafeedback}";
-_pause;
-_exit;
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/MNADebug/mnalauncher.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
-Calcium_Text_Pack_File  New Format
-//START EXTRACT
-$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
-_$directmode;
-_$nolog;
-
-//ok
-//_cover <"{AppDir}/YourOwnApps.ca"> "{MNAPI_Argument}";
-_cout "Example App";
-_return "FailLoadUserInterface";
-
-
-//ExpamleApps
-$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
-//SIPCFG Package Data
-$AppName=ModernApp temple;
-$Setup=mna.apptemple.mna;
-$AppProperties=userapps; // systemapps or userapps
-
-$AppVersion=1001;
-
-//Copyright FoxaXu 2025
-//Default Package
-$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
-
-//FOR SYSTEM DEMO
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/MNA_Package_NotEnable/mna.apptemple.mna);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/NatvcPreinstallEnvironment/startupTask.ca);
-_$directmode;
-_if(!_file_exist "{OriginDisk}/{REAutoExec}")|_goto :FailLoadREProg;
-_var {TaskAutoConfigNtvRe} = _script <"{OriginDisk}/{REAutoExec}">;
-_return "{TaskAutoConfigNtvRe}";
-
-
-:FailLoadREProg;
-_clear;
-_cout "Natvc Recovery Enviroment. Error";
-_cout "Failed load {OriginDisk}/{REAutoExec}";
-_cout "This Enviroment Config has error";
-_pause;
-_return "user_restart";
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/NatvcPreinstallEnvironment/startupTask.ca);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/Services/supershell.nsv);
-//Natvc Service Config
-
-//PROGRAM
-$Execute={SYS_ROOT}/rootshell.ca;
-
-//RUNAS USER
-$UserID=SYSTEM;
-$UserPassword=%sysKerneluserPSWD;
-
-
-
-//DETECT SERVICE API  {NSV_SERVICE_MODE} return true;
-//Natvc Service
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/Services/supershell.nsv);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/SystemResourceNotUsed.txt);
-this folder is collect system old files
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/SystemResourceNotUsed.txt);
-$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemRNU/update.nusp_package.offline/nusp_package.cstp);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemResources/CoralUpdate-NUSPOfflinePackage/nusp_package.cstp);
 Calcium_Text_Pack_File  New Format
 //START EXTRACT
 $CSTP_FILE_RECORD_MARK_ID_START(/modernsetup.ca);
@@ -13586,7 +13373,338 @@ _cout "Create file map error";
 _return "fail";
 $CSTP_FILE_RECORD_MARK_ID_END(/xcopy.ca);
 
-$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemRNU/update.nusp_package.offline/nusp_package.cstp);
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemResources/CoralUpdate-NUSPOfflinePackage/nusp_package.cstp);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemResources/dmcanalysis/dmcay.ca);
+_$directmode;
+_cout "Dynamic Memory Control Analysis";
+_envsave "memorydump.txt";
+_cout "Memory is Dump to memorydump.txt";
+_pause;
+_envload "memorydump.txt";
+_cout "Memory Reloaded":
+_file_del "memorydump.txt";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemResources/dmcanalysis/dmcay.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemResources/ModernApp-LauncherTookit/example.mapp);
+_$directmode;
+
+_var {AppLauncherName} = "{packageName}";
+_var {Unexpected_error_feedback} = "{varspace.null}";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+_clear;
+_cout "Failed to load {AppLauncherName}.";
+_cout "Repair this package or edit to other package";
+_cout "Easy Convert MNA Program";
+_pause;
+_return "{Unexpected_error_feedback}";
+
+//Copyright FDL 2025 
+//MNA Apps Launcher
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemResources/ModernApp-LauncherTookit/example.mapp);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemResources/ModernApp-TemplePackage/mna.apptemple.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+//_cover <"{AppDir}/YourOwnApps.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=ModernApp temple;
+$Setup=mna.apptemple.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+
+//FOR SYSTEM DEMO
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemResources/ModernApp-TemplePackage/mna.apptemple.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemResources/NatvcPreinstallEnvironment-StartupTask/startupTask.ca);
+_$directmode;
+_var {TaskStartupMemClear} = "true";
+_if(!_file_exist "{OriginDisk}/{REAutoExec}")|_goto :FailLoadREProg;
+_var {TaskAutoConfigNtvRe} = _script <"{OriginDisk}/{REAutoExec}">;
+_return "{TaskAutoConfigNtvRe}";
+
+
+:FailLoadREProg;
+_clear;
+_cout "Natvc Recovery Enviroment. Error";
+_cout "Failed load {OriginDisk}/{REAutoExec}";
+_cout "This Enviroment Config has error";
+_pause;
+_return "user_restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemResources/NatvcPreinstallEnvironment-StartupTask/startupTask.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemResources/SystemResources.txt);
+This folder is SystemRNU renamed
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemResources/SystemResources.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemResources/SystemStartup/StartupMemoryClear.ca);
+_$directmode;
+
+//System Driver Loader
+_var {Mem_tmp} = _getargs;
+_if(!_cp("{Mem_tmp}","KernelResetMemory"))|_return "failuserauth";
+
+_cout "      Clearing varspace...";
+
+_free {NTVUE_AD_1};
+_free {NTVUE_AD_2};
+_free {NTVUE_AD_3};
+_free {sys_autologin};
+_free {USER_REQ_LOGON};
+_free {bool_isAutoRunExec};
+_free {Explorer_Title};
+_free {NATVC_USER_MENU_CONFIG};
+_free {NATVC_USER_INDEX};
+_free {NTVEXP_AD_1};
+_free {NTVEXP_AD_2};
+_free {NTVEXP_AD_3};
+_free {NTVEXP_AD_4};
+_free {NTVEXP_AD_5};
+_free {rs_pathexec};
+_free {NATVC_USEREXP_GET};
+_free {CONFGET_FILE};
+_free {CONFGET_WORD};
+_free {ConfGet_CALLBACK_PTR};
+_free {callback_temp};
+_free {FAILSYS_MBU};
+_free {NATVC_USERSVC_CALLBACK};
+_free {USER_UE_CALLBACK};
+_free {CALLBACK_NSV};
+_free {ntvl_process};
+_free {BUG_REPORT};
+_free {args_prep};
+_free {ToolsName};
+_free {NSV_DATA};
+_free {NSV_Execute};
+_free {NSV_Argument};
+_free {NSV_UserID};
+_free {NSV_UserPassword};
+_free {NSV_SET_SST};
+_free {NATVC_BOOT_DLOAD};
+_free {NATVC_SHUTDOWN_SECURE};
+_free {NATVC_CRASH_EXECUTE};
+_free {NATVC_ABOUTS_TEXT};
+_free {NATVC_CRASH_TEXT};
+_free {PlayRate};
+_free {PLAYAVGTIME};
+_free {NATVC_CRASH_CODE};
+_free {NATVC_CRASH_MESSAGE};
+_free {IsAutoLogin};
+_free {UserSVCBUFFER};
+_free {NATVC_REQ_LOGIN};
+_free {NATVC_WHOIS};
+_free {NATVC_USERPROFILE};
+_free {temp};
+_free {NATVC_USERPROFILE_CONFIG};
+_free {NATVC_USERNAME};
+_free {NATVC_isAdmin};
+_free {NATVC_UserAutoRun};
+_free {NATVC_DisableUser};
+_free {NATVC_USER_PASSWORD};
+_free {K_SERVICE_CALLBACK};
+_free {ntvl_temp};
+_free {StopStartup};
+_free {NoGUIBootOpt};
+_free {GET_SYSTIMEL};
+_free {LOG_TIMESTR};
+_free {SYS_LOG};
+_free {last_startup};
+_free {last_shutdown};
+_free {Shutdown_Data};
+_free {temp_record_time};
+_free {SYS_ROOT};
+_free {SYS_NROOT};
+_free {PROG_PATH};
+_free {SYS_USERDIR};
+_free {SYS_USERPATH};
+_free {BL_Verify_F};
+_free {NATVC_EDITION};
+_free {DEF_Title};
+_free {SYS_NAME};
+_free {SYS_KERNEL_VID};
+_free {SYSNAME};
+_free {SYS_KERNEL_CODENAME};
+_free {SYS_RELEASE_Channel};
+_free {_NATVC_SYSID};
+_free {NATVC_USERSVC};
+_free {NATVC_USERMENU};
+_free {NATVC_ROOTSHELL};
+_free {NATVC_EXPLORER};
+_free {SysLocker};
+_free {NATVC_BOOTUI};
+_free {NATVC_Compiler_Warning};
+_free {NATVC_Fail_Startup};
+_free {NATVC_FMV_REQ};
+_free {drv_temp};
+_free {drvload_callback};
+_free {BVM_OSBOOT};
+_free {BootDefaultOption};
+_free {BootSetDefault};
+_free {osvolume};
+_free {Boot_OSPATH};
+_free {NATVC_SYSLDR};
+_free {NATVC_DISK};
+_free {NATVC_BOOTLOAD};
+_free {LoadSign};
+_free {RBootSign};
+_free {OSLOADER_FILE};
+_free {BootMethod};
+_free {Status};
+_free {REV_Missing_File};
+_free {REV_ErrorCode};
+_free {hal_api.SystemBase};
+_free {hal_api.common};
+_free {SystemTemp};
+_free {_DRVLoad_ReadINT};
+_free {DriverFile};
+_free {CalciumK};
+_free {DriverLoadResult};
+_free {Recovery_SvcUser};
+_free {PASSWD_VERIFY};
+_free {AppLauncherName};
+_free {Unexpected_error_feedback};
+_free {Parameter};
+_free {Result};
+_free {LoadApp};
+_free {AppDir};
+_free {AppData};
+_free {ntvue.logontime};
+_free {ntvue.logondate};
+_free {OSLoad_UseFastBoot};
+_free {Next_startup_fast_boot};
+_free {Menu_Type};
+_free {mna_loader_callback};
+_free {appfeedback};
+_free {NATVC_USEREXP_RUN_CALLBACK};
+_free {RunArgs};
+_free {UEL_OriginType};
+_free {mna_Result};
+_free {NATVC_Execute_Program};
+_free {ntsh_version};
+_free {ntsh_revision};
+_free {StartPath};
+_free {SecondPath};
+_free {CheckPREPath};
+_free {ns_type};
+_free {ns_fnd_exec};
+_free {EXPLORER_WORK_DIR};
+_free {USE_NUM_SELECT_FOLDER};
+_free {CopyFileName_Cache};
+_free {CopyFileNameTag_Cache};
+_free {CopyFileDelete_Cache};
+_free {CopyDirName_Cache};
+_free {CopyDirNameTag_Cache};
+_free {CopyDirDelete_Cache};
+_free {EXPLORER_WORK_DIR_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST_LAST};
+_free {NumTarget};
+_free {UserTypeGet};
+_free {OS_CALLBACK};
+_free {Mem_tmp};
+_free {MNAPI_Argument};
+_free {EnableNatvcDebugReport};
+_free {WaitNSTKCode};
+_free {TaskAutoConfigNtvRe};
+_free {UserTypeE};
+_free {SetupVolume};
+_free {UserType};
+_free {UserTypeA};
+_free {SelectVolumeMode};
+_free {AUserType};
+_free {DetailVersion};
+_free {InstallName};
+_free {SETUPVOLUME};
+_free {rs_pathexec_cache};
+_free {TempLoadRE};
+_free {tempdisk};
+_free {ospack};
+_free {useropt};
+_free {IsOOBEComplete};
+_free {IsSystemRunningOnSafeMode};
+_free {NATVC_CRASH_AUTOREBOOT};
+_free {NATVC_CRASH_AUTOREBOOT_TIME};
+_free {sys_autologin_prepswd};
+_free {PRE_AUTOENTRY_PASSWORD};
+_free {Temp};
+_free {DisableKernelSecurityLevel};
+_free {CommandPath};
+_free {EnableSystemUserProtection};
+_free {UserType_A};
+_free {UserType_B};
+_free {SYS_BASE_VID};
+_free {SLMGR_GETARGS};
+_free {SYS_PROD};
+_free {SYS_PROD_ID};
+_free {ActivateRequireID};
+_free {ProductActivateRequire};
+_free {ActivateServer};
+_free {PRD_KEY};
+_free {PRD_KID};
+_free {PRD_ID};
+_free {ProductActivate};
+_free {ProductLicenseArea};
+_free {Channel};
+_free {VaildTime};
+_free {PRD_User};
+_free {PRD_UserType};
+_free {PRD_LicenseHost};
+_free {VF_PRD_KID};
+_free {VF_PRD_KEY};
+_free {SYS_ACT_STATUS};
+_free {EnforceNetworkActivate};
+_free {NATVC_DEPLOY_PROG};
+_free {update_title};
+_free {GETREDIR};
+_free {GetAdvProc};
+_free {IntLoad_ForMNA_R};
+_free {ReadCache};
+_free {Req_install_dev};
+_free {pkgSetupName};
+_free {pkgAppName};
+_free {pkgAppProperties};
+_free {TempListFiles};
+_free {SecondFiliter};
+_free {IntLoad};
+_free {mna_pdir};
+_free _ARGS_NU_FULLNAME;
+_free _ARGS_NU_ID;
+_free _ARGS_NU_PSWD;
+_free _ARGS_NU_ADMIN;
+_free {getargs};
+_free {NATVC_LOGIN_USERPSWD};
+_free {Explorer_AutoRun};
+_free {OOBEQUICK};
+_free {OOBE_PAGE_STATUS};
+_free {Deploy_callback};
+_free {TaskStartupMemClear};
+
+_return "true";
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral/SystemResources/SystemStartup/StartupMemoryClear.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/Coral/SystemUser/LogonUI.txt);
 This file is the login verification file for the Natvc system
 Do not manually delete this file, as losing this file will cause the system to initialize the login service failure
