@@ -1,0 +1,4 @@
+//Natvc SetupMedia
+$InstallerPackageName=Coral 1.0 Technical Preview;
+$DetailVersion=10132;
+$RequireClfmvMin=2500;
