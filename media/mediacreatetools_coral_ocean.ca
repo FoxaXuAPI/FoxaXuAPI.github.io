@@ -24,30 +24,34 @@ _if(!_dir_exist "{GetMediaSavePath}")|_goto :CREATDIRFAIL;
 _url_get ("http://fdl-cds.dev.foxaxu.top/media/moderncoralsetup.cstp","{GetMediaSavePath}/$MCT~Temp/onst.cstp");
 _if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/onst.cstp")|_goto :NetworkError;
 
-_url_get ("http://fdl-cds.dev.foxaxu.top/coral/{SystemCodeName}/natvc.cstp","{GetMediaSavePath}/$MCT~Temp/natvc.cstp");
-_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/natvc.cstp")|_goto :NetworkError;
+_url_get ("http://fdl-cds.dev.foxaxu.top/coral/{SystemCodeName}/install.cstp","{GetMediaSavePath}/$MCT~Temp/install.cstp");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/install.cstp")|_goto :NetworkError;
 
 _url_get ("http://fdl-cds.dev.foxaxu.top/coral/{SystemCodeName}/ntvre_pkg.cstp","{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp");
 _if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp")|_goto :NetworkError;
 
 _url_get ("http://fdl-cds.dev.foxaxu.top/coral/{SystemCodeName}/setupindex.txt","{GetMediaSavePath}/$MCT~Temp/setupindex.txt");
-_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp")|_goto :NetworkError;
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/setupindex.txt")|_goto :NetworkError;
 
 
 _cout "Extract file to make media";
 
 //Expand
 _file_uncstp ("{GetMediaSavePath}/$MCT~Temp/onst.cstp","{GetMediaSavePath}");
+_ms_sleep "3000";
 _file_uncstp ("{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp","{GetMediaSavePath}/Recovery");
-_file_copy ("{GetMediaSavePath}/$MCT~Temp/natvc.cstp","{GetMediaSavePath}/sources/natvc.cstp");
+_ms_sleep "3000";
+_file_copy ("{GetMediaSavePath}/$MCT~Temp/install.cstp","{GetMediaSavePath}/sources/install.cstp");
+_file_copy ("{GetMediaSavePath}/$MCT~Temp/setupindex.txt","{GetMediaSavePath}/sources/setupindex.txt");
 _file_copy ("{GetMediaSavePath}/Recovery/ntvre.cstp","{GetMediaSavePath}/sources/boot.cstp");
-_file_copy ("{GetMediaSavePath}/Recovery/setupindex.txt","{GetMediaSavePath}/sources/setupindex.txt");
 
 //Clear Temp
 _cout "Cleaning up files ...";
 _file_del "{GetMediaSavePath}/$MCT~Temp/onst.cstp";
 _file_del "{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp";
-_file_del "{GetMediaSavePath}/$MCT~Temp/natvc.cstp";
+_file_del "{GetMediaSavePath}/$MCT~Temp/install.cstp";
+_file_del "{GetMediaSavePath}/$MCT~Temp/setupindex.txt";
+_dir_remove "{GetMediaSavePath}/$MCT~Temp";
 
 //Verify File
 _if(!_file_exist "{GetMediaSavePath}/setup.ca")|_goto :FILEMISS;
