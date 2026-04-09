@@ -1,0 +1,88 @@
+_$directmode;
+//Media Create Tools
+//Copyright FoxaXu Dev Lab 2026
+
+_var {SystemCodeName} = "Ocean";
+_var {ImageName} = "Coral OS :  Ocean";
+_var {DetailVersion} = "-1";
+_var {ReqCLFMV} = "mmc missing";
+
+_var {GetMediaSavePath} = _getargs;
+_if(_cp("{GetMediaSavePath}","empty"))|_goto :SELECTAPPLYIMAGE;
+
+:REAPPLYIMAGE;
+_cout "Coral Media Create Tools";
+_cout "IMAGE :  {ImageName}. ";
+_cout "Please wait. media is downloading...";
+
+_dir_remove "{GetMediaSavePath}";
+_dir_make "{GetMediaSavePath}";
+_dir_make "{GetMediaSavePath}/$MCT~Temp";
+
+_if(!_dir_exist "{GetMediaSavePath}")|_goto :CREATDIRFAIL;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/media/moderncoralsetup.cstp","{GetMediaSavePath}/$MCT~Temp/onst.cstp");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/onst.cstp")|_goto :NetworkError;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/coral/{SystemCodeName}/natvc.cstp","{GetMediaSavePath}/$MCT~Temp/natvc.cstp");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/natvc.cstp")|_goto :NetworkError;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/coral/{SystemCodeName}/ntvre_pkg.cstp","{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp")|_goto :NetworkError;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/coral/{SystemCodeName}/setupindex.txt","{GetMediaSavePath}/$MCT~Temp/setupindex.txt");
+_if(!_file_exist "{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp")|_goto :NetworkError;
+
+
+_cout "Extract file to make media";
+
+//Expand
+_file_uncstp ("{GetMediaSavePath}/$MCT~Temp/onst.cstp","{GetMediaSavePath}");
+_file_uncstp ("{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp","{GetMediaSavePath}/Recovery");
+_file_copy ("{GetMediaSavePath}/$MCT~Temp/natvc.cstp","{GetMediaSavePath}/sources/natvc.cstp");
+_file_copy ("{GetMediaSavePath}/Recovery/ntvre.cstp","{GetMediaSavePath}/sources/boot.cstp");
+_file_copy ("{GetMediaSavePath}/Recovery/setupindex.txt","{GetMediaSavePath}/sources/setupindex.txt");
+
+//Clear Temp
+_cout "Cleaning up files ...";
+_file_del "{GetMediaSavePath}/$MCT~Temp/onst.cstp";
+_file_del "{GetMediaSavePath}/$MCT~Temp/ntvre_pkg.cstp";
+_file_del "{GetMediaSavePath}/$MCT~Temp/natvc.cstp";
+
+//Verify File
+_if(!_file_exist "{GetMediaSavePath}/setup.ca")|_goto :FILEMISS;
+
+
+_cout "Your Setup Media is Ready. ";
+_cout "Select boot volume : {GetMediaSavePath} when bvm startup";
+_cout "All Cleaned";
+_ms_sleep "2000";
+_return "true";
+
+
+
+
+
+:NetworkError;
+_cout "Create Failed";
+_cout "Network Error Please check your internet and try again";
+_pause;
+_return "false";
+
+
+:CREATDIRFAIL;
+_cout "Create Failed";
+_cout "Directory Create Failed. access denied";
+_pause;
+_return "false";
+
+:FILEMISS;
+_cout "Create Failed";
+_cout "Verify file error";
+_pause;
+_return "false";
+
+:SELECTAPPLYIMAGE;
+_cout "Type Image you want saved";
+_var {GetMediaSavePath} = _getline;
+_goto :REAPPLYIMAGE;
