@@ -1,0 +1,4 @@
+修复NativeShell中的错误IF
+修复SETUP的配置错误，解决UMM组件对未知CoSxS包的错误判断
+修复Coral Kernel(croskrnl.ca) 对非UTF8 Status的状态反复查询
+12004版本
