@@ -1,0 +1,2092 @@
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/boot);
+//Volume Loader
+$DefaultLoader={BootVolume}/bootmgr.ca;
+$DefaultOption=CoralSetup;
+$RollBackLoad=;
+$CSTP_FILE_RECORD_MARK_ID_END(/boot);
+$CSTP_FILE_RECORD_MARK_ID_START(/bootmgr.ca);
+_$directmode;
+_$nolog;
+
+//New Boot Format
+//LegacyEdition
+//NBF Boot Manager
+
+_var {BootLogFiles} = "{BootVolume}/BootLogFiles.log";
+
+_if(_file_exist "{BootLogFiles}.old")|_file_del "{BootLogFiles}.old";
+
+_if(_file_exist "{BootLogFiles}")|_file_rename ("{BootLogFiles}","{BootLogFiles}.old");
+
+_file_open "{BootLogFiles}";
+
+_file_write "@NBF System loader log file.   Time  %fulltime% ";
+
+_file_write "[%time%][Boot] Boot Start";
+
+_if(_cp("{NBFMenu}","true"))| _goto :BootSelect;
+
+//Load Default Option
+_file_write "[%time%][Boot] Load Default OS Loader";
+_sipcfg.open "{BootVolume}/$BVM_VOL_LOAD";
+_var {BootDefaultOption} = _sipcfg DefaultOption;
+_var {BootSetDefault} = "{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Default BCD File:  {BootDefaultOption}";
+
+:StartLoadingBootNBF
+
+//LoadBCD
+_file_write "[%time%][Boot] Checking Boot loader";
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}") | _goto :NoDefaultLoader;
+_sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Read BCD Files ...";
+
+_var {osvolume} = _sipcfg osvol;
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_file_write "[%time%][Boot] OS Volume :  {osvolume}";
+_file_write "[%time%][Boot] OS PATH :  {Boot_OSPATH}";
+_file_write "[%time%][Boot] OS System loader :  {NATVC_SYSLDR}";
+_file_write "[%time%][Boot] OS Sign :  {BootSign}";
+
+//Config All Disks
+_file_write "[%time%][Boot] Configuration Disk Device";
+
+//Boot System
+_var {NATVC_DISK} = "{osvolume}";
+
+//Edit {boot_rsmode} to Manager System Boot
+
+_file_write "[%time%][Boot] Configuration Boot loader";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+
+_file_write "[%time%][Boot] Check Boot loader";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+
+_file_write "[%time%][Boot] Check Boot Sign";
+//Verify Boot loader is VALID
+_sipcfg.open "{NATVC_BOOTLOAD}";
+_var {LoadSign} = _sipcfg signload;
+_if(!_cp("{BootSign}","{LoadSign}"))|_goto :SignInvalid;
+
+_file_write "[%time%][Boot] Startup System";
+
+_var {RE_ENV} = "false";
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_file_open "{BootLogFiles}";
+_file_write "[%time%][Boot] System Callback :  {OS_CALLBACK}";
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_file_write "[%time%][Boot][Error] Exception CALLBACK";
+_goto :NATVC_MS_FL;
+
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+//ERRPAGE
+:NATVC_MS_SL;
+_file_write "[%time%][Boot][Error] Device Error :   Boot loader is missing";
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+:NATVC_MS_FL;
+_file_write "[%time%][Boot][Error] Boot Fail :  OS CALLBACK =  {NBF_ErrorCode}";
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+//Boot Select Mode
+:BootSelect;
+_file_write "[%time%][Boot] Boot Menu";
+_var {NBFMenu} = "false";
+_clear;
+_typefile "{BootVolume}/res/NBFshell.txt";
+_prt "Select Boot load or type .exit shutdown $> ";
+_var {BootDefaultOption} = _getline;
+
+_if(_cp("{BootDefaultOption}",".exit"))|_return "$shutdown";
+_if(_cp("{BootDefaultOption}",".list"))|_goto :ListBootLDR;
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}")|_goto :BootSelect;
+
+_goto :StartLoadingBootNBF;
+
+
+
+:NoDefaultLoader;
+_file_write "[%time%][Boot] System No Default Loader";
+_cout "No Default System Loader";
+_sleep 2;
+_goto :BootSelect;
+
+:ListBootLDR;
+_file_write "[%time%][Boot] List all boot loader";
+_clear;
+_cout "All Boot loader";
+_cout "------------------------------------";
+_dir_list ("script/tempNBF","{BootVolume}/NBF");
+
+_file_replace "script/tempNBF" ("{BootVolume}/NBF/","");    
+
+_textprint "script/tempNBF";
+_cout "------------------------------------";
+_cout "Default :  ({BootSetDefault})";
+_cout "------------------------------------";
+_file_del "script/tempNBF";
+_pause;
+_goto :BootSelect;
+
+
+
+
+:SignInvalid;
+_file_write "[%time%][Boot] Bootloader sign is invalid :  not trusted device";
+_var {NBF_ErrorCode} = "Invalid Boot Loader :  {NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+//_cout "{LoadSign}";
+//_cout "{BootSign}";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/bootmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/bootmgr.nbf);
+_$directmode;
+_$nolog;
+
+//New Boot Format
+//NBF Boot Manager
+
+_var {BootLogFiles} = "{BootVolume}/BootLogFiles.log";
+
+_if(_file_exist "{BootLogFiles}.old")|_file_del "{BootLogFiles}.old";
+
+_if(_file_exist "{BootLogFiles}")|_file_rename ("{BootLogFiles}","{BootLogFiles}.old");
+
+_file_open "{BootLogFiles}";
+
+_file_write "@NBF System loader log file.   Time  %fulltime% ";
+
+_file_write "[%time%][Boot] Boot Start";
+
+_if(_cp("{NBFMenu}","true"))| _goto :BootSelect;
+
+//Load Default Option
+_file_write "[%time%][Boot] Load Default OS Loader";
+_sipcfg.open "{BootVolume}/$BVM_VOL_LOAD";
+_var {BootDefaultOption} = _sipcfg DefaultOption;
+_var {BootSetDefault} = "{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Default BCD File:  {BootDefaultOption}";
+
+:StartLoadingBootNBF
+
+//LoadBCD
+_file_write "[%time%][Boot] Checking Boot loader";
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}") | _goto :NoDefaultLoader;
+_sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
+
+_file_write "[%time%][Boot] Read BCD Files ...";
+
+_var {osvolume} = _sipcfg osvol;
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_file_write "[%time%][Boot] OS Volume :  {osvolume}";
+_file_write "[%time%][Boot] OS PATH :  {Boot_OSPATH}";
+_file_write "[%time%][Boot] OS System loader :  {NATVC_SYSLDR}";
+_file_write "[%time%][Boot] OS Sign :  {BootSign}";
+
+//Config All Disks
+_file_write "[%time%][Boot] Configuration Disk Device";
+
+//Boot System
+_var {NATVC_DISK} = "{osvolume}";
+
+//Edit {boot_rsmode} to Manager System Boot
+
+_file_write "[%time%][Boot] Configuration Boot loader";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+
+_file_write "[%time%][Boot] Check Boot loader";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+
+_file_write "[%time%][Boot] Check Boot Sign";
+//Verify Boot loader is VALID
+_sipcfg.open "{NATVC_BOOTLOAD}";
+_var {LoadSign} = _sipcfg signload;
+_if(!_cp("{BootSign}","{LoadSign}"))|_goto :SignInvalid;
+
+_file_write "[%time%][Boot] Startup System";
+
+_var {RE_ENV} = "false";
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_file_open "{BootLogFiles}";
+_file_write "[%time%][Boot] System Callback :  {OS_CALLBACK}";
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_file_write "[%time%][Boot][Error] Exception CALLBACK";
+_goto :NATVC_MS_FL;
+
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+//ERRPAGE
+:NATVC_MS_SL;
+_file_write "[%time%][Boot][Error] Device Error :   Boot loader is missing";
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+:NATVC_MS_FL;
+_file_write "[%time%][Boot][Error] Boot Fail :  OS CALLBACK =  {NBF_ErrorCode}";
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+
+//Boot Select Mode
+:BootSelect;
+_file_write "[%time%][Boot] Boot Menu";
+_var {NBFMenu} = "false";
+_clear;
+_typefile "{BootVolume}/res/nbfshell.txt";
+_prt "Select Boot load or type .exit shutdown $> ";
+_var {BootDefaultOption} = _getline;
+
+_if(_cp("{BootDefaultOption}",".exit"))|_return "$shutdown";
+_if(_cp("{BootDefaultOption}",".list"))|_goto :ListBootLDR;
+_if(!_file_exist "{BootVolume}/nbf/{BootDefaultOption}")|_goto :BootSelect;
+
+_goto :StartLoadingBootNBF;
+
+
+
+:NoDefaultLoader;
+_file_write "[%time%][Boot] System No Default Loader";
+_cout "No Default System Loader";
+_sleep 2;
+_goto :BootSelect;
+
+:ListBootLDR;
+_file_write "[%time%][Boot] List all boot loader";
+_clear;
+_cout "All Boot loader";
+_cout "------------------------------------";
+_dir_list ("script/tempnbf","{BootVolume}/nbf");
+
+_file_replace "script/tempnbf" ("{BootVolume}/nbf/","");    
+
+_textprint "script/tempnbf";
+_cout "------------------------------------";
+_cout "Default :  ({BootSetDefault})";
+_cout "------------------------------------";
+_file_del "script/tempnbf";
+_pause;
+_goto :BootSelect;
+
+
+
+
+:SignInvalid;
+_file_write "[%time%][Boot] Bootloader sign is invalid :  not trusted device";
+_var {NBF_ErrorCode} = "Invalid Boot Loader :  {NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+//_cout "{LoadSign}";
+//_cout "{BootSign}";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/bootmgr.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/nbf/CoralSetup);
+//Boot Config Data
+//NBF File Loader
+$osvol={BootVolume};
+$ospath=sources;
+$osload=sources/re.nbf;
+$bootsign=ntvre_osloader_sign;
+$CSTP_FILE_RECORD_MARK_ID_END(/nbf/CoralSetup);
+$CSTP_FILE_RECORD_MARK_ID_START(/nbfload);
+//Volume Loader
+$DefaultLoader={BootVolume}/bootmgr.nbf;
+$DefaultOption=CoralSetup;
+$RollBackLoad=;
+$CSTP_FILE_RECORD_MARK_ID_END(/nbfload);
+$CSTP_FILE_RECORD_MARK_ID_START(/Recovery/bootdat);
+//NATVC RE OSLOADER
+$tempdisk=tempreos;
+$ospack=colre.cstp;
+
+//REBOOT
+$ospath=Coral;
+$osload=Coral/System/ntvload.nbf;
+$bootsign=nvkrnl_universal_bootsignal_fullcore_natvc;
+
+$REAutoExec=Recovery/Recovery.ca;
+$CSTP_FILE_RECORD_MARK_ID_END(/Recovery/bootdat);
+$CSTP_FILE_RECORD_MARK_ID_START(/Recovery/OSRepair/osr.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(!_cp("{RE_ENV}","true"))|_return "fail";
+
+//OS Repair
+
+_var {RAMOLD_SYS_ROOT} = {SYS_ROOT};
+_var {RAMOLD_NATVC_CONFIG} = {NATVC_CONFIG};
+_var {RAMOLD_SYS_NROOT} = {SYS_NROOT};
+_var {RAMOLD_NATVC_DISK} = {NATVC_DISK};
+
+_if(!_file_exist "{OriginDisk}/Recovery/bindos")|_goto :OSREPAIRSELECT;
+
+_sipcfg.open "{OriginDisk}/Recovery/bindos";
+
+_var {NATVC_DISK} = _sipcfg OSDIR;
+
+:BACKREADER;
+
+_if(!_file_exist "{NATVC_DISK}/Coral/RepairData/SystemImage/sysfix.ca")|_goto :FailRepairNotSupport;
+
+_var {SYS_ROOT} = "{NATVC_DISK}/Coral/System";
+
+_var {NATVC_CONFIG} = "{NATVC_DISK}/Coral/config";
+
+_var {SYS_NROOT} = "{NATVC_DISK}/Coral";
+
+_if(!_file_exist "{SYS_ROOT}/sysfix.ca")|_goto :FixFromSI;
+:NEXTFIX;
+_var {CALLSYSFIX} = _script<"{NATVC_DISK}/{Boot_OSPATH}/System/sysfix.ca"> "check";
+_file_open "{SYS_LOG}";
+
+_goto :RECOVERY_ENVOS;
+
+
+
+:FixFromSI;
+_if(!_file_exist "{SYS_NROOT}/RepairData/SystemImage/sysfix.ca")|_goto :CANNOT FIX;
+_file_copy("{SYS_NROOT}/RepairData/SystemImage/sysfix.ca","{SYS_ROOT}/sysfix.ca");
+_goto :NEXTFIX;
+
+
+
+:CANNOT FIX;
+_clear;
+_cout "System Automatic Repair cannot fix your device";
+_cout "some important file is missing";
+_cout "You need contact advanced Technical Support";
+_cout "";
+_cout " OS :  {NATVC_DISK}";
+_cout " SYSROOT :  {SYS_ROOT}";
+_cout "";
+_cout " Press any key to back";
+_pause;
+_goto :RECOVERY_ENVOS;
+
+
+
+:RECOVERY_ENVOS;
+_free {NATVC_DISK};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+
+_var {SYS_ROOT} = "{RAMOLD_SYS_ROOT}";
+_var {NATVC_CONFIG} = {RAMOLD_NATVC_CONFIG};
+_var {SYS_NROOT} = "{RAMOLD_SYS_NROOT}";
+_var {NATVC_DISK} = "{RAMOLD_NATVC_DISK}";
+
+_free {RAMOLD_NATVC_DISK};
+_free {RAMOLD_SYS_NROOT};
+_free {RAMOLD_SYS_ROOT};
+
+_return "ok";
+
+
+
+
+:OSREPAIRSELECT;
+//SELECT VOLUME
+_clear;
+_cout "OS Repair";
+_cout "This Recovery Environment not bind os path";
+_cout "type os volume to start";
+_cout "Example :   script/vdisk/myOS";
+_prts "OSVolume >";
+_var {NATVC_DISK} = _getline;
+_clear;
+_goto :BACKREADER;
+
+
+:FailRepairNotSupport;
+_clear;
+_cout "System Automatic Repair could not fix your device";
+_cout "some important file is missing";
+_cout "You need contact advanced Technical Support";
+_cout "";
+_cout " OS :  {NATVC_DISK}";
+_cout " FILE :  {NATVC_DISK}/Coral/RepairData/SystemImage/sysfix.ca";
+_cout "";
+_cout " Press any key to back";
+_pause;
+_goto :RECOVERY_ENVOS;
+$CSTP_FILE_RECORD_MARK_ID_END(/Recovery/OSRepair/osr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Recovery/re.nbf);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc RE System Loader
+//Anti rootshell load
+
+//SignLoad
+//$signload=ntvre_osloader_sign;
+
+_clear;
+
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
+
+_var {TempLoadRE} = _sipcfg RollBackLoad;
+_if(!_cp(_sipcfg DefaultOption,"recovery"))|_goto :SkipRollBackRE;
+_sipcfg DefaultOption = "{TempLoadRE}";
+_sipcfg RollBackLoad = "";
+
+:SkipRollBackRE;
+
+
+//Load main
+//GET REDATA
+_if(!_file_exist "{NATVC_DISK}/{Boot_OSPATH}/bootdat")|_goto :loadfail_nodat;
+
+_sipcfg.open "{NATVC_DISK}/{Boot_OSPATH}/bootdat";
+_var {tempdisk} = _sipcfg tempdisk;
+_var {tempdisk} = "script/{tempdisk}";
+_var {ospack} = _sipcfg ospack;
+_var {REAutoExec} = _sipcfg REAutoExec;
+
+_var {ospack} = "{NATVC_DISK}/{Boot_OSPATH}/{ospack}";
+
+_if(!_file_exist "{ospack}")|_goto :loadfail_nocstp;
+
+_var {OriginDisk} = "{NATVC_DISK}";
+_var {NATVC_DISK} = "{tempdisk}";
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_clear;
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "    {BootUIA}";
+_cout "    {BootUIB}";
+_cout "    {BootUIC}";
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+
+//Extract to TempDisk
+_if(_dir_exist "{tempdisk}")|_dir_remove "{tempdisk}";
+
+_$no_cstp_output;
+_file_uncstp("{ospack}","{tempdisk}");
+_$open_cstp_output;
+
+//Boot System
+_var {osvolume} = "{tempdisk}";
+_var {NATVC_DISK} = "{osvolume}";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+_var {RE_ENV} = "true";
+_clear;
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_dir_remove "{tempdisk}";
+
+_free {OriginDisk};
+_free {NATVC_DISK};
+_free {Boot_OSPATH};
+_free {NATVC_SYSLDR};
+_free {BootSign};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+_free {REAutoExec};
+_free {BL_Verify_F};
+
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_goto :NATVC_MS_FL;
+
+
+
+//ERRPAGE
+:loadfail_nodat;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {NATVC_DISK}/{Boot_OSPATH}/bootdat   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+:loadfail_nocstp;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {ospack}   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+
+
+:NATVC_MS_SL;
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+:NATVC_MS_FL;
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/Recovery/re.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/Recovery/Recovery.ca);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(!_cp("{RE_ENV}","true"))|_return "ok";
+_clear;
+_cout "Please wait ...";
+_ms_sleep 600;
+
+_if(_cp("{NTV_AutoRepair}","true"))|_goto :OSRepair;
+
+//NATVC Recovery Loader
+_if(_file_exist "{OriginDisk}/ReAgent/task.ca")|_goto :LoadAgentProg;
+:ReloadREMain;
+_clear;
+_typefile "{OriginDisk}/Recovery/text/ReMain.txt";
+_prts "select tools >";
+_var {useropt} = _getline;
+
+_if(_cp("{useropt}","1"))|_goto :OSRepair;
+_if(_cp("{useropt}","2"))|_goto :LoadRootShell;
+_if(_cp("{useropt}","3"))|_goto :LoadAdvancedOpt;
+_if(_cp("{useropt}","4"))|_return "user_restart";
+
+_if(_cp("{useropt}","debug"))|_$analysis;
+
+_goto :ReloadREMain;
+
+
+
+
+//Tools Main
+
+:OSRepair;
+_var {NTV_AutoRepair} = "false";
+_if(!_file_exist "{OriginDisk}/Recovery/OSRepair/osr.ca")|_goto :FileMissing;
+
+_var {CALLOSR} = _script <"{OriginDisk}/Recovery/OSRepair/osr.ca">;
+
+_clear;
+_cout "Automatic Repair is Complete repair your system";
+_cout "Please try to restart";
+_if(_cp("{NTV_AutoRepair}","true"))|_return "user_restart";
+_pause;
+
+_goto :ReloadREMain;
+
+
+:LoadAdvancedOpt;
+_var {NATVC_A_RE} = "true";
+_return "user_restart";
+
+
+:LoadRootShell;
+_clear;
+_var {rs_pathexec} = "{SYS_ROOT}";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script <"{SYS_ROOT}/rootshell.ca">;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown")) |_return "shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))  |_return "restart";
+_clear;
+_goto :ReloadREMain;
+
+
+:FileMissing;
+_cout "OS Repair file missing";
+_cout "{OriginDisk}/Recovery/OSRepair/osr.ca";
+_cout "Run setup media and copy new files";
+_pause;
+_goto :ReloadREMain;
+
+:LoadAgentProg;
+_file_copy ("{OriginDisk}/ReAgent/task.ca","{OriginDisk}/ReAgent/~executetemptask.ca")
+_file_del "{OriginDisk}/ReAgent/task.ca";
+_script <"{OriginDisk}/ReAgent/~executetemptask.ca">;
+_file_del "{OriginDisk}/ReAgent/~executetemptask.ca";
+
+_return "user_restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/Recovery/Recovery.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Recovery/text/ReMain.txt);
+=======================================================
+  🧩 Recovery Environment
+=======================================================
+
+🖥️ RE :  {SYSNAME}.{SYS_KERNEL_VID}  
+
+-------------------------------------------------------
+
+🔍 Available Options:
+
+  [1] 🛠️ Run OS Repair Tool  
+       Diagnose and fix system startup issues
+
+  [2] 🔐 Open Root Shell  
+       Access high-level system commands
+
+  [3] ⚙️ Advanced Boot Options  
+       Configure boot settings and recovery paths
+
+  [4] ⏻ Exit to System  
+       Return to normal boot (if available)
+
+-------------------------------------------------------
+💡 Tip: Use arrow keys or type the number to select  
+=======================================================
+$CSTP_FILE_RECORD_MARK_ID_END(/Recovery/text/ReMain.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/res/bootfail.txt);
+=======================================================
+  🧩  Recovery
+=======================================================
+
+❗ Your device cannot start for the following reasons
+
+🔧 Error   {NBF_ErrorCode}  
+
+
+
+
+  Press Enter to reboot...
+
+
+=======================================================
+$CSTP_FILE_RECORD_MARK_ID_END(/res/bootfail.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/res/filelost.txt);
+=======================================================
+  🧩  Recovery
+=======================================================
+
+❗ Your device cannot start for the following reasons
+
+🔧 File: {NBF_FILE}  
+
+
+
+
+  Press Enter to reboot...
+
+
+=======================================================
+$CSTP_FILE_RECORD_MARK_ID_END(/res/filelost.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/res/nbfshell.txt);
+=======================================================
+                 Choose boot options
+=======================================================
+
+📂 Location: BootVolume/nbf/*.nbf  
+🔧 Default Boot Loader: {BootSetDefault}
+
+-------------------------------------------------------
+
+🛠️ Available Commands:
+
+  • .list     — Show available boot loaders  
+  • .exit     — Shutdown system  
+
+=======================================================
+$CSTP_FILE_RECORD_MARK_ID_END(/res/nbfshell.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/setup.ca);
+_$directmode;
+_clear;
+//Auto Startup Setup
+_file_write "[Setup] Coral Setup is staring...";
+_goto :FindWhatSetupShouldStartup;
+
+:FINDOSCOMPLETE;
+_file_write "[Setup] Setup Volume is :  {SETUPVOLUME}";
+_if(_cp("{RE_ENV}","true"))|_goto :UsePESetup;
+_if(_cp("{RE_ENV}","false"))|_goto :UseOSSetup;
+_clear;
+_file_write "[Setup] Error. cannot open with method RE_ENV: {RE_ENV}";
+_clear;
+_cout "Error :  Setup cannot continue.";
+_cout "Restart your system or boot with media";
+_pause;
+_return "OK";
+
+:UsePESetup;
+_file_write "[Setup] Enviroment is Preinstall. Load setup.pe.ca ";
+_cover <"{SETUPVOLUME}/sources/setup.pe.ca">;
+_goto :ErrorHappend;
+
+:UseOSSetup;
+_file_write "[Setup] Enviroment is OS. Load setup.os.ca ";
+_cover <"{SETUPVOLUME}/sources/setup.os.ca">;
+_goto :ErrorHappend;
+
+:ErrorHappend;
+_file_write "[Setup][Error] Unexpected Error happend.";
+_cout "system error. setup crashed.";
+_cout "Try redownload setup media or boot with media.";
+_pause;
+_return "mediaerror";
+
+
+_clear;
+
+:FindWhatSetupShouldStartup;
+_file_write "[Setup] Try find system setup volume";
+_clear;
+//Allocate
+_var {SETUPVOLUME} = "unknownindex";
+_if(_file_exist "{OriginDisk}/sources/setupindex.txt")|_var {SETUPVOLUME} = "{OriginDisk}";
+_if(_file_exist "{rs_pathexec}/sources/setupindex.txt")|_var {SETUPVOLUME} = "{rs_pathexec}";
+_if(_file_exist "{BootVolume}/sources/setupindex.txt")|_var {SETUPVOLUME} = "{BootVolume}";
+_if(_file_exist "{NATVC_DISK}/sources/setupindex.txt")|_var {SETUPVOLUME} = "{NATVC_DISK}";
+//FAILED
+_if(_dir_exist "{SETUPVOLUME}/sources")|_goto :FINDOSCOMPLETE;
+_file_write "[Setup][Error] Cannot find Setup Volume.";
+_cout "Error. Setup cannot find setup media/volume";
+_cout "Try Redownload Setup Media or boot from media";
+_pause;
+_return "cancel";
+
+$CSTP_FILE_RECORD_MARK_ID_END(/setup.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/bootdat);
+//NATVC RE OSLOADER
+$tempdisk=tempreos;
+$ospack=boot.cstp;
+
+//REBOOT
+$ospath=Coral;
+$osload=Coral/System/ntvload.nbf;
+$bootsign=nvkrnl_universal_bootsignal_fullcore_natvc;
+
+$REAutoExec=setup.ca;
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/bootdat);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/dbgforce.ca);
+_$directmode;
+_var {InstallWithDebugMode} = "true";
+_cout "Enable Install with Debug Mode ";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/dbgforce.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/diskmgr.ca);
+_$directmode;
+
+_clear;
+//MAKE DISK
+:ReloadDM;
+
+_free {SelectVolumeMode};
+_var {AUserType} = _getargs;
+_if(_cp("{AUserType}","$selectvolume"))|_var {SelectVolumeMode} = "true";
+
+_if(_cp("{netvdisk.api_disk_address}",'{netvdisk.api_disk_address}'))|_goto :CannotFoundINputIO;
+_if(!_dir_exist "{netvdisk.api_disk_address}")|_goto :CreateNewDiskTarget;
+_clear;
+//Load Main
+:RELOADCONSOLE;
+
+_file_del "{temp}/Explorer_cacheList.txt";
+_var {EXPLORER_WORK_DIR} = "{netvdisk.api_disk_address}";
+_clear;
+_if(_cp("{SelectVolumeMode}","true"))|_cout "## Please Select a Volume";
+_cout "#---- DISK MANAGER -------------------------------------------";
+_cout "| VDISK Address :   {EXPLORER_WORK_DIR}";
+_cout "#-------------------------------------------------------------";
+_file_list ("{temp}/Explorer_cacheList.txt","{EXPLORER_WORK_DIR}");
+_file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}/","");
+_if(_file_exist "{temp}/Explorer_cacheList.txt")|_textprint "{temp}/Explorer_cacheList.txt";
+_if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No Volume. type 'new' to create volume";
+_cout "---------------------------------------------------------------";
+//MANAGER CONSOLE
+_cout "Command :  'new' 'exit' 'clean'  ";
+_prt "Select a Volume or type command >";
+_var {UserType} = _getline;
+//PROCESS
+_if(_cp("{UserType}","new"))|_goto :NewPartition;
+_if(_cp("{UserType}","exit"))|_return "exit";
+_if(_cp("{UserType}","clean"))|_goto :ReCleanDiskManager;
+
+_if(_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_goto :ManageApi;
+_cout "Unknown Command or invaild volume";
+_pause;
+_goto :RELOADCONSOLE;
+
+:NewPartition;
+_clear;
+_cout "Type volume name you want created";
+_var {UserType} = _getline;
+_if(_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_cout "The Volume is already exist";
+_if(_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_pause;
+_if(_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_goto :RELOADCONSOLE;
+_dir_make "{netvdisk.api_disk_address}/{UserType}";
+_if(!_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_cout "Volume Create failed. might you don`t have Permission to control vdisk";
+_if(!_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_pause;
+_goto :RELOADCONSOLE;
+
+:ReCleanDiskManager;
+_cout "Clean VDISK:  {netvdisk.api_disk_address} ? (y)";
+_var {UserType} = _getline;
+_if(_cp("{UserType}","y"))|_goto :ApplyResetVdisk;
+_goto :RELOADCONSOLE;
+
+
+:CreateNewDiskTarget;
+_clear;
+_cout "Local vdisk not be created. Do you want create a new disk? (y)";
+_var {UserType} = _getline;
+_if(_cp("{UserType}","y"))|_goto :NewDiskCreated;
+_return "usercancel";
+
+_dir_make "{netvdisk.api_disk_address}";
+_goto :ReloadDM;
+
+:ApplyResetVdisk;
+//RESET DRIVERS
+_if(_found("{NATVC_DISK}","{netvdisk.api_disk_address}"))|_goto :AccessDeniedOSPART;
+_cout "Are you sure to reset vdisk? you will lost all data! (y)";
+_var {UserType} = _getline;
+_if(!_cp("{UserType}","y"))|_goto :RELOADCONSOLE;
+_dir_remove "{netvdisk.api_disk_address}";
+_dir_make "{netvdisk.api_disk_address}";
+_goto :RELOADCONSOLE;
+
+:AccessDeniedOSPART;
+_clear;
+_cout "Cannot Reset/Clean vdisk {netvdisk.api_disk_address}";
+_cout "Current OS is running on {NATVC_DISK}.";
+_pause;
+_goto :RELOADCONSOLE;
+
+:CannotFoundINputIO;
+_clear;
+_cout "Load netvdisk failed. is this driver is loaded?";
+_cout "Disk manager failed start";
+_pause;
+_return "driver_missing:netvdisk";
+
+:NewDiskCreated;
+_dir_make "{netvdisk.api_disk_address}";
+_goto :RELOADCONSOLE;
+
+
+:ManageApi;
+_clear;
+_cout "Manage This Volume";
+_cout "Address :  {netvdisk.api_disk_address}/{UserType}";
+_cout "What do you want to do";
+_cout "Command :  'remove'  'clean'  'backup'  'restore'  'exit' ";
+_if(_cp("{SelectVolumeMode}","true"))|_cout "Type 'apply' to select this volume ";
+_prt "Type >";
+_var {Menu_Type} = _getline;
+_if(_cp("{Menu_Type}","remove"))|_goto :removeVolume;
+_if(_cp("{Menu_Type}","clean"))|_goto :cleanVolume;
+_if(_cp("{Menu_Type}","backup"))|_goto :backupVolume;
+_if(_cp("{Menu_Type}","restore"))|_goto :restoreVolume;
+_if(_cp("{Menu_Type}","exit"))|_goto :RELOADCONSOLE;
+_if(_cp("{Menu_Type}","apply"))|_return "{netvdisk.api_disk_address}/{UserType}";
+_goto :ManageApi;
+
+:removeVolume;
+_if(_cp("{netvdisk.api_disk_address}/{UserType}","{NATVC_DISK}"))|_goto :AccessDeniedOSPART;
+_dir_remove "{netvdisk.api_disk_address}/{UserType}";
+_if(!_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_goto :RELOADCONSOLE;
+_cout "Remove Failed.";
+_pause;
+_goto :RELOADCONSOLE;
+
+:cleanVolume;
+_if(_cp("{netvdisk.api_disk_address}/{UserType}","{NATVC_DISK}"))|_goto :AccessDeniedOSPART;
+_dir_remove "{netvdisk.api_disk_address}/{UserType}";
+_if(!_dir_exist "{netvdisk.api_disk_address}/{UserType}")|_goto :cleanVolume2;
+_cout "Remove Failed.";
+_pause;
+_goto :RELOADCONSOLE;
+
+:cleanVolume2;
+_dir_make "{netvdisk.api_disk_address}/{UserType}";
+_cout "complete";
+_pause;
+_goto :RELOADCONSOLE;
+
+:backupVolume;
+_var {initFolder} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefolder";
+_prt "Type Save File>";
+_var {Menu_Type} = _getline;
+_var {Menu_Type} = "{initFolder}/{Menu_Type}";
+_free {initFolder};
+_file_cstp ("{netvdisk.api_disk_address}/{UserType}","{Menu_Type}");
+_goto :RELOADCONSOLE;
+
+:restoreVolume;
+_var {Menu_Type} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefile";
+_if(!_file_exist "{Menu_Type}")|_goto :Failed_LoadFileNotExist;
+_file_uncstp ("{Menu_Type}","{netvdisk.api_disk_address}/{UserType}");
+_goto :RELOADCONSOLE;
+
+
+:Failed_LoadFileNotExist;
+_cout "File Not Exist";
+_pause;
+_goto :RELOADCONSOLE;
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/diskmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/drivers/netvdisk.codrv);
+_$directmode;
+
+//Load Net Vdisk 
+_if(!_file_exist "script/bvm/DefaultDisk")|_file_write "[netvdisk] Error. Critical Error Detected :  INACCESSABLE_BVM_DATA";
+_if(!_file_exist "script/bvm/DefaultDisk")|_file_write "[netvdisk] Driver unloaded. Netvdisk is Running on safemode";
+_if(!_file_exist "script/bvm/DefaultDisk")|_return "drv_load_ok";
+_sipcfg.open "script/bvm/DefaultDisk";
+_var {netvdisk.api_disk_address} = _sipcfg defaultdisk;
+_var {netvdisk.api_disk_address} = _str_replace "{netvdisk.api_disk_address}" ('{path}/',"");
+_file_write "[netvdisk] config address value :  {netvdisk.api_disk_address}";
+//_if(!_dir_exist "{netvdisk.api_disk_address}")|_return "NetVDiskError::DRV_SET_ADDRESS_FAILED";
+
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/drivers/netvdisk.codrv);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/mvosold.ca);
+_$directmode;
+//Move System to old folder
+_if(_dir_exist "{SetupVolume}/Coral")|_goto :StartCopyOldSYSTEM;
+_if(_dir_exist "{SetupVolume}/Natvc")|_goto :StartCopyOldSYSTEM;
+_if(_dir_exist "{SetupVolume}/Program")|_goto :StartCopyOldSYSTEM;
+_if(_dir_exist "{SetupVolume}/Users")|_goto :StartCopyOldSYSTEM;
+_return "NoOldSystem";
+
+:StartCopyOldSYSTEM;
+_dir_remove "{SetupVolume}/Natvc/SystemImage";
+_dir_remove "{SetupVolume}/Coral/SystemImage";
+_dir_remove "{SetupVolume}/Coral/RepairData";
+
+_if(!_dir_exist "{SetupVolume}/Natvc")|_goto :SKipCopyNatvc;
+_var {XCOPY_A} = "{SetupVolume}/Natvc";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Natvc";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+:SKipCopyNatvc;
+
+_if(!_dir_exist "{SetupVolume}/Coral")|_goto :SKipCopyCoral;
+_var {XCOPY_A} = "{SetupVolume}/Coral";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Coral";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+:SKipCopyCoral;
+
+_var {XCOPY_A} = "{SetupVolume}/Program";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Program";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_var {XCOPY_A} = "{SetupVolume}/Users";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Users";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_dir_remove "{SetupVolume}/Coral";
+_dir_remove "{SetupVolume}/Natvc";
+_dir_remove "{SetupVolume}/Program";
+_dir_remove "{SetupVolume}/Users";
+
+_return "OK";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/mvosold.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/re.nbf);
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+//Natvc RE System Loader
+//Anti rootshell load
+
+//SignLoad
+//$signload=ntvre_osloader_sign;
+
+_clear;
+
+_sipcfg.open "nul";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "{BootVolume}/nbfload";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "{BootVolume}/boot";
+
+_var {TempLoadRE} = _sipcfg RollBackLoad;
+_if(!_cp(_sipcfg DefaultOption,"recovery"))|_goto :SkipRollBackRE;
+_sipcfg DefaultOption = "{TempLoadRE}";
+_sipcfg RollBackLoad = "";
+
+:SkipRollBackRE;
+
+
+//Load main
+//GET REDATA
+_if(!_file_exist "{NATVC_DISK}/{Boot_OSPATH}/bootdat")|_goto :loadfail_nodat;
+
+_sipcfg.open "{NATVC_DISK}/{Boot_OSPATH}/bootdat";
+_var {tempdisk} = _sipcfg tempdisk;
+_var {tempdisk} = "script/{tempdisk}";
+_var {ospack} = _sipcfg ospack;
+_var {REAutoExec} = _sipcfg REAutoExec;
+
+_var {ospack} = "{NATVC_DISK}/{Boot_OSPATH}/{ospack}";
+
+_if(!_file_exist "{ospack}")|_goto :loadfail_nocstp;
+
+_var {OriginDisk} = "{NATVC_DISK}";
+_var {NATVC_DISK} = "{tempdisk}";
+_var {Boot_OSPATH} = _sipcfg ospath;
+_var {NATVC_SYSLDR} = _sipcfg osload;
+_var {BootSign} = _sipcfg bootsign;
+
+_clear;
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "    {BootUIA}";
+_cout "    {BootUIB}";
+_cout "    {BootUIC}";
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+_cout "";
+
+//Extract to TempDisk
+_if(_dir_exist "{tempdisk}")|_dir_remove "{tempdisk}";
+
+_$no_cstp_output;
+_file_uncstp("{ospack}","{tempdisk}");
+_$open_cstp_output;
+
+//Boot System
+_var {osvolume} = "{tempdisk}";
+_var {NATVC_DISK} = "{osvolume}";
+//Core
+_var {NATVC_BOOTLOAD} = "{NATVC_DISK}/{NATVC_SYSLDR}";
+_if(!_file_exist "{NATVC_BOOTLOAD}")| _goto :NATVC_MS_SL;
+_var {RE_ENV} = "true";
+_clear;
+_var {OS_CALLBACK} = _script <"{NATVC_BOOTLOAD}"> "sysload";
+
+_dir_remove "{tempdisk}";
+
+_free {OriginDisk};
+_free {NATVC_DISK};
+_free {Boot_OSPATH};
+_free {NATVC_SYSLDR};
+_free {BootSign};
+_free {SYS_NROOT};
+_free {SYS_ROOT};
+_free {REAutoExec};
+_free {BL_Verify_F};
+
+_if(_cp("{OS_CALLBACK}","$reboot"))|_return "$reboot";
+_if(_cp("{OS_CALLBACK}","$shutdown"))|_return "$shutdown";
+_goto :NATVC_MS_FL;
+
+
+
+//ERRPAGE
+:loadfail_nodat;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {NATVC_DISK}/{Boot_OSPATH}/bootdat   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+:loadfail_nocstp;
+_clear;
+_cout "Natvc Recovery Load fail";
+_cout "file :  {ospack}   is missing";
+_cout "Boot data is missing, system cannot startup";
+_pause;
+_return "$reboot";
+
+
+
+:NATVC_MS_SL;
+_var {NBF_FILE} = "{NATVC_BOOTLOAD}";
+_clear;
+_typefile "{BootVolume}/res/filelost.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+
+:NATVC_MS_FL;
+_var {NBF_ErrorCode} = "{OS_CALLBACK}";
+_clear;
+_typefile "{BootVolume}/res/bootfail.txt";
+_pause;
+_var {SysLocker} = "false";
+_var {NBFMenu} = "true";
+_var bvm_bm = "true";
+_return "$reboot";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/re.nbf);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/redeploy.ca);
+_$directmode;
+//MakeDir Folder
+_if(_cp("{netvdisk.api_disk_address}",'{netvdisk.api_disk_address}'))|_var {netvdisk.api_disk_address} = "script/vdisk";
+
+_if(_dir_exist "{netvdisk.api_disk_address}/Recovery/Recovery")|_dir_remove "{netvdisk.api_disk_address}/Recovery/Recovery";
+_dir_make "{netvdisk.api_disk_address}/Recovery";
+_dir_make "{netvdisk.api_disk_address}/Recovery/Recovery";
+_dir_make "{netvdisk.api_disk_address}/Recovery/Recovery/text";
+_dir_make "{netvdisk.api_disk_address}/Recovery/Recovery/OSRepair";
+
+_file_copy ("{SETUPVOLUME}/Recovery/bootdat","{netvdisk.api_disk_address}/Recovery/Recovery/bootdat");
+_file_copy ("{SETUPVOLUME}/sources/boot.cstp","{netvdisk.api_disk_address}/Recovery/Recovery/colre.cstp");
+_file_copy ("{SETUPVOLUME}/Recovery/re.nbf","{netvdisk.api_disk_address}/Recovery/Recovery/re.nbf");
+_file_copy ("{SETUPVOLUME}/Recovery/Recovery.ca","{netvdisk.api_disk_address}/Recovery/Recovery/Recovery.ca");
+_file_copy ("{SETUPVOLUME}/Recovery/OSRepair/osr.ca","{netvdisk.api_disk_address}/Recovery/Recovery/OSRepair/osr.ca");
+_file_copy ("{SETUPVOLUME}/Recovery/text/ReMain.txt","{netvdisk.api_disk_address}/Recovery/Recovery/text/ReMain.txt");
+
+//Repair Loader
+_script <"{SYS_ROOT}/refix.ca"> "{netvdisk.api_disk_address}/Recovery";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/redeploy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/REUpdate/cposold.ca);
+_$directmode;
+//Move System to old folder
+_if(_dir_exist "{SetupVolume}/Coral")|_goto :StartCopyOldSYSTEM;
+_if(_dir_exist "{SetupVolume}/Natvc")|_goto :StartCopyOldSYSTEM;
+_if(_dir_exist "{SetupVolume}/Program")|_goto :StartCopyOldSYSTEM;
+_if(_dir_exist "{SetupVolume}/Users")|_goto :StartCopyOldSYSTEM;
+_return "NoOldSystem";
+
+:StartCopyOldSYSTEM;
+_dir_remove "{SetupVolume}/Natvc/SystemImage";
+_dir_remove "{SetupVolume}/Coral/SystemImage";
+_dir_remove "{SetupVolume}/Coral/RepairData";
+
+_if(!_dir_exist "{SetupVolume}/Natvc")|_goto :SKipCopyNatvc;
+_var {XCOPY_A} = "{SetupVolume}/Natvc";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Natvc";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+:SKipCopyNatvc;
+
+_if(!_dir_exist "{SetupVolume}/Coral")|_goto :SKipCopyCoral;
+_var {XCOPY_A} = "{SetupVolume}/Coral";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Coral";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+:SKipCopyCoral;
+
+_var {XCOPY_A} = "{SetupVolume}/Program";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Program";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_var {XCOPY_A} = "{SetupVolume}/Users";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/Users";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_return "OK";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/REUpdate/cposold.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/REUpdate/mvoldos.ca);
+_$directmode;
+//Restore System
+_if(_cp("{netvdisk.api_disk_address}",'{netvdisk.api_disk_address}'))|_var {netvdisk.api_disk_address} = "script/vdisk";
+
+_if(!_dir_exist "{SetupVolume}/Coral")|_return "NoOldSystem";
+
+_dir_remove "{SetupVolume}/Natvc";
+_dir_remove "{SetupVolume}/Coral";
+_dir_remove "{SetupVolume}/Program";
+_dir_remove "{SetupVolume}/Users";
+
+_if(!_dir_exist "{SetupVolume}/Coral.old/$SystemBootVolume") |_goto :SkipSBV;
+_dir_remove "{BootVolume}";
+_var {XCOPY_A} = "{SetupVolume}/Coral.old/$SystemBootVolume";
+_var {XCOPY_B} = "{BootVolume}";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_dir_remove "{SetupVolume}/Coral.old/$SystemBootVolume";
+:SkipSBV;
+
+_if(!_dir_exist "{SetupVolume}/Coral.old/$SystemRecovery") |_goto :SkipSR;
+_dir_remove "{netvdisk.api_disk_address}/Recovery";
+_var {XCOPY_A} = "{SetupVolume}/Coral.old/$SystemRecovery";
+_var {XCOPY_B} = "{netvdisk.api_disk_address}/Recovery";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_dir_remove "{SetupVolume}/Coral.old/$SystemRecovery";
+:SkipSR;
+
+
+_var {XCOPY_A} = "{SetupVolume}/Coral.old";
+_var {XCOPY_B} = "{SetupVolume}";
+
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_dir_remove "{SetupVolume}/Coral.old";
+
+_return "OK";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/REUpdate/mvoldos.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/REUpdate/NatvcMvToCoral.ca);
+_$directmode;
+_clear;
+_if(_cp("{CleanSetup}","true"))|_return "skip";
+_cout "Please wait... Natvc Update to Coral need do some process.";
+_dir_remove "{SetupVolume}/Program";
+
+_dir_remove "{SetupVolume}/Natvc";
+_dir_make "{SetupVolume}/Coral";
+_dir_make "{SetupVolume}/Coral/config";
+
+_file_copy ("{SetupVolume}/Coral.old/Natvc/config/SETUP","{SetupVolume}/Coral/config/SETUP");
+_file_copy ("{SetupVolume}/Coral.old/Natvc/config/USERS","{SetupVolume}/Coral/config/USERS");
+_file_copy ("{SetupVolume}/Coral.old/Natvc/config/SOFTWARE","{SetupVolume}/Coral/config/SOFTWARE");
+
+_sipcfg.open "{SetupVolume}/Coral/config/SETUP";
+_sipcfg NATVC_SHUTDOWN_SECURE = "0";
+_sipcfg NATVC_CRASH_EXECUTE = "$reboot";
+_sipcfg NATVC_CRASH_AUTOREBOOT = "0";
+_sipcfg NATVC_CRASH_AUTOREBOOT_TIME = "15";
+_sipcfg DisableSysRepiar = "false";
+_sipcfg IsSystemActivated = "false";
+_sipcfg EnableSystemUserProtection = "true";
+_sipcfg PlayNewUpdatefromNatvc = "true";
+_sipcfg FILECHECK = "true";
+
+_sipcfg.open "{SetupVolume}/Coral/config/USERS";
+_sipcfg.remove Local_Low;
+_sipcfg.remove TrustedServices;
+_sipcfg FILECHECK = "true";
+
+_sipcfg.open "{SetupVolume}/Coral/config/SOFTWARE";
+_sipcfg FILECHECK = "true";
+
+_var {XCOPY_A} = "{SetupVolume}/Coral.old/Natvc/SystemPackage";
+_var {XCOPY_B} = "{SetupVolume}/$InstallSource/ModernAppsPreinstall";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/mnacore.pkgmanager.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc_fdl.nexplorer.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc.configeditor.system.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc.logon.interface.host.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc.outofboxExp.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc.textreader.modern.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc.userinterface.explorer.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc.userinterface.file.explorer.mna";
+_file_del "{SetupVolume}/$InstallSource/ModernAppsPreinstall/natvc.userinterface.startmenu.mna";
+
+_sipcfg.open "{SetupVolume}/$InstallSource/deployconf.cfg";
+_sipcfg UpdateFromNATVC = "true";
+
+//PROCESS DONE
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/REUpdate/NatvcMvToCoral.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/REUpdate/preSetup.ca);
+_$directmode;
+
+//Load Setup Options
+_sipcfg.open "{NATVC_DISK}/CoralUpdate/InstallOptions.cfg";
+_var {CleanSetup} = _sipcfg CleanInstall;
+
+//Make System New;
+_if(!_file_exist "{NATVC_DISK}/CoralUpdate/install.cstp")|_goto :FILEMISSING;
+_if(!_file_exist "{NATVC_DISK}/CoralUpdate/deployment.cstp")|_goto :FILEMISSING;
+_dir_remove "{NATVC_DISK}/CoralUpdate/NewOS";
+_dir_make "{NATVC_DISK}/CoralUpdate/NewOS";
+_file_uncstp ("{NATVC_DISK}/CoralUpdate/install.cstp","{NATVC_DISK}/CoralUpdate/NewOS");
+_file_uncstp ("{NATVC_DISK}/CoralUpdate/deployment.cstp","{NATVC_DISK}/$InstallSource");
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_sipcfg DeployStartupScript = false;
+
+_if(_cp("{CleanSetup}","true"))|_goto :RebootNow;
+
+//Delete Some Resources to void Value FAILED
+_dir_remove "{NATVC_DISK}/CoralUpdate/NewOS/Users/admin";
+_file_del "{NATVC_DISK}/CoralUpdate/NewOS/Coral/config/SETUP";
+_file_del "{NATVC_DISK}/CoralUpdate/NewOS/Coral/config/USERS";
+_file_del "{NATVC_DISK}/CoralUpdate/NewOS/Coral/config/SOFTWARE";
+
+//_script <"{SYS_ROOT}/mnareset.ca"> "uninstallforce";
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+//_script <"{SYS_ROOT}/diskclean.ca"> "auto";
+_script <"{SETUPVOLUME}/sources/redeploy.ca">;
+
+:RebootNow;
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setuprestarting.txt";
+_ms_sleep "1700";
+_return "restart";
+
+
+:FILEMISSING;
+_clear;
+_cout "Setup Error. some file not loaded";
+_pause;
+_return "BadInstallMedia";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/REUpdate/preSetup.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/REUpdate/systemUpdate.ca);
+_$directmode;
+
+_if(_cp("{netvdisk.api_disk_address}",'{netvdisk.api_disk_address}'))|_var {netvdisk.api_disk_address} = "script/vdisk";
+
+//Load Setup Options
+_clear;
+_cout "Setup is staring...";
+
+_sipcfg.open "{OriginDisk}/Recovery/bindos";
+_var {SetupVolume} = _sipcfg OSDIR;
+
+_sipcfg.open "{SetupVolume}/CoralUpdate/InstallOptions.cfg";
+_var {CleanSetup} = _sipcfg CleanInstall;
+_var {RestoreToOldSystem} = _sipcfg RestoreToOldSystem;
+_var {UpdateFromNATVC} = _sipcfg IsUpdateFromNATVC;
+
+//CheckValue
+_if(_cp("{RestoreToOldSystem}","true"))|_goto :RollbackOldSystem;
+
+//Start Install
+_clear;
+_typefile "{SetupVolume}/CoralUpdate/pesetupinstalling.txt";
+_cout "Copying your previous system on Coral.old";
+_if(_cp("{CleanSetup}","false"))|_script <"{SetupVolume}/CoralUpdate/cposold.ca">;
+_if(_cp("{CleanSetup}","true"))|_script <"{SetupVolume}/CoralUpdate/mvosold.ca">;
+//Process old system done
+//If Restart Exception. Go System Restore;
+
+_sipcfg.open "{SetupVolume}/CoralUpdate/InstallOptions.cfg";
+_sipcfg RestoreToOldSystem = "true";
+
+//Install Update
+_if(_cp("{UpdateFromNATVC}","true"))|_script <"{SetupVolume}/CoralUpdate/NatvcMvToCoral.ca">;
+_var {XCOPY_A} = "{SetupVolume}/CoralUpdate/NewOS";
+_var {XCOPY_B} = "{SetupVolume}";
+
+_cout "Copying New OS";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_dir_remove "{SetupVolume}/CoralUpdate/NewOS";
+
+//Complete Copy Work
+//Repair Boot Loader
+
+_if(_cp("{CleanSetup}","true"))|_goto :SkipLoadSKK;
+_file_open "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca";
+_file_write '_script <"{NATVC_DISK}/$InstallSource/autodeploy.ca">; ';
+_file_write '_dir_remove "{NATVC_DISK}/$InstallSource"; ';
+_file_open "{SYS_LOG}";
+:SkipLoadSKK;
+
+_cout "Writing bootloader";
+_script <"{SYS_ROOT}/autobl.ca"> "{SetupVolume}";
+_cout "Complete.";
+
+_ms_sleep "300";
+_clear;
+_return "restart";
+
+
+:RollbackOldSystem;
+_clear;
+_typefile "{SetupVolume}/CoralUpdate/pesetupundo.txt";
+_script <"{SetupVolume}/CoralUpdate/mvoldos.ca">;
+
+//Complete Copy Work
+//Repair Boot Loader
+
+//_script <"{SYS_ROOT}/autobl.ca"> "{SetupVolume}";
+//give up design. because boot loader has changed!
+
+_clear;
+_return "restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/REUpdate/systemUpdate.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/REUpdate/sysupd_REDeploy.ca);
+_$directmode;
+//MakeDir Folder
+_if(_cp("{netvdisk.api_disk_address}",'{netvdisk.api_disk_address}'))|_var {netvdisk.api_disk_address} = "script/vdisk";
+
+_if(_dir_exist "{netvdisk.api_disk_address}/$UpdateRecovery")|_dir_remove "{netvdisk.api_disk_address}/$UpdateRecovery";
+
+_if(_dir_exist "{netvdisk.api_disk_address}/$UpdateRecovery/Recovery")|_dir_remove "{netvdisk.api_disk_address}/$UpdateRecovery/Recovery";
+_dir_make "{netvdisk.api_disk_address}/$UpdateRecovery";
+_dir_make "{netvdisk.api_disk_address}/$UpdateRecovery/Recovery";
+_dir_make "{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/text";
+_dir_make "{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/OSRepair";
+
+_file_copy ("{SETUPVOLUME}/Recovery/bootdat","{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/bootdat");
+_file_copy ("{SETUPVOLUME}/sources/boot.cstp","{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/colre.cstp");
+_file_copy ("{SETUPVOLUME}/Recovery/re.nbf","{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/re.nbf");
+_file_copy ("{SETUPVOLUME}/Recovery/Recovery.ca","{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/Recovery.ca");
+_file_copy ("{SETUPVOLUME}/Recovery/OSRepair/osr.ca","{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/OSRepair/osr.ca");
+_file_copy ("{SETUPVOLUME}/Recovery/text/ReMain.txt","{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/text/ReMain.txt");
+
+
+_var {ReDir} = "{netvdisk.api_disk_address}/$UpdateRecovery";
+//Repair Loader
+_sipcfg.open "{ReDir}/Recovery/re.nbf";
+_var {refix_getsign} = _sipcfg signload;
+
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "script/vdisk/nbf/nbf/System Update";
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "script/vdisk/sysboot/nbf/System Update";
+
+_sipcfg osvol = "{ReDir}";
+_sipcfg ospath = "Recovery";
+_sipcfg osload = "Recovery/re.nbf";
+_sipcfg bootsign = "{refix_getsign}";
+
+_file_del "{ReDir}/Recovery/bindos";
+_sipcfg.open "{ReDir}/Recovery/bindos";
+_sipcfg OSDIR="{osvolume}";
+
+_sipcfg.open "{netvdisk.api_disk_address}/$UpdateRecovery/Recovery/bootdat";
+_sipcfg REAutoExec = "../../../{NATVC_DISK}/CoralUpdate/systemUpdate.ca";
+
+_if(_cp("{BootMethod}","boot"))|_sipcfg.open "$sys_def_disk/sysboot/boot";
+_if(_cp("{BootMethod}","boot"))|_sipcfg DefaultOption = "System Update";
+
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg.open "$sys_def_disk/nbf/nbfload";
+_if(_cp("{BootMethod}","nbfload"))|_sipcfg DefaultOption = "System Update";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/REUpdate/sysupd_REDeploy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/setup.os.ca);
+_$directmode;
+//LoadSetupIndex
+_sipcfg.open "{SETUPVOLUME}/sources/setupindex.txt";
+_var {InstallName} = _sipcfg InstallerPackageName;
+_var {DetailVersion} = _sipcfg DetailVersion;
+_var {NATVC_FMV_REQ} = _sipcfg RequireClfmvMin;
+
+_var {DeploySource} = _sipcfg DeployPackage;
+
+_var {IsUpdateFromNATVC} = "false";
+
+//Load UI
+_file_write "[Setup] Image Name:  {InstallName}   Detail Version :  {DetailVersion}";
+_file_write "[Setup] Setup is staring.";
+
+//SetupMain
+_var {SetupVolume} = "{NATVC_DISK}";
+:ReloadMainSetup;
+_if(_cp("{RE_ENV}","true"))|_return "BadSystemEnviroment";
+
+_if(!_cp("{NATVC_isAdmin}","1"))|_goto :User_PRIV_Error;
+
+_clear;
+_typefile "{SETUPVOLUME}/sources/textupdate/setupmainpage.txt";
+_prt "Type Here>";
+_var {useropt} = _getline;
+_if(_cp("{useropt}","2"))|_var {CleanSetup} = "false";
+_if(_cp("{useropt}","2"))|_goto :Start Setup;
+_if(_cp("{useropt}","3"))|_var {CleanSetup} = "true";
+_if(_cp("{useropt}","3"))|_goto :Start Setup;
+_return "cancel";
+
+//
+//  ERROR REPORT
+//
+
+:NullVolumeSelect;
+_clear;
+_cout "The system cannot install on this volume";
+_cout "You need rename your system volume";
+_pause;
+_goto :ReloadMainSetup;
+
+
+//
+//  ERROR REPORT END
+//
+
+
+:Start Setup;
+_if(_cp("{CleanSetup}","true"))|_goto :RESELECTCONFIRM;
+_if(_cp("{Boot_OSPATH}","Natvc"))|_var {IsUpdateFromNATVC} = "true";
+
+:RESELECTCONFIRM;
+_clear;
+_if(_cp("{CleanSetup}","false"))|_typefile "{SETUPVOLUME}/sources/textupdate/setupselectconfirm_alldata.txt";
+_if(_cp("{CleanSetup}","true"))|_typefile "{SETUPVOLUME}/sources/textupdate/setupselectconfirm_clean.txt";
+_cout "Type (y) to confirm";
+_var {UserTypeE} = _getline;
+_if(_cp("{UserTypeE}","y"))|_goto :STARTINSTALLER;
+_if(_cp("{UserTypeE}","n"))|_goto :ReloadMainSetup;
+_goto :RESELECTCONFIRM;
+
+:STARTINSTALLER;
+_if (_cp("{NATVC_DISK}","{netvdisk.api_disk_address}/sysboot"))|_goto :NullVolumeSelect;
+_if (_cp("{NATVC_DISK}","{netvdisk.api_disk_address}/nbf"))|_goto :NullVolumeSelect;
+_if (_cp("{NATVC_DISK}","{netvdisk.api_disk_address}/$UpdateRecovery"))|_goto :NullVolumeSelect;
+//Backup Boot Volume and Recovery
+
+//PLEASE WAIT
+_dir_remove "{SetupVolume}/Coral.old";
+_clear;
+_cout "Copying Temporarily files....    please wait";
+_var {XCOPY_A} = "{BootVolume}";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/$SystemBootVolume";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+
+_if(!_dir_exist "{netvdisk.api_disk_address}/Recovery") |_goto :SkipSR;
+_var {XCOPY_A} = "{netvdisk.api_disk_address}/Recovery";
+_var {XCOPY_B} = "{SetupVolume}/Coral.old/$SystemRecovery";
+_script <"{SYS_ROOT}/xcopy.ca"> "auto";
+:SkipSR;
+
+
+//Make ReAgent
+_script <"{SETUPVOLUME}/sources/redeploy.ca">;
+
+_script <"{SETUPVOLUME}/sources/REUpdate/sysupd_REDeploy.ca">;
+
+_file_open "{SYS_LOG}";
+
+//Copy Update Client
+_dir_make "{NATVC_DISK}/CoralUpdate";
+_file_copy ("{SETUPVOLUME}/sources/install.cstp","{NATVC_DISK}/CoralUpdate/install.cstp");
+_file_copy ("{SETUPVOLUME}/sources/DeploySource/{DeploySource}","{NATVC_DISK}/CoralUpdate/deployment.cstp");
+_file_copy ("{SETUPVOLUME}/sources/mvosold.ca","{NATVC_DISK}/CoralUpdate/mvosold.ca");
+_file_copy ("{SETUPVOLUME}/sources/REUpdate/systemUpdate.ca","{NATVC_DISK}/CoralUpdate/systemUpdate.ca");
+_file_copy ("{SETUPVOLUME}/sources/REUpdate/mvoldos.ca","{NATVC_DISK}/CoralUpdate/mvoldos.ca");
+_file_copy ("{SETUPVOLUME}/sources/REUpdate/cposold.ca","{NATVC_DISK}/CoralUpdate/cposold.ca");
+_file_copy ("{SETUPVOLUME}/sources/REUpdate/preSetup.ca","{NATVC_DISK}/CoralUpdate/preSetup.ca");
+_file_copy ("{SETUPVOLUME}/sources/REUpdate/NatvcMvToCoral.ca","{NATVC_DISK}/CoralUpdate/NatvcMvToCoral.ca");
+_file_copy ("{SETUPVOLUME}/sources/textupdate/pesetupinstalling.txt","{NATVC_DISK}/CoralUpdate/pesetupinstalling.txt");
+_file_copy ("{SETUPVOLUME}/sources/textupdate/pesetupundo.txt","{NATVC_DISK}/CoralUpdate/pesetupundo.txt");
+
+//Config Setup Options
+_sipcfg.open "{NATVC_DISK}/CoralUpdate/InstallOptions.cfg";
+_if(_cp("{CleanSetup}","false"))|_sipcfg CleanInstall = "false";
+_if(_cp("{CleanSetup}","true"))|_sipcfg CleanInstall = "true";
+_sipcfg RestoreToOldSystem = "false";
+_sipcfg SystemVolume = "{NATVC_DISK}";
+_sipcfg IsUpdateFromNATVC = "{IsUpdateFromNATVC}";
+
+//Setup PRE
+_clear;
+_typefile "{SETUPVOLUME}/sources/textupdate/setupinstalling.txt";
+_cover <"{NATVC_DISK}/CoralUpdate/preSetup.ca">;
+_clear;
+_cout "Setup is not started";
+_cout "some file is missing";
+_pause;
+_return "failed";
+
+
+:NotSupportUpgradeFromNATVC;
+_clear;
+_typefile "{SETUPVOLUME}/sources/textupdate/setupdevicenotsupported.txt";
+_pause;
+_goto :ReloadMainSetup;
+
+:User_PRIV_Error;
+_clear;
+_cout "This User cannot update this device.";
+_cout "Please use a admin user to open this software";
+_cout "User Privilege not allowed to open this software";
+_pause;
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/setup.os.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/setup.pe.ca);
+_$directmode;
+//Load setupindex
+_sipcfg.open "{SETUPVOLUME}/sources/setupindex.txt";
+_var {InstallName} = _sipcfg InstallerPackageName;
+_var {DetailVersion} = _sipcfg DetailVersion;
+_var {NATVC_FMV_REQ} = _sipcfg RequireClfmvMin;
+
+_var {DeploySource} = _sipcfg DeployPackage;
+_var {InstallWithDebugMode} = _sipcfg InstallWithDebugMode;
+_var {EnterKeyMode} = _sipcfg RequireKeyPage;
+
+//Load UI
+_file_write "[Setup] Image Name:  {InstallName}   Detail Version :  {DetailVersion}";
+_file_write "[Setup] Setup is staring.";
+
+//Main;
+:ReloadMainSetup;
+_if(!_cp("{RE_ENV}","true"))|_return "BadSystemEnviroment";
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setupmainpage.txt";
+_if(_cp("{InstallWithDebugMode}","true"))|_cout "Install PE Version :  {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+_if(_cp("{InstallWithDebugMode}","true"))|_cout "Current media :  {InstallName} .  BUILDCODE:  {DetailVersion} .  Requirement CLFMV :  {NATVC_FMV_REQ}";
+_prt "Type Here>";
+_var {useropt} = _getline;
+
+_if(_cp("{useropt}","1"))|_goto :StartInstaller;
+_if(_cp("{useropt}","2"))|_goto :LoadRootShell;
+_if(_cp("{useropt}","3"))|_goto :RepairModes;
+_if(_cp("{useropt}","4"))|_return "restart";
+_goto :ReloadMainSetup;
+
+:LoadRootShell;
+_clear;
+_var {rs_pathexec} = "{SETUPVOLUME}/sources";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script <"{SYS_ROOT}/rootshell.ca">;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown")) |_return "shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))  |_return "restart";
+_clear;
+_goto :ReloadMainSetup;
+
+
+:RepairModes;
+_var {REPAIRMODE} = _script <"{SETUPVOLUME}/Recovery/Recovery.ca">;
+_goto :ReloadMainSetup;
+
+//
+//  ERROR REPORT
+//
+:CompilerNotSupport;
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setupdevicenotsupported.txt";
+_pause;
+_goto :ReloadMainSetup;
+
+:MediaBreak;
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setuperrormedia.txt";
+_pause;
+_goto :ReloadMainSetup;
+
+:NullVolumeSelect;
+_clear;
+_cout "The system cannot install on this volume";
+_cout "Please select other volume";
+_pause;
+_goto :RESELECTDISK_MODE;
+
+
+//
+//  ERROR REPORT END
+//
+
+:StartInstaller;
+_clear;
+_cout "Loading Drivers...";
+_script <"{SYS_ROOT}/hdrv.ca"> "{SETUPVOLUME}/sources/drivers/netvdisk.codrv";
+
+_clear;
+_typefile "{SETUPVOLUME}/support/EULA.txt";
+_cout "Type (y) to accept this eula";
+_if(!_cp(_getline,"y"))|_goto :ReloadMainSetup;
+
+_var {PreKeyType} = "{varspace.null}";
+
+_if(!_cp("{EnterKeyMode}","true"))|_goto :SkipWriteKeyMode;
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setupkeytype.txt";
+_prt "Enter your key here. format like 'XXXXX-XXXXX-XXXXX' >";
+_var {PreKeyType} = _getline;
+
+:SkipWriteKeyMode;
+
+//Enter System Image
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setupapplyimage.txt";
+_cout "Type (y) to confirm";
+_if(!_cp(_getline,"y"))|_goto :ReloadMainSetup;
+
+//Checking Device Supported?
+_if(!_=>("{CalciumL_FMV}","{NATVC_FMV_REQ}"))|_goto :CompilerNotSupport;
+
+
+//Select Disk
+:RESELECTDISK_MODE;
+_var {SetupVolume} = _script <"{SETUPVOLUME}/sources/diskmgr.ca"> "$selectvolume";
+_if (_cp("{SetupVolume}","ok"))|_goto :ReloadMainSetup;
+_if (_cp("{SetupVolume}","exit"))|_goto :ReloadMainSetup;
+_if (_cp("{SetupVolume}","usercancel"))|_goto :ReloadMainSetup;
+
+_if (_cp("{SetupVolume}","{netvdisk.api_disk_address}/sysboot"))|_goto :NullVolumeSelect;
+_if (_cp("{SetupVolume}","{netvdisk.api_disk_address}/nbf"))|_goto :NullVolumeSelect;
+_if (_cp("{SetupVolume}","{netvdisk.api_disk_address}/Recovery"))|_goto :NullVolumeSelect;
+
+//Starting Selected;
+:RESELECTCONFIRM;
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setupselectconfirm.txt";
+_cout "Type (y) to confirm";
+_var {UserTypeE} = _getline;
+_if(_cp("{UserTypeE}","y"))|_goto :STARTINSTALLER;
+_if(_cp("{UserTypeE}","n"))|_goto :ReloadMainSetup;
+_goto :RESELECTCONFIRM;
+
+:STARTINSTALLER;
+//Start Installer
+_if(!_file_exist "{SETUPVOLUME}/sources/install.cstp")|_goto :MediaBreak;
+_if(!_file_exist "{SETUPVOLUME}/sources/DeploySource/{DeploySource}")|_goto :MediaBreak;
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setupinstalling.txt";
+_cout "Move Old System";
+_script <"{SETUPVOLUME}/sources/mvosold.ca">;
+_cout "copying files...";
+_file_uncstp ("{SETUPVOLUME}/sources/install.cstp","{SetupVolume}");
+
+_cout "Installing Update...";
+_file_uncstp ("{SETUPVOLUME}/sources/DeploySource/{DeploySource}","{SetupVolume}/$InstallSource");
+_sipcfg.open "{SetupVolume}/$InstallSource/deployconf.cfg";
+_sipcfg RegisterKey = "{PreKeyType}";
+_file_write "[Setup] Pre Activate Key is '{PreKeyType}' ";
+
+//Copy System Recovery
+
+//Create Boot loader
+_cout "setting bootloader...";
+_script <"{SYS_ROOT}/autobl.ca"> "{SetupVolume}";
+_if(_cp("{InstallWithDebugMode}","true"))|_cout "Current installed system is enabled debug mode";
+_if(_cp("{InstallWithDebugMode}","true"))|_sipcfg.open "$sys_def_disk/nbf/nbf/{FileLoadName}";
+_if(_cp("{InstallWithDebugMode}","true"))|_sipcfg BootOptions = "debugmode";
+_if(_cp("{InstallWithDebugMode}","true"))|_ms_sleep "1000";
+_script <"{SETUPVOLUME}/sources/redeploy.ca">;
+
+//_script <"{SYS_ROOT}/refix.ca"> "{netvdisk.api_disk_address}/Recovery";
+
+_var bvm_bm = "false";
+
+_clear;
+_typefile "{SETUPVOLUME}/sources/textfiles/setuprestarting.txt";
+_ms_sleep "1700";
+_return "restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/setup.pe.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setupapplyimage.txt);
+🛠️ {InstallName} Setup
+
+🖼️ Please confirm this image  
+📦 This system will be installed
+
+   🖥️ SYSTEM         : {InstallName}  
+   🔢 Detail Version : {DetailVersion}
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setupapplyimage.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setupdevicenotsupported.txt);
+🛠️ {InstallName} Setup
+
+❌ Sorry, this device can't run {InstallName}  
+⚠️ It does not meet the minimum requirements.
+
+   🔒 Required Version (minimum) : {NATVC_FMV_REQ}  
+   🧩 Current Device Version     : {CalciumL_FMV}
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setupdevicenotsupported.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setuperrormedia.txt);
+🛠️ {InstallName} Setup
+
+❌ Setup Error  
+📂 Some files are missing
+
+🔄 Please select another setup media  
+⬇️ Or redownload this media
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setuperrormedia.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setupinstalling.txt);
+🔧 Installing {InstallName}  
+   📦 Your device will automatically complete  
+   the installation and configuration.
+
+📂 Installing Coral to your folder...
+
+⚠️ Do not turn off your device!
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setupinstalling.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setupkeytype.txt);
+FDL Product License Manager
+
+Enter your product key!
+These key you can find on your Manufactured.
+System Provides or Buy pages.
+
+This key used to activate your product.
+If you do not want Enter Key now. or this product is not require activate.
+Press Enter
+
+If this product required activated! and you haven`t enter a vaildkey.
+The system setup will require you activated on OOBE or User Explorer
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setupkeytype.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setupmainpage.txt);
+🛠️ {InstallName} Setup
+
+👋 SETUP MEDIA
+📋 What do you want to do?
+
+   1. Install Coral OS 
+   2. Open Root Shell  
+   3. Recovery  
+   4. Restart
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setupmainpage.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setuprestarting.txt);
+🔧 Installing {InstallName}  
+   📦 Your device will automatically complete  
+   the installation and configuration.
+
+   Your device needs to restart before 
+             it can continue
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setuprestarting.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textfiles/setupselectconfirm.txt);
+🛠️ {InstallName} Setup
+
+✅ All Done.  
+📋 Please confirm these install options:
+
+   📁 Install Volume : {SetupVolume}  
+   🖥️ OS             : {InstallName}
+
+📦 If the volume contains an old system,  
+   it will be moved to ➡️ Coral.old
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textfiles/setupselectconfirm.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textupdate/pesetupinstalling.txt);
+🔧 Installing {InstallName}
+   📦 Your device will automatically complete
+   the installation and configuration.
+
+🚀 Installing Coral...
+
+⚠️ Do not turn off your device!
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textupdate/pesetupinstalling.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textupdate/pesetupundo.txt);
+❌ Install Cancel  
+🔄 Restoring previous version of System...
+
+⚠️ Do not turn off your device!
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textupdate/pesetupundo.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textupdate/setupdevicenotsupported.txt);
+🛠️ {InstallName} Setup
+
+❌ Unable to upgrade this device  
+⚠️ Coral cannot be upgraded from the old System..
+
+     Boot from the media device to install Coral
+
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textupdate/setupdevicenotsupported.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textupdate/setupinstalling.txt);
+🔧 Installing {InstallName}  
+   📦 Your device will automatically complete  
+   the installation and configuration.
+
+🔄 Updating Coral...
+
+⚠️ Do not turn off your device!
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textupdate/setupinstalling.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textupdate/setupmainpage.txt);
+🛠️ {InstallName} Setup
+
+👋 Welcome to Coral
+📋 What do you want to do?
+
+   1. Cancel Setup  
+   2. Update Coral (save all my data)  
+   3. Update Coral (clean setup)
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textupdate/setupmainpage.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textupdate/setupselectconfirm_alldata.txt);
+🛠️ {InstallName} Setup
+
+📋 Please confirm these install options:
+
+   📁 Install Volume : {SetupVolume}  
+   🖥️ SYSTEM         : {InstallName}  
+   💾 Save All Data
+
+📦 Old system will be moved to ➡️ Coral.old
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textupdate/setupselectconfirm_alldata.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/sources/textupdate/setupselectconfirm_clean.txt);
+🛠️ {InstallName} Setup
+
+📋 Please confirm these install options:
+
+   📁 Install Volume : {SetupVolume}  
+   🖥️ SYSTEM         : {InstallName}  
+   🧹 Clean Setup
+
+📦 Old system will be moved to ➡️ Coral.old
+
+$CSTP_FILE_RECORD_MARK_ID_END(/sources/textupdate/setupselectconfirm_clean.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/support/EULA.txt);
+foxaxu_dev_lab Software End User License Agreement (EULA)
+Effective Date: May 11, 2025
+Copyright 2025 foxaxu_dev_lab
+
+This End User License Agreement ("EULA") is a legal agreement between you (either an individual or a single entity) and foxaxu_dev_lab for the software product identified above ("Software"). By installing, copying, or otherwise using the Software, you agree to be bound by the terms of this agreement.
+
+1. License Grant
+1.1 foxaxu_dev_lab grants you a limited, non-exclusive, non-transferable, revocable license to use the Software for your personal or internal business purposes.
+
+1.2 You may not:
+
+Copy, modify, or create derivative works of the Software
+
+Distribute, sublicense, lease, rent, or sell the Software
+
+Reverse engineer, decompile, or disassemble the Software
+
+Remove any proprietary notices or labels
+
+2. Open Source Components
+2.1 If the Software contains open-source components, such components are governed by their respective open-source licenses.
+
+2.2 Your use of open-source components must comply with all applicable open-source license terms.
+
+3. Community Contributions
+3.1 foxaxu_dev_lab welcomes contributions to its open-source projects ("Projects") from community members.
+
+3.2 Contributions to Projects are subject to separate contribution agreements.
+
+3.3 foxaxu_dev_lab makes no commitment to provide ongoing maintenance or support for any Project.
+
+4. Distribution Restrictions
+4.1 You may not redistribute the Software or its installation media to third parties without express written permission.
+
+4.2 Pre-release or beta versions ("Beta Software") are provided for testing purposes only and should not be used in production environments.
+
+5. Disclaimer of Warranties
+5.1 THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+5.2 foxaxu_dev_lab does not warrant that the Software will meet your requirements or that its operation will be uninterrupted or error-free.
+
+6. Limitation of Liability
+6.1 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL foxaxu_dev_lab BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE.
+
+7. Termination
+7.1 This EULA is effective until terminated. Your rights under this license will terminate automatically without notice if you fail to comply with any term(s).
+
+7.2 Upon termination, you must cease all use of the Software and destroy all copies in your possession.
+
+8. General Provisions
+8.1 This EULA constitutes the entire agreement between you and foxaxu_dev_lab regarding the Software.
+
+8.2 If any provision of this EULA is held to be unenforceable, the remaining provisions will remain in full force and effect.
+
+8.3 For more information about this EULA or the Software, please visit: [https://devlab.foxaxu.com/sources/natvc/eula.txt]
+
+9. Acceptance
+BY INSTALLING OR USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT INSTALL OR USE THE SOFTWARE.
+$CSTP_FILE_RECORD_MARK_ID_END(/support/EULA.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/support/OfficalWebsite.txt);
+FOR MORE HELP
+VISIT https://www.foxaxu.com/contact
+
+$CSTP_FILE_RECORD_MARK_ID_END(/support/OfficalWebsite.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/support/Personal.txt);
+Natvc Personal
+THIS LICENSE FOR NATVC PERSONAL USERS
+
+We authorize you to use this system anywhere,
+but we do not guarantee any stability. 
+You are responsible for any consequences caused by this system.
+
+Natvc is a simulation platform system built by FDL based on Calcium. 
+This project is managed and maintained by FDL, and Calcium also belongs to FDL, 
+which is responsible for its maintenance and development.
+
+
+Copyright Info:
+
+FoxaXu Dev Lab (FDL) Copyright 2024 - 2025
+FoxaXu Copyright 2024
+
+//Other Copyright
+Calcium Project (FoxaXu) 2024 - 2025
+Biato Core System Emulate Based Core (FDL) 2024 - 2025
+$CSTP_FILE_RECORD_MARK_ID_END(/support/Personal.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/support/uselib.txt);
+Natvc is a system written in the Calcium language. 
+Writing Natvc requires the use of some libraries. 
+For ease of maintenance, this directory will list all the libraries used.
+
+Some software packages may not be directly included in Natvc, 
+but auxiliary components use these libraries.
+
+==============Used Library========================
+
+By FDL & FoxaXu:
+Calcium Project (FoxaXu)  --Based Language &Run Core
+Biato Core (FDL)  --Based Emulate System underlying kernel
+NetVdisk Manager Core (FDL)  --For emulate virtual disk on local folder
+
+By Community:
+Natvc System Developer Tookit  --Dev and test system
+"Open Natvc Setup Media" Create Tools  --Make System setup Media
+Calcium Enhanced Tools for Natvc  --Drivers for Natvc
+
+By Third-Party Toolkit:
+Windows Batch Script(Microsoft)   --Manage system file
+Natvc NTFS&FAT32 Driver (FDL)  --For Compatible Windows Path Directory.
+Windows URLDownloadFiles (urlmon.dll) API  --For download file from internet on Windows
+LibCurl (curl.h) API  --For download file from internet on Windows&Linux(unix)
+
+Server Provider:
+Github Pages  --Services for Natvc Network services URL : https://fdl-cds.dev.foxaxu.com
+Local Nginx Server  --Services for Natvc Network services URL : https://dev.foxaxu.com
+$CSTP_FILE_RECORD_MARK_ID_END(/support/uselib.txt);
