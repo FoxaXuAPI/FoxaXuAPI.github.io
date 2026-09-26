@@ -1,0 +1,4374 @@
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/autodeploy.ca);
+_$directmode;
+
+_file_write "[%time%][MDP] Modern Deployment Service Start";
+
+_clear;
+_var {update_title} = "Installing Coral";
+_typefile "{SYS_NROOT}/res/natvc-bootupdate.txt";
+_ms_sleep "300";
+
+_if(!_file_exist "{NATVC_DISK}/$InstallSource/deployconf.cfg")|_goto :ErrorP1;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg DeployDrivers;
+_file_write "[%time%][MDP] DeployDrivers Status :  {tempargs}";
+_if(_cp(_sipcfg DeployDrivers,"true"))|_file_write "[%time%][MDP] Modern Deployment:  DRIVERS";
+_if(_cp(_sipcfg DeployDrivers,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/drivers.ca">;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg DeployStartupScript;
+_file_write "[%time%][MDP] DeployStartupScript Status :  {tempargs}";
+_if(_cp(_sipcfg DeployStartupScript,"true"))|_file_write "[%time%][MDP] Modern Deployment:  Startup Settings";
+_if(_cp(_sipcfg DeployStartupScript,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/startupTask.ca">;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg DeployEOF_Apps;
+_file_write "[%time%][MDP] DeployEOF_Apps Status :  {tempargs}";
+_if(_cp(_sipcfg DeployEOF_Apps,"true"))|_file_write "[%time%][MDP] Modern Deployment:  End of life Apps";
+_if(_cp(_sipcfg DeployEOF_Apps,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/eof_apps.ca">;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg DeployCSU;
+_file_write "[%time%][MDP] DeployCSU Status :  {tempargs}";
+_if(_cp(_sipcfg DeployCSU,"true"))|_file_write "[%time%][MDP] Modern Deployment:  CSU Service";
+_if(_cp(_sipcfg DeployCSU,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/csuinstaller.ca">;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg DeploySystemSDK;
+_file_write "[%time%][MDP] DeploySystemSDK Status :  {tempargs}";
+_if(_cp(_sipcfg DeploySystemSDK,"true"))|_file_write "[%time%][MDP] Modern Deployment:  System SDK";
+_if(_cp(_sipcfg DeploySystemSDK,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/sdk.ca">;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg DeployForceSettings;
+_file_write "[%time%][MDP] DeployForceSettings Status :  {tempargs}";
+_if(_cp(_sipcfg DeployForceSettings,"true"))|_file_write "[%time%][MDP] Modern Deployment:  Force Settings";
+_if(_cp(_sipcfg DeployForceSettings,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/settings.ca">;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg DeployModernApps;
+_file_write "[%time%][MDP] DeployModernApps Status :  {tempargs}";
+_if(_cp(_sipcfg DeployModernApps,"true"))|_file_write "[%time%][MDP] Modern Deployment:  Modern Apps";
+_if(_cp(_sipcfg DeployModernApps,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/modernapps.ca">;
+
+_sipcfg.open "{NATVC_DISK}/$InstallSource/deployconf.cfg";
+_var {tempargs} = _sipcfg InstallDebugTookit;
+_file_write "[%time%][MDP] InstallDebugTookit Status :  {tempargs}";
+_if(_cp(_sipcfg InstallDebugTookit,"true"))|_file_write "[%time%][MDP] Modern Deployment:  InstallDebugTookit";
+_if(_cp(_sipcfg InstallDebugTookit,"true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/debugtookit.ca">;
+
+//If Debugmode is true
+_if(_cp("{EnableNatvcDebugReport}","true"))|_file_write "[%time%][MDP] DebugMode is Enabled. force install debugtookit";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_script <"{NATVC_DISK}/$InstallSource/Deployment/debugtookit.ca">;
+
+_file_write "[%time%][MDP] Modern Deployment Service Stop";
+
+_return "ok";
+
+
+:ErrorP1;
+_clear;
+_cout "Modern Deploy Error    -missing resource";
+_cout "Missing deployconf.cfg";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/autodeploy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/deployconf.cfg);
+//Coral Deploy Config file
+
+//Default
+$DeployDrivers=true;
+$DeployModernApps=true;
+$DeployStartupScript=true;
+$DeployCSU=true;
+
+//Option
+$DeployEOF_Apps=false;
+$DeploySystemSDK=false;
+$DeployForceSettings=false;
+$InstallDebugTookit=false;
+
+$RegisterKey={varspace.null};
+$CSTP_FILE_RECORD_MARK_ID_END(/deployconf.cfg);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/csuinstaller.ca);
+_$directmode;
+//_sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
+//_var {tempargs} = _sipcfg BootOptions;
+//_sipcfg BootOptions = "{tempargs},debugmode";
+
+_script <"{SYS_NROOT}/UMM/add-package.ca"> "{NATVC_DISK}/$InstallSource/Source/CSU_SERVICE.CSTP";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/csuinstaller.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/debugtookit.ca);
+_$directmode;
+//_sipcfg.open "{BootVolume}/nbf/{BootDefaultOption}";
+//_var {tempargs} = _sipcfg BootOptions;
+//_sipcfg BootOptions = "{tempargs},debugmode";
+
+_script <"{SYS_NROOT}/UMM/add-package.ca"> "{NATVC_DISK}/$InstallSource/Source/devtools.cstp";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/debugtookit.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/drivers.ca);
+_$directmode;
+_dir_make "{SYS_NROOT}/drivers";
+_var {XCOPY_A} = "{NATVC_DISK}/$InstallSource/SystemAddedDrivers";
+_var {XCOPY_B} = "{SYS_NROOT}/drivers";
+_script <"{SYS_ROOT}/xcopy.ca">;
+
+_return "done";
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/drivers.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/eof_apps.ca);
+_$directmode;
+
+_var {XCOPY_A} = "{NATVC_DISK}/$InstallSource/EOF_Apps";
+_var {XCOPY_B} = "{SYS_ROOT}";
+_script <"{SYS_ROOT}/xcopy.ca">;
+
+_return "done";
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/eof_apps.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/modernapps.ca);
+_$directmode;
+_$nolog;
+
+_cout "";
+_cout "Deploying ModernApps";
+
+_var {IntLoad_ForMNA_R} = "1";
+
+//Add New Package list files
+_file_del "{NATVC_CONFIG}/mnalist";
+
+_dir_list ("{NATVC_CONFIG}/mnalist","{NATVC_DISK}/$InstallSource/ModernAppsPreinstall");
+
+
+:MNARESETRESCAN;
+_var {ReadCache} = _file_read ("{NATVC_CONFIG}/mnalist","{IntLoad_ForMNA_R}");
+
+_if(_cp("{ReadCache}","FileNotExist"))|_goto :FailAddsPkgList;
+
+_if(_cp("{ReadCache}","overline")) | _goto :MNARESETRESCAN_OK;
+
+//Verify
+_file_write "[MA Deploy] Restore Package :  {ReadCache}";
+
+_cout "";
+_cout "Deploying... {IntLoad_ForMNA_R}    Please wait";
+
+_if(!_file_exist "{ReadCache}")|_goto :MNA_NullPackRestore;
+
+_script <"{SYS_NROOT}/mnacore/install.ca"> "{ReadCache}";
+
+
+:BACKCTRESTORE;
+
+_var {IntLoad_ForMNA_R} = _+("{IntLoad_ForMNA_R}","1");
+_goto :MNARESETRESCAN;
+
+:MNARESETRESCAN_OK;
+//complete MNA Restore
+_cout "All Modern App Deploy Complete..";
+_file_del "{NATVC_CONFIG}/mnalist";
+_return "ok";
+
+:FailAddsPkgList;
+_cout "";
+_cout "App cannot installed because package list is missing";
+_cout "";
+_return "ok";
+
+:MNA_NullPackRestore;
+_cout "";
+_cout "App cannot be installed because package {ReadCache} not found";
+_goto :BACKCTRESTORE;
+
+//LL
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/modernapps.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/sdk.ca);
+_$directmode;
+
+_var {XCOPY_A} = "{NATVC_DISK}/$InstallSource/SDK";
+_var {XCOPY_B} = "{SYS_NROOT}/DevelopmentSDK";
+_script <"{SYS_ROOT}/xcopy.ca">;
+
+_return "done";
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/sdk.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/settings.ca);
+_$directmode;
+
+_var {XCOPY_A} = "{NATVC_DISK}/$InstallSource/Settings";
+_var {XCOPY_B} = "{SYS_NROOT}/config";
+_script <"{SYS_ROOT}/xcopy.ca">;
+
+_return "done";
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/settings.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Deployment/startupTask.ca);
+_$directmode;
+
+//Startup Task
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg DisableSysRepiar = "false";
+
+_return "ok"; // Not Responding restart / shutdown
+$CSTP_FILE_RECORD_MARK_ID_END(/Deployment/startupTask.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/bcdmgr.ca);
+//Coral Boot Manager Tools
+//Design By FoxaXu
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_clear;
+
+_var {ToolsName} = "bcdmgr.ca";
+
+
+//Load Main
+:BACKMAINCONSOLE;
+_clear;
+_cout "sysboot Boot Manager ({SYSNAME}.{SYS_KERNEL_VID})";
+_if(!_cp("$BVM_VOL_LOAD","boot"))|_cout "WARNING. this system not use sysboot to boot";
+_cout "@--------------------------------------------------------@";
+_cout "select mode ";
+_cout "1. Create New Bootloader on device";
+_cout "2. Edit old bootloader";
+_cout "3. Delete Boot Loader";
+_cout "";
+_if(_cp("$BVM_VOL_LOAD","boot"))|_cout "Current Load file :  {BootVolume}/sysboot/{BootDefaultOption}";
+_cout "use "bootopt" on explorer. to restart to sysboot Shell";
+_cout "use .exit close this tool";
+_cout "Copyright FoxaXu 2024 . Project NATVC";
+_cout "@--------------------------------------------------------@";
+_prts "select mode > ";
+_var {useropt} = _getline;
+_if(_cp("{useropt}","1"))|_goto :addblmode;
+_if(_cp("{useropt}","2"))|_goto :editblmode;
+_if(_cp("{useropt}","3"))|_goto :delblmode;
+_if(_cp("{useropt}",".exit"))|_return "ok";
+_goto :BACKMAINCONSOLE;
+
+
+
+:addblmode;
+_cout "Select System Disk";
+_prts "SYSDRV> ";
+_var {sysmaindrv} = _getline;
+_if(!_file_exist "{sysmaindrv}/Coral/System/ntvload.ca")|_goto :FailIndex;
+
+_cout "Set Load File Name";
+_prts "SYSDRV> ";
+_var {FileLoadName} = _getline;
+
+_cout "Please wait";
+
+_if(!_file_exist "$sys_def_disk/sysboot/bootmgr.ca")|_goto :NewBootloader;
+
+:BackCONADD;
+
+_file_copy("{SYS_NROOT}/sysboot/nbf-Temple","$sys_def_disk/sysboot/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/sysboot/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
+_sipcfg ospath = "Coral";
+_sipcfg osload = "Coral/System/ntvload.ca";
+
+_var {GetBootSign} = _script<"{sysmaindrv}/Coral/System/ntvload.ca"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
+_sipcfg.open "$sys_def_disk/sysboot/boot";
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.ca';
+_sipcfg DefaultOption = "{FileLoadName}";
+
+_cout "Complete";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:NewBootloader;
+
+_dir_remove "$sys_def_disk/sysboot";
+
+_dir_make "$sys_def_disk/sysboot";
+_dir_make "$sys_def_disk/sysboot/nbf";
+_dir_make "$sys_def_disk/sysboot/res";
+
+_file_copy ("{SYS_NROOT}/sysboot/boot","$sys_def_disk/sysboot/boot");
+_file_copy ("{SYS_NROOT}/sysboot/bootmgr.ca","$sys_def_disk/sysboot/bootmgr.ca");
+
+_file_copy ("{SYS_NROOT}/sysboot/res/bootfail.txt","$sys_def_disk/sysboot/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/filelost.txt","$sys_def_disk/sysboot/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/sysboot/res/nbfshell.txt","$sys_def_disk/sysboot/res/nbfshell.txt");
+
+_goto :BackCONADD;
+
+
+
+
+:editblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/boot")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_goto :BACKMAINCONSOLE; 
+
+
+:delblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/boot")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+
+_if(_cp("{BootVolume}/sysboot/{BootDefaultOption}","{RegOpenFile}"))|_goto :DEF_WARNING;
+
+:ApplyDeleteBL;
+_file_del "{RegOpenFile}";
+_goto :BACKMAINCONSOLE; 
+
+
+//ErrPage
+:FailIndex;
+_cout "This Disk is invalid System. bcdmgr.ca cannot create a boot loader for this system";
+_cout "Error : No load file on {bootloaderdrv}/boot";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:FailIndex2;
+_cout "This Disk is invalid boot data. bcdmgr.ca cannot Edit sysboot on here";
+_cout "Error :  No sysboot CONFIG on {bootloaderdrv}/nbf/{FileLoadName}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:FAIL_DISALLOW;
+_cout "Use Admin open this tools";
+_cout "bcdmgr.ca.ca";
+_return "fails";
+
+:DEF_WARNING;
+_cout "WARNING :  This boot loader is system now using boot load file";
+_cout "           If you delete this boot file, Your device won't boot";
+_cout "type y to Continue";
+_prts "y/n (default n)>";
+_var {DEFW_N} = _getline;
+
+_if(_cp("{DEFW_N}","y"))|_goto :ApplyDeleteBL;
+
+_goto :BACKMAINCONSOLE; 
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/bcdmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/envset.ca);
+_$directmode;
+_$nolog;
+
+//Type Env
+:BackMainET;
+_clear;
+_file_open "{SYS_LOG}";
+_cout "Environment Set Tool":
+_cout "Type you want set System Environment";
+_prt "Type Env>";
+_var {GetEnvTyper} = _getline;
+_if(_cp("{GetEnvTyper}","exit"))|_return "ok";
+_cout "";
+_cout "Type you want set value";
+_prt "Type Value>";
+_var {SetEnvTyper} = _getline;
+_if(_cp("{SetEnvTyper}","exit"))|_return "ok";
+
+_file_del "{temp}/envsetTemp.ca";
+_file_open "{temp}/envsetTemp.ca";
+_file_write "_var {GetEnvTyper} = "{SetEnvTyper}"; ";
+_file_write "_return "ok"; ";
+
+_script <"{temp}/envsetTemp.ca">;
+
+_cout "Env:   {GetEnvTyper} = {SetEnvTyper}";
+_free {GetEnvTyper};
+_free {SetEnvTyper};
+_pause;
+_file_del "{temp}/envsetTemp.ca";
+
+_goto :BackMainET;
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/envset.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/envtype.ca);
+_$directmode;
+_$nolog;
+
+//Type Env
+:BackMainET;
+_clear;
+_file_open "{SYS_LOG}";
+_cout "Environment Type Tool":
+_cout "Type you want check System Environment";
+_prt "Type Env>";
+_var {GetEnvTyper} = _getline;
+
+_if(_cp("{GetEnvTyper}","exit"))|_return "ok";
+
+_var {Filiter_Env} = "{GetEnvTyper}";
+
+_file_del "{temp}/envtypeTemp.ca";
+_file_open "{temp}/envtypeTemp.ca";
+_file_write "_return "{GetEnvTyper}";";
+
+_var {GetEnvTyper} = _script <"{temp}/envtypeTemp.ca">;
+_file_del "{temp}/envtypeTemp.ca";
+
+_cout "Env:   {Filiter_Env} = {GetEnvTyper}";
+_pause;
+_goto :BackMainET;
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/envtype.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/filemgr.ca);
+//Coral File Manager
+//Use _file_pack /  _file_unpack / _file_exist / _file_del / _file_copy / _dir_exist / _dir_make / _dir_remove / _dir_make  Exist API 
+_$directmode;
+_$nolog;
+
+_$req_cl_fmv 1502;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_var {ToolsName} = "FILEMGR";
+
+_var {FileExpAddr} = "$sys_def_disk";
+
+
+:MainFileExplorer;
+_clear;
+_cout "";
+_cout "Natvc File Manager ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "----File Explorer -------------------------------";
+_cout "{FileExpAddr}";
+_cout "-------------------------------------------------";
+_cout "type folder or select file ." 
+_cout "use #make - to make dir ,use .exit to close file manager";
+_prts "$FileExp >";
+_var {UserExplorerConsole} = _getline;
+_if(_dir_exist "{UserExplorerConsole}")|_goto :FolderMode;
+_if(_file_exist "{UserExplorerConsole}")|_goto :FileMode;
+_if(_cp("{UserExplorerConsole}","#make"))|_goto :MakeFolder;
+_if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_goto :MainFileExplorer;
+
+
+
+:FolderMode;
+_cout "";
+_cout "Select Remove(type "r") or Cancel(Enter)"; 
+_prts "${UserExplorerConsole} >";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_if(_cp("{UserSelectMode}","r"))|_dir_remove "{UserExplorerConsole}";
+_goto :MainFileExplorer;
+
+
+
+:FileMode;
+_cout "";
+_cout "Select Remove(type "r") or Rename(n) or Copy(c) . Cancel (Enter)";
+_prts "${UserExplorerConsole} - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_if(_cp("{UserSelectMode}","r"))|_file_del "{UserExplorerConsole}";
+_if(_cp("{UserSelectMode}","n"))|_goto :FileMode_ReName;
+_if(_cp("{UserSelectMode}","c"))|_goto :FileMode_Copy;
+_goto :MainFileExplorer;
+
+
+
+:FileMode_ReName;
+_cout "";
+_cout "New Name (TypeFullPath) >";
+_prts "${UserExplorerConsole} - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_file_rename ("{UserExplorerConsole}","{UserSelectMode}");
+_goto :MainFileExplorer;
+
+
+
+:FileMode_Copy;
+_cout "";
+_cout "Copy Path and New Name >";
+_prts "${UserExplorerConsole} - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_file_rename ("{UserExplorerConsole}","{UserSelectMode}");
+_goto :MainFileExplorer;
+
+
+
+:MakeFolder;
+_cout "";
+_cout "Make New Folder >";
+_prts "Path - ";
+_var {UserSelectMode} = _getline;
+_if(_cp("{UserSelectMode}",".exit"))|_goto :MainFileExplorer;
+_dir_make "{UserSelectMode}";
+_goto :MainFileExplorer;
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC File Manager";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/filemgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/filepack.ca);
+//Coral File Pack Tools
+//Use _file_pack /  _file_unpack / _file_exist / _file_del  Exist API 
+//Extract or PackFile
+_$directmode;
+_$nolog;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_var {ToolsName} = "FILEPACK";
+
+
+
+:MainFileExplorer;
+_clear;
+_cout "Natvc File Pack Tools ({SYSNAME}.{SYS_KERNEL_VID})";
+_cout "----File Pack and Extract tools--------------";
+_cout "";
+_cout "    1. Extract Mode";
+_cout "    2. Pack Files";
+_cout "";
+_cout " Legacy Format will not support on future";
+_cout " Copyright foxaxu 2024";
+_cout "---------------------------------------------";
+_cout "select mode . (use .exit cancel)" 
+_prts "$FilePack >";
+_var {UserExplorerConsole} = _getline;
+
+_if(_cp("{UserExplorerConsole}","1"))|_goto :ExtractMode;
+_if(_cp("{UserExplorerConsole}","2"))|_goto :PackFileMode;
+_if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_goto :MainFileExplorer;
+
+
+
+:ExtractMode;
+_cout "Extract File.   Select File (use .exit cancel)";
+_prts "$FilePack >";
+_var {packfile} = _getline;
+_if(_cp("{packfile}",".exit")) |_goto :MainFileExplorer;
+_if(!_file_exist "{packfile}")  |_goto :ExtractMode;
+
+_prts "$Extract Directory >";
+_var {extractdir} = _getline;
+_if(_cp("{extractdir}",".exit")) |_goto :MainFileExplorer;
+
+_dir_remove "{extractdir}";
+_file_unpack ("{packfile}","{extractdir}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+
+
+:PackFileMode;
+_cout "Pack File.   Select Dir";
+_prts "$Dir >";
+_var {extractdir} = _getline;
+_if(_cp("{extractdir}",".exit")) |_goto :MainFileExplorer;
+
+_if(!_dir_exist "{extractdir}")   |_goto :PackFileMode;
+
+_prts "$Pack File Name >";
+_var {packfile} = _getline;
+_if(_cp("{packfile}",".exit")) |_goto :MainFileExplorer;
+
+_dir_remove "{packfile}";
+_file_pack ("{extractdir}","{packfile}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+//ERRPAGE
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC FILE PACK";
+_cout "For system security reasons, current users cannot run User Settings";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter ...";
+_pause;
+_return "user_noauth";
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/filepack.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/nbfmgr.ca);
+//Coral Boot Manager Tools
+//Design By FoxaXu
+_$directmode;
+_$nolog;
+_$no_err_report;
+
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :FAIL_DISALLOW;
+
+_clear;
+
+_var {ToolsName} = "NBFMGR";
+
+
+//Load Main
+:BACKMAINCONSOLE;
+_clear;
+_cout "NBF Boot Manager ({SYSNAME}.{SYS_KERNEL_VID})";
+_if(!_cp("$BVM_VOL_LOAD","nbfload"))|_cout "WARNING. this system not use NBF to boot";
+_cout "@--------------------------------------------------------@";
+_cout "select mode ";
+_cout "1. Create New Bootloader on device";
+_cout "2. Edit old bootloader";
+_cout "3. Delete Boot Loader";
+_cout "";
+_if(_cp("$BVM_VOL_LOAD","nbfload"))|_cout "Current Load file :  {BootVolume}/nbf/{BootDefaultOption}";
+_cout "use "bootopt" on explorer. to restart to NBF Shell";
+_cout "use .exit close this tool";
+_cout "Copyright FoxaXu 2024 . Project NATVC";
+_cout "@--------------------------------------------------------@";
+_prts "select mode > ";
+_var {useropt} = _getline;
+_if(_cp("{useropt}","1"))|_goto :addblmode;
+_if(_cp("{useropt}","2"))|_goto :editblmode;
+_if(_cp("{useropt}","3"))|_goto :delblmode;
+_if(_cp("{useropt}",".exit"))|_return "ok";
+_goto :BACKMAINCONSOLE;
+
+
+
+:addblmode;
+_cout "Select System Disk";
+_prts "SYSDRV> ";
+_var {sysmaindrv} = _getline;
+_if(!_file_exist "{sysmaindrv}/Coral/System/ntvload.nbf")|_goto :FailIndex;
+
+_cout "Set Load File Name";
+_prts "SYSDRV> ";
+_var {FileLoadName} = _getline;
+
+_cout "Please wait";
+
+_if(!_file_exist "$sys_def_disk/nbf/bootmgr.nbf")|_goto :NewBootloader;
+
+:BackCONADD;
+
+_file_copy("{SYS_NROOT}/nbf/NBF-Temple","$sys_def_disk/nbf/nbf/{FileLoadName}");
+
+_sipcfg.open "$sys_def_disk/nbf/nbf/{FileLoadName}";
+_sipcfg osvol = "{sysmaindrv}";
+_sipcfg ospath = "Coral";
+_sipcfg osload = "Coral/System/ntvload.nbf";
+
+_var {GetBootSign} = _script<"{sysmaindrv}/Coral/System/ntvload.nbf"> "getsign";
+
+_sipcfg bootsign = "{GetBootSign}";
+
+_sipcfg.open "$sys_def_disk/nbf/nbfload";
+_sipcfg DefaultLoader = '{BootVolume}/bootmgr.nbf';
+_sipcfg DefaultOption = "{FileLoadName}";
+
+_cout "Complete";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:NewBootloader;
+
+_dir_remove "$sys_def_disk/nbf";
+
+_dir_make "$sys_def_disk/nbf";
+_dir_make "$sys_def_disk/nbf/nbf";
+_dir_make "$sys_def_disk/nbf/res";
+
+_file_copy ("{SYS_NROOT}/nbf/nbfload","$sys_def_disk/nbf/nbfload");
+_file_copy ("{SYS_NROOT}/nbf/bootmgr.nbf","$sys_def_disk/nbf/bootmgr.nbf");
+
+_file_copy ("{SYS_NROOT}/nbf/res/bootfail.txt","$sys_def_disk/nbf/res/bootfail.txt");
+_file_copy ("{SYS_NROOT}/nbf/res/filelost.txt","$sys_def_disk/nbf/res/filelost.txt");
+_file_copy ("{SYS_NROOT}/nbf/res/nbfshell.txt","$sys_def_disk/nbf/res/nbfshell.txt");
+
+_goto :BackCONADD;
+
+
+
+
+:editblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_goto :BACKMAINCONSOLE; 
+
+
+:delblmode;
+_cout "Select Boot Disk";
+_prts "Default open current system bootloader .  select boot Disk> ";
+_var {bootloaderdrv} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbfload")|_goto :FailIndex;
+
+_prts "Select boot load file> ";
+_var {FileLoadName} = _getline;
+_if(!_file_exist "{bootloaderdrv}/nbf/{FileLoadName}")|_goto :FailIndex2;
+
+_var {RegOpenFile} = "{bootloaderdrv}/nbf/{FileLoadName}";
+
+_if(_cp("{BootVolume}/nbf/{BootDefaultOption}","{RegOpenFile}"))|_goto :DEF_WARNING;
+
+:ApplyDeleteBL;
+_file_del "{RegOpenFile}";
+_goto :BACKMAINCONSOLE; 
+
+
+//ErrPage
+:FailIndex;
+_cout "This Disk is invalid System. nbfmgr cannot create a boot loader for this system";
+_cout "Error : No load file on {bootloaderdrv}/nbfload";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:FailIndex2;
+_cout "This Disk is invalid boot data. nbfmgr cannot Edit NBF on here";
+_cout "Error :  No NBF CONFIG {bootloaderdrv}/nbf/{FileLoadName} ";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:FAIL_DISALLOW;
+_cout "Use Admin open this tools";
+_cout "nbfmgr.ca";
+_return "fails";
+
+:DEF_WARNING;
+_cout "WARNING :  This boot loader is system now using boot load file";
+_cout "           If you delete this boot file, Your device won't boot";
+_cout "type y to Continue";
+_prts "y/n (default n)>";
+_var {DEFW_N} = _getline;
+
+_if(_cp("{DEFW_N}","y"))|_goto :ApplyDeleteBL;
+
+_goto :BACKMAINCONSOLE; 
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/nbfmgr.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/setautologin.ca);
+_$directmode;
+
+_clear;
+_cout "Type current user password";
+_cout "USER :   {NATVC_WHOIS}";
+_cout "No password please don`t type .press enter";
+
+_var {UserType} = _getline;
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg default = "{NATVC_WHOIS}";
+
+_if(_cp("{UserType}","{varspace.null}"))|_sipcfg defaultPassword = "@";
+_if(!_cp("{UserType}","{varspace.null}"))|_sipcfg defaultPassword = "{UserType}";
+
+_clear;
+_cout "Auto login config complete";
+_cout "Restart your device to verify this user auto login";
+_pause;
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/setautologin.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/EOF_Apps/setimagedebug.ca);
+_$directmode;
+
+//CHECK STATUS
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {UserType} = _sipcfg EnableNatvcDebugReport;
+
+_cout "Current Debug status is {UserType}";
+_cout "Do you want switch debug mode? (y/n)";
+_if(_cp(_getline,"y"))|_goto :ApplyMode;
+_return "cancel";
+
+:ApplyMode;
+_if(_cp("{UserType}","false"))|_sipcfg EnableNatvcDebugReport = "true";
+_if(_cp("{UserType}","true"))|_sipcfg EnableNatvcDebugReport = "false";
+_cout "Complete";
+_sleep "2";
+_return "restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/EOF_Apps/setimagedebug.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/modernappreset.ca);
+_$directmode;
+
+_script <"{SYS_ROOT}/mnareset.ca"> "uninstallforce";
+
+_file_open "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_file_write "_cover <"{NATVC_DISK}/$InstallSource/Deployment/modernapps.ca">;";
+_file_open "{SYS_LOG}";
+
+_return "restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/modernappreset.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/CoralModern.FileExplorer.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_free {SelectFolderMode};
+_free {SelectFileMode};
+_cover <"{AppDir}/Coral.SystemFileManager.Modern.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral.SystemFileManager.Modern.ca);
+_$directmode;
+_$nolog;
+
+//Explorer Main
+
+_sipcfg.open "{NATVC_USERPROFILE}/userconfig";
+_if(_cp(_sipcfg noexplorer,"true"))|_goto :FailStartupFileExplorer_ConfigBlocked;
+
+//Load Cache File Map
+_var {ToolsName} = "EXPLORER";
+
+_var {EXPLORER_WORK_DIR} = _getargs;
+
+//Load Default Maps
+_file_write "[File Explorer] Argument {EXPLORER_WORK_DIR}";
+_if(_cp("{EXPLORER_WORK_DIR}","$choosefile"))|_var {SelectFileMode} = "true";
+_if(_cp("{EXPLORER_WORK_DIR}","$choosefolder"))|_var {SelectFolderMode} = "true";
+_if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
+
+_var {USE_NUM_SELECT_FOLDER} = "0";
+_if(_file_exist "{NATVC_USERPROFILE}/USE_NUM_SELECT_FOLDER")|_var {USE_NUM_SELECT_FOLDER} = "1";
+
+_free {EXPLORER_WORK_DIR_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST};
+_free {EXPLORER_WORK_DIR_LAST_LAST_LAST};
+
+//Open File Manager
+//CONSOLE
+
+_var {CopyFileName_Cache} = "{noselect_files}";
+_var {CopyFileNameTag_Cache} = "{ORGNAMEDIR}";
+_var {CopyFileDelete_Cache} = "0";
+
+_var {CopyDirName_Cache} = "{noselect_files}";
+_var {CopyDirNameTag_Cache} = "{ORGNAMEDIR}";
+_var {CopyDirDelete_Cache} = "0";
+
+_var {EXPLORER_WORK_DIR_LAST} = "{nolastdir}";
+_var {EXPLORER_WORK_DIR_LAST_LAST} = "{nolastdir}";
+_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{nolastdir}";
+
+:RELOADCONSOLE;
+_var {NumTarget} = "0";
+_file_del "{temp}/Explorer_cacheList.txt";
+_if(!_dir_exist "{EXPLORER_WORK_DIR}")|_var {EXPLORER_WORK_DIR} = "script/vdisk";
+_clear;
+_if(_cp("{SelectFolderMode}","true"))|_cout "##Choose folder to apply";
+_if(_cp("{SelectFileMode}","true"))|_cout "##Choose file to apply";
+_cout "#---- File Explorer -------------------------------------------";
+_cout "| DIR:  {EXPLORER_WORK_DIR}";
+_cout "---------------------------------------------------------------";
+_file_list ("{temp}/Explorer_cacheList.txt","{EXPLORER_WORK_DIR}");
+_file_replace "{temp}/Explorer_cacheList.txt" ("{EXPLORER_WORK_DIR}/","");
+_if(_file_exist "{temp}/Explorer_cacheList.txt")|_textprint "{temp}/Explorer_cacheList.txt";
+_if(!_file_exist "{temp}/Explorer_cacheList.txt")|_cout "        No File at here";
+_cout "---------------------------------------------------------------";
+_cout "type dir name to opendir,type file name to edit file";
+_cout "command :   "rmdir"  "mkdir"  "cpdir" "cutdir" "cd"  "paste"  "exit"  ";
+_if(_cp("{SelectFolderMode}","true"))|_cout "Type 'apply' to select this folder";
+_if(_cp("{USE_NUM_SELECT_FOLDER}","1"))|_cout "Number Select Folder/File is Enabled. You can type number to select";
+_cout "";
+_prt "Explorer >";
+_var {UserTypeGet} = _getline;
+//Process User Command
+:ReProcessCommand
+//_cout "Recyclic {UserTypeGet}";
+//_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","LineError"))|_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","FileNotExist"))|_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","{varspace.null}"))|_cout "Refresh Explorer";
+_if(_cp("{UserTypeGet}","{varspace.null}"))|_ms_sleep "100";
+_if(_cp("{UserTypeGet}","{varspace.null}"))|_goto :RELOADCONSOLE;
+_if(_cp("{UserTypeGet}","ntsh"))|_goto :OpenNtshConsole;
+_if(_cp("{UserTypeGet}","apply"))|_goto :ApplyFeedbackFolder;
+
+_if(_cp("{UserTypeGet}",".."))|_goto :GotoLastDIR;
+_if(_cp("{UserTypeGet}","..."))|_var {EXPLORER_WORK_DIR} = "{NODIR}";
+_if(_cp("{UserTypeGet}","rmdir"))|_goto :RemoveDir;
+_if(_cp("{UserTypeGet}","mkdir"))|_goto :MakeDir;
+_if(_cp("{UserTypeGet}","cpdir"))|_goto :CopyDirMD;
+_if(_cp("{UserTypeGet}","cutdir"))|_goto :CutDirMD;
+_if(_cp("{UserTypeGet}","cd"))|_goto :CdDir;
+_if(_cp("{UserTypeGet}","debug.levelprint"))|_goto :DEBUG_LVPTR;
+//paste
+_if(_cp("{UserTypeGet}","paste"))|_goto :PasteFileOrDir;
+
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST}";
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST}";
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR_LAST} = "{EXPLORER_WORK_DIR}";
+_if(_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_var {EXPLORER_WORK_DIR} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+
+_if(_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :FileEdit_Manager;
+
+
+_if(_cp("{UserTypeGet}","exit"))|_return "ok";
+_if(_cp("{UserTypeGet}",".exit"))|_return "ok";
+
+_if(_cp("{USE_NUM_SELECT_FOLDER}","0"))|_goto :RELOADCONSOLE;
+
+_if(_cp("{UserTypeGet}","overline"))|_goto :RELOADCONSOLE;
+
+//Is Num
+_if (_cp("{NumTarget}","1"))|_goto :RELOADCONSOLE;
+_var {NumTarget} = "1";
+_var {UserTypeGet} = _file_read ("{temp}/Explorer_cacheList.txt","{UserTypeGet}");
+_goto :ReProcessCommand;
+
+
+_goto :Explorer_Crash;
+
+
+
+:Explorer_Crash;
+_clear;
+_cout "Coral Explorer Error. stop working";
+_cout "File Operate failed":
+_pause;
+_return "crash";
+
+
+:CopyDirMD;
+_cout "";
+_cout "Type Dir you want Copy";
+_prt "Copy Dir>";
+_var {UserTypeGet} = _getline;
+
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_cout "No This dir";
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_pause;
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
+
+_var {CopyDirName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_var {CopyDirNameTag_Cache} = "{UserTypeGet}";
+_var {CopyDirDelete_Cache} = "0";
+
+_var {CopyFileName_Cache} = "{noselect_files}";
+_var {CopyFileNameTag_Cache} = "{ORGNAMEDIR}";
+_var {CopyFileDelete_Cache} = "0";
+
+_goto :RELOADCONSOLE;
+
+
+:CopyDirMD;
+_cout "";
+_cout "Type Dir you want Cut";
+_prt "Cut Dir>";
+_var {UserTypeGet} = _getline;
+
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_cout "No This dir";
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_pause;
+_if(!_dir_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
+
+_var {CopyDirName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_var {CopyDirNameTag_Cache} = "{UserTypeGet}";
+_var {CopyDirDelete_Cache} = "1";
+
+_goto :RELOADCONSOLE;
+
+
+
+
+:GotoLastDIR;
+_var {EXPLORER_WORK_DIR} = "{EXPLORER_WORK_DIR_LAST}";
+_var {EXPLORER_WORK_DIR_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST}";
+_var {EXPLORER_WORK_DIR_LAST_LAST} = "{EXPLORER_WORK_DIR_LAST_LAST_LAST}";
+_var {EXPLORER_WORK_DIR_LAST_LAST_LAST} = "{nolastdir}";
+_goto :RELOADCONSOLE;
+
+:RemoveDir;
+_cout "";
+_cout "Type Dir you want remove";
+_prt "Remove Dir>";
+_var {UserTypeGet} = _getline;
+_dir_remove "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_goto :RELOADCONSOLE;
+
+:MakeDir;
+_cout "";
+_cout "Type Dir you want Make";
+_prt "Make Dir>";
+_var {UserTypeGet} = _getline;
+_dir_make "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_goto :RELOADCONSOLE;
+
+:CdDir;
+_cout "";
+_cout "Type Dir";
+_prt "Dir>";
+_var {UserTypeGet} = _getline;
+_var {EXPLORER_WORK_DIR} = "{UserTypeGet}";
+_goto :RELOADCONSOLE;
+
+
+:FileEdit_Manager;
+_cout "";
+_cout "What do you want do";
+_cout "File {EXPLORER_WORK_DIR}/{UserTypeGet}";
+_cout "command :  "copy" "del" "cut" "open"  "exit"   ";
+_if(_cp("{SelectFileMode}","true"))|_cout "Type 'apply' to select this file";
+_prt "file>";
+_var {GETOPT} = _getline;
+_if(_cp("{GETOPT}","apply"))|_goto :ApplyFeedbackFile;
+_if(_cp("{GETOPT}","copy"))|_var {CopyFileName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_if(_cp("{GETOPT}","copy"))|_var {CopyFileNameTag_Cache} = "{UserTypeGet}";
+_if(_cp("{GETOPT}","copy"))|_var {CopyFileDelete_Cache} = "0";
+
+_if(_cp("{GETOPT}","copy"))|_var {CopyDirName_Cache} = "{noselect_files}";
+_if(_cp("{GETOPT}","copy"))|_var {CopyDirDelete_Cache} = "0";
+
+_if(_cp("{GETOPT}","copy"))|_cout "file is copy. use "paste" command to paste here  ";
+
+_if(_cp("{GETOPT}","del"))|_goto :delMode;
+
+_if(_cp("{GETOPT}","cut"))|_var {CopyFileName_Cache} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_if(_cp("{GETOPT}","cut"))|_var {CopyFileNameTag_Cache} = "{UserTypeGet}";
+_if(_cp("{GETOPT}","cut"))|_var {CopyFileDelete_Cache} = "1";
+
+_if(_cp("{GETOPT}","cut"))|_var {CopyDirName_Cache} = "{noselect_files}";
+_if(_cp("{GETOPT}","cut"))|_var {CopyDirDelete_Cache} = "0";
+
+_if(_cp("{GETOPT}","cut"))|_cout "file is cut. use "paste" command to paste here  ";
+
+_if(_cp("{GETOPT}","open"))|_goto :OpenFileForOpeate;
+
+_goto :RELOADCONSOLE;
+
+
+
+
+
+:delMode;
+_file_del "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_if(!_file_exist "{EXPLORER_WORK_DIR}/{UserTypeGet}")|_goto :RELOADCONSOLE;
+_cout "Delete Fail";
+_cout "This file is using ?.  or you haven`t auth to delete this file";
+_pause;
+_goto :RELOADCONSOLE;
+
+
+
+:OpenFileForOpeate;
+
+
+//Check EXP is allow?
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{UserTypeGet}";
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :FailLoadProgram;
+
+
+_clear;
+_cout "How do you want open this file";
+_cout "File :   {EXPLORER_WORK_DIR}/{UserTypeGet}";
+_cout "";
+_cout "     1. Run Calcium Application"; //OK
+_cout "     2. Open with Text reader";  //OK
+_cout "     3. Open with Config Editor";  //OK
+_cout "     4. Exit";
+_prt "Select Open Method >";
+_var {OpenMethod} = _getline;
+
+_var {ROOTSHELL_CALLBACK} = "Null";
+_var {rs_pathexec} = "{EXPLORER_WORK_DIR}";
+
+_if(_cp("{OpenMethod}","1"))|_var {ROOTSHELL_CALLBACK} = _script <"{SYS_ROOT}/run.ca"> "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+
+_if(_cp("{OpenMethod}","2"))|_script <"{SYS_ROOT}/textreader.ca"> "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+
+_if(_cp("{OpenMethod}","3"))|_goto :RunRegeditProMode;
+
+_if(_cp("{ROOTSHELL_CALLBACK}","user_shutdown"))|_return "user_shutdown";
+_if(_cp("{ROOTSHELL_CALLBACK}","user_restart"))|_return "user_restart";
+_if(_cp("{ROOTSHELL_CALLBACK}","user_logoff"))|_return "user_logoff";
+_if(_cp("{ROOTSHELL_CALLBACK}","shutdown"))|_return "user_shutdown";
+_if(_cp("{ROOTSHELL_CALLBACK}","restart"))|_return "user_restart";
+_if(_cp("{ROOTSHELL_CALLBACK}","logoff"))|_return "user_logoff";
+
+_if(_cp("{ROOTSHELL_CALLBACK}","notworkonusermode"))|_cout "This Application cannot running on User Mode";
+_if(_cp("{ROOTSHELL_CALLBACK}","noauth"))|_cout "This Application cannot running in current user";
+_if(_cp("{ROOTSHELL_CALLBACK}","failuserauth"))|_cout "This Application cannot running in current user";
+
+_if(!_cp("{ROOTSHELL_CALLBACK}","Null"))|_pause;
+
+_goto :RELOADCONSOLE;
+
+
+
+:FailLoadProgram;
+_cout "For System Security. your device is not allowed run this program";
+_pause;
+_goto :RELOADCONSOLE;
+
+:RunRegeditProMode;
+_if(_cp("{NATVC_isAdmin}","0"))|_goto :NotAlloweEdit;
+_var {RegOpenFile} = "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+_script <"{SYS_ROOT}/confedit.ca"> "openedit";
+_goto :RELOADCONSOLE;
+
+
+:NotAlloweEdit;
+_clear;
+_cout "Open Editor Require System Administrator";
+_pause;
+_goto :RELOADCONSOLE;
+
+:PasteFileOrDir;
+_if(!_cp("{CopyDirName_Cache}","{noselect_files}"))|_goto :CopyDirMode;
+_if(!_cp("{CopyFileName_Cache}","{noselect_files}"))|_goto :CopyFileMode;
+_cout "No File/Dir on Paste Board";
+_pause
+_goto :RELOADCONSOLE;
+
+:CopyDirMode;
+_var {XCOPY_A} = "{CopyDirName_Cache}";
+_var {XCOPY_B} = "{EXPLORER_WORK_DIR}/{CopyDirNameTag_Cache}";
+_script <"{SYS_ROOT}/xcopy.ca">;
+_free {XCOPY_A};
+_free {XCOPY_B};
+
+_if(_cp("{CopyDirDelete_Cache}","1"))|_dir_remove "{CopyDirName_Cache}";
+
+
+_goto :RELOADCONSOLE;
+
+
+
+:CopyFileMode;
+_file_copy ("{CopyFileName_Cache}","{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}");
+_if(_cp("{CopyFileDelete_Cache}","1"))|_file_del "{CopyFileName_Cache}";
+
+_if(!_file_exist "{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}")|_cout "Copy Fail..";
+_if(!_file_exist "{EXPLORER_WORK_DIR}/{CopyFileNameTag_Cache}")|_pause;
+
+_goto :RELOADCONSOLE;
+
+:OpenNtshConsole;
+_clear;
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_cout "failed to detect nativeshell core Application";
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_pause;
+_if(!_file_exist "{SYS_ROOT}/nativeshell.ca")|_goto :RELOADCONSOLE;
+_script <"{SYS_ROOT}/nativeshell.ca"> "{EXPLORER_WORK_DIR}";
+_goto :RELOADCONSOLE;
+
+:DEBUG_LVPTR;
+_clear;
+_cout "Top :   {EXPLORER_WORK_DIR}";
+_cout "2   :   {EXPLORER_WORK_DIR_LAST}";
+_cout "3   :   {EXPLORER_WORK_DIR_LAST_LAST}";
+_cout "4   :   {EXPLORER_WORK_DIR_LAST_LAST_LAST}";
+_cout "Debug Toolkit";
+_pause;
+_goto :RELOADCONSOLE;
+
+
+:FailStartupFileExplorer_ConfigBlocked;
+_clear;
+_cout "File Explorer.  Error";
+_cout "Security Reason.";
+_cout "The Local Security had Blocked File Explorer";
+_cout "Explorer Cannot startup";
+_pause;
+_return "false";
+
+
+:ApplyFeedbackFolder;
+_var {SelectFolderMode} = "false";
+_free {SelectFolderMode};
+_return "{EXPLORER_WORK_DIR}";
+
+:ApplyFeedbackFile;
+_var {SelectFileMode} = "false";
+_free {SelectFileMode};
+_return "{EXPLORER_WORK_DIR}/{UserTypeGet}";
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral.SystemFileManager.Modern.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Coral File Explorer;
+$Setup=CoralModern.FileExplorer.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=10079;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$ID=unknown_package_no_id_4157609;
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/CoralModern.FileExplorer.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/CoralModern.LogonUser.InterfaceHost.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/LogonUI.ca">;
+_cout "";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/LogonUI.ca);
+
+// NATVC User Experience
+// Default UI or LogonUI
+_$directmode;
+_$nolog;
+
+//Execute
+
+_var {ToolsName} = "Logon Interface";
+
+_file_write "[%time%][Logon Interface] Start.";
+
+_var {ntvue.logontime} = _getclock;
+_var {ntvue.logondate} = _getdate;
+
+_if(_file_exist "{SYS_NROOT}/SystemResources/memcollect/startup_clear.ca")|_script <"{SYS_NROOT}/SystemResources/memcollect/startup_clear.ca">;
+
+_if(_cp("{ReCreateImage}","true"))|_goto :ReCreateImage;
+:BackCreateImage;
+
+//Default Disabled
+_if(!_file_exist "{NATVC_USERPROFILE}/EnabledLogonImageCheck")|_goto :DisabledLImageCheck;
+_if(!_file_cp("{SYS_ROOT}/ntvue.ca","{SYS_NROOT}/RepairData/SystemImage/ntvue.ca"))|_goto :CrashNTVueErr;
+//Compare File full
+
+:DisabledLImageCheck;
+
+_if(!_cp("{NATVC_isAdmin}","2"))|_return "failuserauth";
+_if(!_file_exist "{NATVC_USERPROFILE}/LogonUI.txt")|_return "failuserauth";
+_file_write "[%time%][Logon Interface] Boot Safe Mode :  {boot_rsmode}";
+_if(_cp("{boot_rsmode}","true"))|_goto :O_ROOTSHELL;
+
+//Try Save Natvc Fast Boot Dump File
+_if(_file_exist "{NATVC_DISK}/hiberfile.txt")|_goto :SkipLoadFSL;
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {OSLoad_UseFastBoot} = _sipcfg FastBoot;
+_if(!_cp("{OSLoad_UseFastBoot}","1"))|_goto :SkipLoadAllFSB;
+
+_file_write "[%time%][UserExperience] System is trying Save Hiberfile for next startup fast boot";
+
+_var {SysLocker} = "false";
+_if(!_cp("{IsSystemRunningOnSafeMode}","1"))|_envsave "{NATVC_DISK}/hiberfile.txt";
+_var {SysLocker} = "true";
+
+_file_write "[%time%][UserExperience] File Dump on {NATVC_DISK}/hiberfile.txt";
+
+:SkipLoadFSL;
+_file_write "[%time%][UserExperience] Fast boot is OK";
+_var {Next_startup_fast_boot} = "1";
+_goto :Load_Main_UserExperience;
+
+:SkipLoadAllFSB;
+_file_write "[%time%][UserExperience] Fast boot is Disabled on system settings";
+_var {Next_startup_fast_boot} = "-1";
+_goto :Load_Main_UserExperience;
+
+
+:Load_Main_UserExperience;
+//Load Main
+
+_file_write "[%time%][UserExperience] Load Logon Interface";
+
+_sipcfg.open "{SYS_NROOT}/Themes/NtvueThemes.txt";
+
+_var {NTVUE_AD_1} = _sipcfg TitleA;
+_var {NTVUE_AD_2} = _sipcfg TitleB;
+_var {NTVUE_AD_3} = _sipcfg TitleC;
+
+_clear;
+
+//DETECT OOBE
+
+_file_write "[%time%][Logon Interface] Check this system oobe";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp(_sipcfg oobe,"1")) | _goto :startOOBEuser;
+
+_if(_cp("{IsAutoLogin}","false"))|_goto :SkipDetectAL;
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_var {sys_autologin} = _sipcfg default;
+_var {sys_autologin_prepswd} = _sipcfg defaultPassword;
+_if(!_cp("{sys_autologin}","@"))| _goto :AutoLoginUserA;
+
+:SkipDetectAL;
+
+:BACKMAINTEXT;
+//GET LOGON THEMES
+_var {ntvue.logontime} = _getclock;
+_var {ntvue.logondate} = _getdate;
+
+_var {USER_REQ_LOGON} = "{NULLUSER}";
+_clear
+_typefile "{SYS_NROOT}/res/natvc-ntvue.txt";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "You are using test system!";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_BASE_VID}";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+_file_write "[%time%][Logon Interface] Wait User Operation";
+_prt "Type User Name>";
+_var {USER_REQ_LOGON} = _getline;
+_if(_cp("{USER_REQ_LOGON}","@debug.currentuser"))|_goto :List_CurrentUserStatus;
+_if(_cp("{USER_REQ_LOGON}","restart"))|_goto :UE_RESTART_API;
+_if(_cp("{USER_REQ_LOGON}","shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{USER_REQ_LOGON}",'{varspace.null}'))|_goto :NE_ERR_NOTTYPE;
+_if(_cp("{USER_REQ_LOGON}",".re"))|_goto :GORECOVERY;
+
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_var {Next_startup_fast_boot} = "-1";
+_if(_cp("{USER_REQ_LOGON}","@shutdown"))|_goto :UE_SHUTDOWN_API;
+
+:AutoLoginUserLoadM;
+
+//BLOCK Illegal Request
+_if(_cp("{USER_REQ_LOGON}","SYSTEM"))|_goto :USERFAIL_NOUSER;
+_if(_cp("{USER_REQ_LOGON}","default"))|_goto :USERFAIL_NOUSER;
+_if(_cp("{USER_REQ_LOGON}","FILECHECK"))|_goto :USERFAIL_NOUSER;
+//END
+
+_file_write "[%time%][Logon Interface] Run User Service...";
+
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-loggin.txt";
+
+//Check user is exist ?
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_var {NATVC_USERPROFILE} = _sipcfg {USER_REQ_LOGON};
+
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Load User Service";
+
+_if(_cp("{NATVC_USERPROFILE}",'{varspace.null}')) | _goto :USERFAIL_NOUSER;
+
+_if(_cp("{NoGUIBootOpt}","1"))| _goto :SkipPlayLogonANI;
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{USER_REQ_LOGON}.nuslc")|_script <"{SYS_ROOT}/ntvani.ca">;
+:SkipPlayLogonANI;
+
+_file_write "[%time%][Logon Interface] Load System User";
+_if(_cp("{NoGUIBootOpt}","1"))|_cout "Waitting User Service";
+  //_cout "Waitting User Service";
+_var {NATVC_isAdmin} = "2";
+_if(!_cp("{sys_autologin_prepswd}","@"))|_var {PRE_AUTOENTRY_PASSWORD} = "{sys_autologin_prepswd}";
+_if(!_cp("{sys_autologin_prepswd}","@"))|_var {sys_autologin_prepswd} = "@";
+_var {USER_UE_CALLBACK} = _script <"{NATVC_USERSVC}"> "{USER_REQ_LOGON}";
+
+_if(_cp("{USER_UE_CALLBACK}","loginfail"))|_goto :BACKMAINTEXT;
+
+_file_write "[%time%][Logon Interface] User logoff with argument :  {USER_UE_CALLBACK}";
+
+_if(_cp("{USER_UE_CALLBACK}","reload_SYSTEM"))|_goto :UE_LOGOFF_API;
+_if(_cp("{USER_UE_CALLBACK}","logoff"))|_goto :UE_LOGOFF_API;
+_if(_cp("{USER_UE_CALLBACK}","user_logoff"))|_goto :UE_LOGOFF_API;
+_if(_cp("{USER_UE_CALLBACK}","user_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{USER_UE_CALLBACK}","user_restart"))|_goto :UE_RESTART_API;
+_if(_cp("{USER_UE_CALLBACK}","user_hiber"))|_goto :HiberClose;
+_if(_cp("{USER_UE_CALLBACK}","ok"))|_goto :UE_LOGOFF_API;
+
+_return "{USER_UE_CALLBACK}";
+
+
+//TEXTPRINT
+:ReloadSystemUser;
+_file_write "[%time%][Logon Interface] Reload System User";
+
+_clear;
+
+
+_var {NATVC_REQ_LOGIN} = "SYSTEM";
+
+_return "relogin";
+
+
+:AutoLoginUserA;
+_var {USER_REQ_LOGON} = _sipcfg default;
+_file_write "[%time%][Logon Interface] Config Autologin User :  {USER_REQ_LOGON}";
+_var {IsAutoLogin} = "false";
+_goto :AutoLoginUserLoadM;
+
+
+:O_ROOTSHELL;
+//OPEN ROOT SHELL
+_file_write "[%time%][Logon Interface] Startup as safemode (rootshell)";
+_clear;
+_cout "{SYSNAME} {NATVC_EDITION}.  CodeName : {SYS_KERNEL_CODENAME}";
+_cout "Version :  {SYSNAME}.{SYS_KERNEL_VID}   Build :  {SYS_RELEASE_Channel}";
+_cout "This system is booting in safe mode - Boot firmware :  {BootMethod}";
+_sleep 5;
+
+
+_file_write "[%time%][Logon Interface] Set Auto Execute Program";
+
+//_var {NATVC_EXPLORER} = {NATVC_ROOTSHELL};
+_var {boot_rsmode} = "false";
+_var {IsSystemRunningOnSafeMode} = "1";
+_var {DEF_Title} = "NATVC SafeMode";
+_var {IsAutoLogin} = "false";
+
+_file_del "{NATVC_DISK}/hiberfile.txt";
+
+_goto :BACKMAINTEXT;
+
+
+:ShellMissing;
+_file_write "[%time%][Logon Interface][Error] Fail load rootshell ";
+_clear;
+_cout "NATVC User Experience";
+_cout "Fail Load Root Shell {NATVC_ROOTSHELL}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Please use normal boot to login";
+_pause;
+_if(_cp("{NATVC_WHOIS}","SYSTEM"))|_return "$shutdown";
+_if(_cp("{NATVC_WHOIS}","SystemShell"))|_return "$shutdown";
+_if(_cp("{NATVC_WHOIS}","LOCAL_SERVICE"))|_return "$shutdown";
+_file_write "[%time%][Logon Interface] System Closed";
+_return "$shutdown";
+
+
+:UE_LOGOFF_API;
+_if(_cp("{NATVC_DisableUser}","1"))|_goto :ReloadSystemUser;
+_var {USER_REQ_LOGON} = "{NATVC_WHOIS}";
+_clear
+_file_write "[%time%][UserExperience] UserSvc Callback : user_logoff";
+_clear;
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc")|_typefile "{SYS_NROOT}/res/natvc-ntvue-logoff.txt";
+_if(!_file_exist "{SYS_NROOT}/SECURITY/{NATVC_WHOIS}.nuslc")|_script <"{SYS_ROOT}/ntvani.ca">;
+_clear;
+_goto :ReloadSystemUser;
+
+:UE_RESTART_API;
+_clear;
+_file_write "[%time%][UserExperience] UserSvc Callback : user_restart";
+_if(_cp("{boot_rsmode}","true")) | _goto :UE_WAIT_RESTART_API;
+//Check Shutdown Execute
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(!_cp(_sipcfg shutdown_execute,"noexec")) | _goto :startUpdater;
+
+:BackRestartMode;
+
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-restart.txt";
+_script <"{SYS_ROOT}/ntvani.ca"> "1";
+_if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_RESTART_API_SECURE;
+_return "$reboot";
+
+:UE_WAIT_RESTART_API;
+_clear;
+_file_write "[%time%][UserExperience] UserSvc Callback : user_restart / wait_screen";
+_typefile "{SYS_NROOT}/res/natvc-ntvue-wait.txt";
+_sleep 1;
+_if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_RESTART_API_SECURE;
+_return "$reboot";
+
+
+:UE_RESTART_API_SECURE;
+_file_write "[%time%][UserExperience] Secure Shutdown Report.";
+_clear;
+_cout "Now. Press any Key to Restart. All Application is closed. (Secure Shutdown)";
+_pause;
+_file_write "[%time%][UserExperience] System Restart.";
+_return "$reboot";
+
+:UE_SHUTDOWN_API;
+_file_write "[%time%][UserExperience] UserSvc Callback : user_shutdown";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-shutdown.txt";
+_if(_cp("{Next_startup_fast_boot}","-1"))|_script <"{SYS_ROOT}/ntvani.ca"> "1";
+_if(_cp("{NATVC_SHUTDOWN_SECURE}","1")) | _goto :UE_SHUTDOWN_API_SECURE;
+_file_write "[%time%][UserExperience] System Shutdown";
+_return "$shutdown";
+
+:UE_SHUTDOWN_API_SECURE;
+_file_write "[%time%][UserExperience] Secure Shutdown Report.";
+_clear;
+_cout "Now. You can close this Device. All Application is closed. (Secure Shutdown)";
+_pause;
+_return "$shutdown";
+
+
+:HiberClose;
+_file_write "[%time%][UserExperience] System Load Hiber Mode";
+_file_write "[%time%][UserExperience] Make VarSpace Snapshot.";
+_envsave "{NATVC_DISK}/hiberfile.txt";
+_file_write "[%time%][UserExperience] Save Snapshot on {NATVC_DISK}/hiberfile.txt";
+_sipcfg.open "script/hiberdata";
+_sipcfg hiberfile = "{NATVC_DISK}/hiberfile.txt";
+_file_write "@ [%time%][SYSTEM] System is HiberMode on %fulltime%";
+_return "$hiber";
+
+
+//ERRPAGE
+:NE_ERR_NOAUTH;
+_clear;
+_file_write "[%time%][UserExperience][Error] Forbidden Run this service";
+_cout "NATVC User Experience";
+_cout "This User is not allowed run this service";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Please try to reboot and restart";
+_pause;
+_if(_cp("{NATVC_WHOIS}","SYSTEM"))|_return "$shutdown";
+_goto :ReloadSystemUser;
+
+:NE_ERR_NOTALLOW;
+_file_write "[%time%][UserExperience][Error] Report : NotAllow";
+_clear;
+_cout "NATVC User Experience";
+_cout "This User is not allowed logon.  User Name : "{USER_REQ_LOGON}". ";
+_cout "Your sign-in request was intercepted";
+_cout "Press Enter key to back";
+_pause;
+_goto :BACKMAINTEXT;
+
+:NE_ERR_NOTTYPE;
+_file_write "[%time%][UserExperience][Error] No Type Detected";
+_var {USER_REQ_LOGON} = "NOT SELECT";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-notype.txt";
+_pause;
+_goto :BACKMAINTEXT;
+
+
+//OOBE MANAGER
+:startOOBEuser;
+//Load System Deploy
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {Natvc_Deploy_Program} = _sipcfg SystemDeploy;
+_if(!_file_exist "{Natvc_Deploy_Program}")|_goto :FailDetectDeployProg;
+
+_var {Deploy_callback} = _script <"{Natvc_Deploy_Program}">;
+
+
+_if(_cp("{Deploy_callback}","oobe_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{Deploy_callback}","oobe_recovery"))|_goto :GORECOVERY;
+_if(_cp("{Deploy_callback}","user_shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{Deploy_callback}","user_restart"))|_goto :UE_RESTART_API;
+_if(_cp("{Deploy_callback}","shutdown"))|_goto :UE_SHUTDOWN_API;
+_if(_cp("{Deploy_callback}","restart"))|_goto :UE_RESTART_API;
+
+_file_write "[%time%][UserExperience][Report] Deploy Service Exit,  Status Code :  {Deploy_callback}";
+
+_clear;
+_goto :ReloadSystemUser;
+
+:FailDetectDeployProg;
+_file_write "[%time%][UserExperience][Error] Deploy Service Failed :  {Natvc_Deploy_Program}";
+_clear;
+_cout "Natvc Setup Could not continue";
+_cout "System Deploy Program is missing or unable load";
+_cout "try to reinstall natvc or use third party software deploy natvc";
+_cout "ERROR :  DEPLOY_ERROR_EXECUTE";
+_pause;
+_return "$reboot";
+
+
+//Update API
+:startUpdater;
+_file_write "[%time%][UserExperience] System has a Update need install";
+_var {ReCreateImage} = "true";
+//Get Update Execute File
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {update_execute} = _sipcfg shutdown_execute;
+_var {update_title} = _sipcfg shutdown_exe_title;
+
+//restore default
+_sipcfg shutdown_exe_title = "Please Wait. Prepare Update";
+_sipcfg shutdown_execute = "noexec";
+
+_file_write "[%time%][UserExperience][Update] Execute File :  {update_execute}";
+_file_write "[%time%][UserExperience][Update] Check File Exist if not back restart";
+
+_if(!_file_exist "{update_execute}")|_goto :BackRestartMode;
+_file_write "[%time%][UserExperience][Update] Start Update File :  {update_execute}";
+_file_write "[%time%][UserExperience][Update] Title :  {update_title}";
+
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-updater.txt";
+
+_file_write "[%time%][UserExperience][Update] Starting Update";
+
+_var {update_callback} = _script<"{update_execute}"> "autoupdate";
+
+_file_write "[%time%][UserExperience][Update] Update End";
+_file_write "[%time%][UserExperience][Update] Status :  {update_callback}";
+
+//Back Restart
+_goto :BackRestartMode;
+
+
+:ReCreateImage;
+_var {ReCreateImage} = "false";
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_script <"{SYS_ROOT}/sysfix.ca"> "new";
+_goto :BackCreateImage;
+
+
+:CrashNTVueErr;
+_file_write "[%time%][UserExperience][Error] Unexpected terminate .. ";
+_var {BUG_REPORT} = "ntvue.ca";
+_var {NATVC_CRASH_CODE} = "NTVUE_FATAL_ERROR";
+_var {NATVC_CRASH_MESSAGE} = "Ntvue Service unexpected exit ,  try use sysfix to repair your system";
+_return "device_crash";
+
+:USERFAIL_NOUSER;
+_file_write "[%time%][UserExperience][Error] Fail load user. user not exist";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-ntvue-nouser.txt"
+_pause;
+_goto :BACKMAINTEXT;
+
+
+
+
+//Recovery Init
+:GORECOVERY;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :NORENOTICE;
+
+_script <"{SYS_ROOT}/ntvrebl.ca">;
+_clear;
+_cout "Restarting to Recovery";
+_return "user_restart";
+
+:NORENOTICE;
+_clear;
+_cout "System no recovery environment";
+_cout "Please try to use "refix" to repair";
+_pause;
+_goto :BACKMAINTEXT;
+
+:List_CurrentUserStatus;
+_clear;
+_cout "System Login Interface Report";
+_cout "Current Login User";
+_cout "";
+_cout "UserName: {NATVC_USERNAME} ";
+_cout "Whois: {NATVC_WHOIS} ";
+_cout "UserProfile: {NATVC_USERPROFILE}  ";
+_cout "";
+_cout "isAdmin: {NATVC_isAdmin}      ";
+_cout "AutoRun: {NATVC_UserAutoRun}  ";
+_cout "Service Mode :  {NSV_SERVICE_MODE}";
+_cout "";
+_cout "LOCAL LOGON APPLICATION";
+_cout _getfile;
+_pause;
+_goto :BACKMAINTEXT;
+
+$CSTP_FILE_RECORD_MARK_ID_END(/LogonUI.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Coral Logon User Interface;
+$Setup=CoralModern.LogonUser.InterfaceHost.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=10101;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/CoralModern.LogonUser.InterfaceHost.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/CoralModern.NativeShell.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+
+_if(!_file_exist "{AppData}/NativeConf")|_file_copy ("{AppDir}/NativeConf_Temple","{AppData}/NativeConf");
+_if(!_dir_exist "{AppData}/CommandPrompt")|_file_uncstp ("{AppDir}/shell_modules.cstp","{AppData}/CommandPrompt");
+
+_file_write "[NativeShell_Logger] Start on {AppDir}/nativeshell.ca";
+_cover <"{AppDir}/nativeshell.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/NativeConf_Temple);
+//NativeShell Configuration
+$StartPath={SYS_ROOT};
+$SecondPath={SYS_ROOT}; //Deprecated
+$CommandPath={AppData}/CommandPrompt;/nativeshell;
+
+$FILECHECK=true;
+$CSTP_FILE_RECORD_MARK_ID_END(/NativeConf_Temple);
+$CSTP_FILE_RECORD_MARK_ID_START(/nativeshell.ca);
+_$directmode;
+_$nolog;
+
+
+//   _var {co_ramdisk_mgr.sourcefile} = "";
+//   _var {co_ramdisk_mgr.processname} = "";
+//   _var {co_ramdisk_mgr.argument} = "";
+
+//Data int
+
+_var {ntsh_version} = "2911";
+_var {ntsh_revision} = "3";
+
+//GET DIRECT 
+
+_var {RunArgs} = "NativeShell";
+
+//Load Config
+_if(!_file_exist "{AppData}/NativeConf") | _goto :FailConfig;
+_sipcfg.open "{AppData}/NativeConf";
+_var {StartPath} = _sipcfg StartPath;
+_var {SecondPath} = _sipcfg SecondPath;
+_var {CommandPath} = _sipcfg CommandPath;
+_clear;
+
+_var {CheckPREPath} = _getargs;
+_if(_dir_exist "{CheckPREPath}")|_var {StartPath} = "{CheckPREPath}";
+
+_var {rs_pathexec} = "{StartPath}";
+_if (!_dir_exist "{rs_pathexec}")|_cout "Config Error:  StartPath is not accessable. Reset to SYS_ROOT";
+_if (!_dir_exist "{rs_pathexec}")|_sipcfg StartPath = '{SYS_ROOT}';
+_if (!_dir_exist "{rs_pathexec}")|_var {rs_pathexec} = "{SYS_ROOT}";
+
+_if (!_dir_exist "{SecondPath}")|_cout "Config Error:  SecondPath is not accessable. Reset to SYS_ROOT";
+_if (!_dir_exist "{SecondPath}")|_sipcfg SecondPath = '{SYS_ROOT}';
+_if (!_dir_exist "{SecondPath}")|_var {SecondPath} = "{SYS_ROOT}";
+
+_if (!_dir_exist "{CommandPath}")|_cout "Config Error:  CommandPath is not accessable. Reset to {AppData}/CommandPrompt";
+_if (!_dir_exist "{CommandPath}")|_sipcfg CommandPath = '{AppData}/CommandPrompt';
+_if (!_dir_exist "{CommandPath}")|_var {CommandPath} = "{AppData}/CommandPrompt";
+
+
+
+//Main ntsh
+_cout "Coral NativeShell.  ";
+_cout "Copyright (C) FoxaXu_Dev_Lab .  All Rights Reserved.";
+:TypeNewShell;
+_cout "";
+_prt "NS {rs_pathexec}>";
+_var {ns_type} = _getline;
+_if(_cp("{ns_type}","exit"))|_return "ok";
+_if(_cp("{ns_type}","system"))|_goto :exec_system_commander;
+_if(_cp("{ns_type}","help"))|_goto :TypeNTSH_Helper;
+_if(_cp("{ns_type}","cd"))|_goto :PathSet;
+_if(_cp("{ns_type}","args"))|_goto :SetArgs;
+_if(_cp("{ns_type}","version"))|_goto :VersionINFO;
+_if(_cp("{ns_type}",'{varspace.null}'))|_goto :TypeNewShell;
+
+_if(_cp("{ns_type}","clear"))| _clear;
+_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
+
+_if(_cp("{ns_type}","clear"))| _clear;
+_if(_cp("{ns_type}","clear"))| _goto :TypeNewShell;
+
+//EXECUTE PROGRAM
+
+_var {ns_fnd_exec} = "{ns_type}";
+_if(_file_exist "{CommandPath}/{ns_fnd_exec}")|_goto :C_TYPESHELL_EXE;
+_if(_file_exist "{CommandPath}/{ns_fnd_exec}.ca")|_var {ns_fnd_exec} = "{ns_fnd_exec}.ca";
+_if(_file_exist "{CommandPath}/{ns_fnd_exec}")|_goto :C_TYPESHELL_EXE;
+
+_var {ShellExecuteOpen} = "{ns_type}";
+_var {ShellExecuteOpen_Args} = "{RunArgs}";
+
+_var {NRS_CALLBACK} = _loadlib <"{SYS_ROOT}/KernelAPI/CO_ShellExecute.clib"> "::ShellExecuteFiles";
+_if(_cp("{NativeShell_RSCode}","true"))|_cout "Exit with code :  {NRS_CALLBACK}";
+_if(!_cp("{NRS_CALLBACK}","filenotfound"))|_goto :TYPESHELL_EXE;
+
+_cout "";
+_cout "Cannot Explain Command or not found any exist Executable file";
+_cout "{ns_type} : is invaild";
+_goto :TypeNewShell;
+
+
+
+:TYPESHELL_EXE;
+_var {ns_exec_back} = "{NRS_CALLBACK}";
+_if(_cp("{ns_exec_back}","user_shutdown"))|_return "shutdown";
+_if(_cp("{ns_exec_back}","user_restart"))|_return "restart";
+_if(_cp("{ns_exec_back}","user_logoff"))|_return "logoff";
+_if(_cp("{ns_exec_back}","lock"))|_return "lock";
+_if(_cp("{ns_exec_back}","shutdown"))|_return "shutdown";
+_if(_cp("{ns_exec_back}","restart"))|_return "restart";
+_if(_cp("{ns_exec_back}","logoff"))|_return "logoff";
+
+_goto :TypeNewShell;
+
+:C_TYPESHELL_EXE;
+_var {ns_exec_back} = _script <"{CommandPath}/{ns_fnd_exec}"> "{RunArgs}";
+_if(_cp("{ns_exec_back}","user_shutdown"))|_return "shutdown";
+_if(_cp("{ns_exec_back}","user_restart"))|_return "restart";
+_if(_cp("{ns_exec_back}","user_logoff"))|_return "logoff";
+_if(_cp("{ns_exec_back}","lock"))|_return "lock";
+_if(_cp("{ns_exec_back}","shutdown"))|_return "shutdown";
+_if(_cp("{ns_exec_back}","restart"))|_return "restart";
+_if(_cp("{ns_exec_back}","logoff"))|_return "logoff";
+
+_goto :TypeNewShell;
+
+
+
+:PathSet;
+_prts "Set Directory>";
+_var {rs_pathexec_cache} = _getline;
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :TryAdvancedSet;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :TypeNewShell;
+
+:TryAdvancedSet;
+_var {rs_pathexec_cache} = "{rs_pathexec}/{rs_pathexec_cache}";
+_if(!_dir_exist "{rs_pathexec_cache}")|_goto :NULLPATHSET;
+_var {rs_pathexec} = "{rs_pathexec_cache}";
+_goto :TypeNewShell;
+
+
+:NULLPATHSET;
+_cout "Cannot found directory "{rs_pathexec_cache}" , this directory is not exist or acceess denind";
+_cout "Set Location Failed";
+_goto :TypeNewShell;
+
+
+:SetArgs;
+_prts "Type Execute Arguments >";
+_var {RunArgs} = _getline;
+_goto :TypeNewShell;
+
+
+:exec_system_commander;
+_cout "";
+_prt "{path}>";
+_var {TargetCommand} = _getline;
+_if(_cp("{TargetCommand}","exit"))|_goto :TypeNewShell;
+_system "{TargetCommand}";
+_pause;
+_goto :exec_system_commander;
+
+
+:TypeNTSH_Helper;
+//_cout "";
+_cout "Themes:";
+_cout "Coral NativeShell Help Center";
+_cout "";
+_cout "What is NativeShell:";
+_cout "NativeShell is a new shell console for Coral. to improve legacy console rootshell.";
+_cout "NativeShell support much new function. some function is some software was required";
+_cout "Thanks your support";
+_cout "";
+_cout "This Help Center cannot tell you how to use nativeshell. but you can view more info";
+_cout "on internet. open link https://www.foxaxu.top";
+_cout "NativeShell is new project. if you have some problem. report to us. hello@foxaxu.com";
+_cout "";
+_cout "Online Help";
+_cout "You can find some message on Developer FoxaXu. link:  https://www.foxaxu.top";
+_cout "Some command need you have administrator. make sure run nativeshell as administrator";
+_cout "Type 'All-Command' to list all nativeshell command ";
+_cout "";
+_pause;
+_cout "";
+_goto :TypeNewShell;
+
+
+:VersionINFO;
+_cout "";
+_cout "NativeShell Version";
+_cout "NTSH Version :   {ntsh_version}   (ModernApps)";
+_cout "REVISION:  {ntsh_revision}";
+_cout "";
+_cout "Work System";
+_cout "System :   {SYS_NAME} {SYSNAME}.{SYS_KERNEL_VID}";
+_cout "Code Name:  {SYS_KERNEL_CODENAME}";
+_cout "RC:  {SYS_RELEASE_Channel}";
+_cout "";
+_cout "User:{NATVC_WHOIS} ({NATVC_isAdmin})  Profile: {NATVC_USERPROFILE}";
+_cout "NativeShell Config file :   {AppData}/NativeConf";
+_goto :TypeNewShell;
+
+
+:FailConfig;
+_cout "Native Shell could not start";
+_cout "Config file is missing";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/nativeshell.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Package_new_CmdProp.ca);
+_$directmode;
+_file_del "{AppDir}/shell_modules.cstp";
+_pause;
+_cout "Making New packages";
+_file_cstp ("{AppData}/CommandPrompt","{AppDir}/shell_modules.cstp");
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Package_new_CmdProp.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Coral NativeShell Application;
+$Setup=CoralModern.NativeShell.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/Reset_CmdProp.ca);
+_$directmode;
+_dir_remove "{AppData}/CommandPrompt";
+_file_uncstp ("{AppDir}/shell_modules.cstp","{AppData}/CommandPrompt");
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Reset_CmdProp.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/shell_modules.cstp);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/All-Command.ca);
+_$directmode;
+_cout "Get All NativeShell Command";
+_script <"{SYS_ROOT}/ls.ca"> "{CommandPath}";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/All-Command.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CSU-CheckUpdate.ca);
+_$directmode;
+_if(!_dir_exist "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core")|_goto :FailedCSUModuleFound;
+_var {tempargs} = _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csucore.ca"> "checkupdate";
+
+_cout "CSU Status :  {tempargs}";
+_return "true";
+
+
+:FailedCSUModuleFound;
+_cout "CSU Not Installed";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CSU-CheckUpdate.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CSU-CleanUp.ca);
+_$directmode;
+_if(!_dir_exist "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core")|_goto :FailedCSUModuleFound;
+_var {tempargs} = _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csucore.ca"> "cleanup";
+
+_cout "CSU Status :  {tempargs}";
+_return "true";
+
+
+:FailedCSUModuleFound;
+_cout "CSU Not Installed";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CSU-CleanUp.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CSU-InstallUpdate.ca);
+_$directmode;
+_if(!_dir_exist "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core")|_goto :FailedCSUModuleFound;
+_var {tempargs} = _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csucore.ca"> "installupdate";
+
+_cout "CSU Status :  {tempargs}";
+_return "true";
+
+
+:FailedCSUModuleFound;
+_cout "CSU Not Installed";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CSU-InstallUpdate.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CSU-UpdateCancel.ca);
+_$directmode;
+_if(!_dir_exist "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core")|_goto :FailedCSUModuleFound;
+_var {tempargs} = _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csucore.ca"> "cancelupdate";
+
+_cout "CSU Status :  {tempargs}";
+_return "true";
+
+
+:FailedCSUModuleFound;
+_cout "CSU Not Installed";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CSU-UpdateCancel.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Disable-ResultCode.ca);
+_$directmode;
+_var {NativeShell_RSCode} = "false";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/Disable-ResultCode.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Enable-ResultCode.ca);
+_$directmode;
+_var {NativeShell_RSCode} = "true";
+_return "true";
+$CSTP_FILE_RECORD_MARK_ID_END(/Enable-ResultCode.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Get-Calcium.ca);
+_$directmode;
+//Native Shell Get Module
+_cout _getexec;
+_return _getexec;
+$CSTP_FILE_RECORD_MARK_ID_END(/Get-Calcium.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Get-CalciumProfile.ca);
+_$directmode;
+_clear;
+_cout "            $Calcium Settings";
+_textprint "{path}/calcium_settings.cfg";
+_cout "";
+_cout "       File address :  {path}/calcium_settings.cfg";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Get-CalciumProfile.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Get-ErrorLevel.ca);
+_$directmode;
+_cout "'{NRS_CALLBACK}'";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Get-ErrorLevel.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Get-PendingTask.ca);
+_$directmode;
+//Native Shell Get Module
+_cout "  $ System pending task";
+_cout "    Update Task";
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_prt "            Shutdown Execute:   ";
+_cout _sipcfg shutdown_execute;
+_prt "            Startup Execute:   ";
+_cout _sipcfg startup_execute;
+_cout "    Third party Task";
+
+_prt "            Restart Pending :   ";
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca")|_prt "TRUE";
+_if(!_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca")|_prt "FALSE";
+_cout "";
+
+_prt "            Startup Pending:   ";
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_prt "TRUE";
+_if(!_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_prt "FALSE";
+
+_cout "";
+_cout "";
+_prt "            Current User Auto Run:    ";
+_if(_file_exist "{NATVC_USERPROFILE}/autorun")|_prt "TRUE";
+_if(!_file_exist "{NATVC_USERPROFILE}/autorun")|_prt "FALSE";
+_cout "";
+_cout "";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/Get-PendingTask.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Get-Script.ca);
+_$directmode;
+//Native Shell Get Module
+_cout _getfile;
+_return _getfile;
+$CSTP_FILE_RECORD_MARK_ID_END(/Get-Script.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernApp-InstallPackage.ca);
+_$directmode;
+//ModernApp Package Manager
+_var {UserType} = _script <"{SYS_NROOT}/mnacore/install.ca">"{RunArgs}";
+_return "{UserType}";
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernApp-InstallPackage.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernApp-RemovePackage-Enforce.ca);
+_$directmode;
+//ModernApp Package Manager
+_var {UserType} = _script <"{SYS_NROOT}/mnacore/uninstallenf.ca">"{RunArgs}";
+_return "{UserType}";
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernApp-RemovePackage-Enforce.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernApp-RemovePackage.ca);
+_$directmode;
+//ModernApp Package Manager
+_var {UserType} = _script <"{SYS_NROOT}/mnacore/uninstall.ca">"{RunArgs}";
+_return "{UserType}";
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernApp-RemovePackage.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SL-EnterKey.ca);
+_$directmode;
+//EnterKey
+
+_cout "Type your activate key";
+_prt ">";
+_var {UserType} = _getline;
+
+_prt "Status :   ";
+_cout _script <"{SYS_ROOT}/reglic.ca"> "{UserType}";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SL-EnterKey.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SL-Refresh.ca);
+_$directmode;
+//Software license Refresh
+_var {UserType} = _script <"{SYS_ROOT}/services.ca"> "sppsvc";
+_var {SYS_ACT_STATUS} = "{UserType}";
+_cout "Refresh succeed";
+_prt "   Activate :  ";
+_if(_cp("{UserType}","true"))|_cout "TRUE";
+_if(!_cp("{UserType}","true"))|_cout "FALSE";
+_cout "";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SL-Refresh.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SL-RemoveLicense.ca);
+_$directmode;
+_script <"{SYS_ROOT}/slmgr.ca"> "remove-license"
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SL-RemoveLicense.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SL-Status.ca);
+_$directmode;
+//Software license status
+_var {UserType} = _script <"{SYS_ROOT}/services.ca"> "sppsvc";
+_var {SYS_ACT_STATUS} = "{UserType}";
+_cout "Software License Status";
+_cout "   {SYS_NAME} {SYS_PROD}({SYS_PROD_ID})";
+_prt "   Activate :  ";
+_if(_cp("{UserType}","true"))|_cout "TRUE";
+_if(!_cp("{UserType}","true"))|_cout "FALSE";
+_cout "";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SL-Status.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SL-UI.ca);
+_$directmode;
+_cover <"{SYS_ROOT}/slui.ca">;
+_cout "Invaild SLUI";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SL-UI.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SMT-Disable-KernelSecurityLevel.ca);
+_$directmode;
+//System Manager Tools
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg DisableKernelSecurityLevel = "true";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SMT-Disable-KernelSecurityLevel.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SMT-Disable-SystemRepair.ca);
+_$directmode;
+//System Manager Tools
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg DisableSysRepiar = "true";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SMT-Disable-SystemRepair.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SMT-Disable-SystemUserProtection.ca);
+_$directmode;
+//System Manager Tools
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg EnableSystemUserProtection = "false";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SMT-Disable-SystemUserProtection.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SMT-Enable-KernelSecurityLevel.ca);
+_$directmode;
+//System Manager Tools
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg DisableKernelSecurityLevel = "false";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SMT-Enable-KernelSecurityLevel.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SMT-Enable-SystemRepair.ca);
+_$directmode;
+//System Manager Tools
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg DisableSysRepiar = "false";
+_cout "Restart your device to create system image";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SMT-Enable-SystemRepair.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SMT-Enable-SystemUserProtection.ca);
+_$directmode;
+//System Manager Tools
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg EnableSystemUserProtection = "true";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SMT-Enable-SystemUserProtection.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SMT-Get.ca);
+_$directmode;
+//Native Shell Get Module
+_cout "  $ System Security Policy";
+_cout "    Security Function";
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+
+_cout "";
+
+_prt "            System User Protection (SUP):   ";
+_if(_cp(_sipcfg EnableSystemUserProtection;,"true"))|_cout "true";
+_if(_cp(_sipcfg EnableSystemUserProtection,"false"))|_cout "false";
+
+_cout "";
+
+_prt "            System Repair and Check (SRC):   ";
+_if(_cp(_sipcfg DisableSysRepiar;,"true"))|_cout "false";
+_if(_cp(_sipcfg DisableSysRepiar,"false"))|_cout "true";
+
+_cout "";
+_cout "System Security Policy";
+_cout "The output only indicates whether the security policy is enabled in the settings."; 
+_cout "To verify, please check the system logs.";
+_cout "";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SMT-Get.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/System-Report.ca);
+_$directmode;
+//Native Shell Get Module
+_cout "{SYS_NAME} {SYSNAME}";
+_cout "Current Tools :  {ToolsName}";
+_cout "User:  {NATVC_USERNAME} ({NATVC_WHOIS})";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/System-Report.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/User-Add.ca);
+_$directmode;
+
+_if(!_cp("{NATVC_isAdmin}","1"))|_goto :FAIL_DISALLOW;
+
+_cout "Type your New user name";
+_cout "This name code is use for login"
+_var {tempargs} = _getline;
+
+_if(_cp("{tempargs}","SYSTEM"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","Local_Driver_Security_User"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","admin"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","default"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","defaultPassword"))|_goto :USERFAIL_ACCESSDENIND;
+
+_sipcfg.open "{NATVC_CONFIG_USERS}"
+
+_var {NATVC_USERPROFILE} = _sipcfg {tempargs};
+
+_if(!_cp("{NATVC_USERPROFILE}",'{varspace.null}')) | _goto :USERFAIL_EXISTUSER;
+_free {NATVC_USERPROFILE};
+
+_var _ARGS_NU_ID = "{tempargs}";
+
+_cout "Type your full name";
+_cout "This name is use for display"
+_var _ARGS_NU_FULLNAME = _getline;
+
+_cout "Type your password ";
+_cout "login reqired. if not need. Press Enter";
+_var _ARGS_NU_PSWD = _getline;
+_if(_cp("_ARGS_NU_PSWD",'{varspace.null}')) | _var _ARGS_NU_PSWD = "@nopswd";
+
+_cout "Is this user is admin? ";
+_cout "Yes type 1. No type 0";
+_var _ARGS_NU_ADMIN = _getline;
+_if(_cp("_ARGS_NU_ADMIN","1"))|_goto :PASSTYPE;
+_if(_cp("_ARGS_NU_ADMIN","0"))|_goto :PASSTYPE;
+_goto :BadUserStatus;
+
+:PASSTYPE;
+_var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "newuser";
+_cout "Result: {umback}";
+_return "true";
+
+
+
+_var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+_cout "Delete {umback}";
+_return "true";
+
+:FAIL_DISALLOW;
+_cout "Admin Required!";
+_return "false";
+
+:USERFAIL_EXISTUSER;
+_cout "This user is exist!. cannot created!";
+_return "false";
+
+:USERFAIL_ACCESSDENIND;
+_cout "This users cannot be added. Because System Security has not allowed! ";
+_return "false";
+
+:BadUserStatus;
+_cout "Invaild Type User Admin level";
+_return "false";
+
+:VerifyFailed;
+_cout "Credential verification failed! Password wrong";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/User-Add.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/User-Delete.ca);
+_$directmode;
+
+_if(!_cp("{NATVC_isAdmin}","1"))|_goto :FAIL_DISALLOW;
+
+_cout "Select User to Delete";
+_cout "Type your userid"
+_var {tempargs} = _getline;
+
+_if(_cp("{tempargs}","SYSTEM"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","Local_Driver_Security_User"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","admin"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","default"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","defaultPassword"))|_goto :USERFAIL_ACCESSDENIND;
+
+_sipcfg.open "{NATVC_CONFIG_USERS}"
+
+_var {NATVC_USERPROFILE} = _sipcfg {tempargs};
+
+_if(_cp("{NATVC_USERPROFILE}",'{varspace.null}')) | _goto :USERFAIL_NOUSER;
+
+_var _ARGS_NU_ID = "{tempargs}";
+_var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+_cout "Delete {umback}";
+_return "true";
+
+:FAIL_DISALLOW;
+_cout "Admin Required!";
+_return "false";
+
+:USERFAIL_NOUSER;
+_cout "Cannot Found this user. ";
+_return "false";
+
+:USERFAIL_ACCESSDENIND;
+_cout "This users cannot managed. Because System Security has not allowed! ";
+_return "false";
+
+:BadUserStatus;
+_cout "This users cannot managed. Because Admin Disabled this user!. Enable this user first!";
+_return "false";
+
+:VerifyFailed;
+_cout "Credential verification failed! Password wrong";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/User-Delete.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/User-Reset-Password.ca);
+_$directmode;
+
+_cout "Select User to Reset Password";
+_cout "Type your userid"
+_var {tempargs} = _getline;
+
+_if(_cp("{tempargs}","{NATVC_WHOIS}"))|_goto :SkipAuthCheck;
+_if(!_cp("{NATVC_isAdmin}","1"))|_goto :FAIL_DISALLOW;
+
+:SkipAuthCheck;
+_if(_cp("{tempargs}","SYSTEM"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","Local_Driver_Security_User"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","default"))|_goto :USERFAIL_ACCESSDENIND;
+_if(_cp("{tempargs}","defaultPassword"))|_goto :USERFAIL_ACCESSDENIND;
+
+_sipcfg.open "{NATVC_CONFIG_USERS}"
+
+_var {NATVC_USERPROFILE} = _sipcfg {tempargs};
+
+_if(_cp("{NATVC_USERPROFILE}",'{varspace.null}')) | _goto :USERFAIL_NOUSER;
+
+_sipcfg.open "{NATVC_DISK}/{NATVC_USERPROFILE}/userconfig";
+_if(_cp(_sipcfg DisableUser,"1"))|_goto :BadUserStatus;
+_var {OldRealPSWD} = _sipcfg UserPassword;
+
+_cout "Type your old password to confirm";
+_var {UserType} = _getline;
+_if(_cp("{UserType}",'{varspace.null}')) | _var {UserType} = "@nopswd";
+
+_if(!_cp("{UserType}","{OldRealPSWD}"))|_goto :VerifyFailed;
+
+:ReConfirmNewPSWD;
+_cout "Type your new password";
+_var {UserType_A} = _getline;
+_if(_cp("{UserType_A}",'{varspace.null}')) | _var {UserType_A} = "@nopswd";
+
+_cout "Confirm your new password";
+_var {UserType_B} = _getline;
+_if(_cp("{UserType_B}",'{varspace.null}')) | _var {UserType_B} = "@nopswd";
+
+_if(!_cp("{UserType_A}","{UserType_B}"))|_cout "Password set failed. Confirm failed!";
+_if(!_cp("{UserType_A}","{UserType_B}"))|_pause;
+_if(!_cp("{UserType_A}","{UserType_B}"))|_goto :ReConfirmNewPSWD;
+_sipcfg.open "{NATVC_DISK}/{NATVC_USERPROFILE}/userconfig";
+_sipcfg UserPassword = "{UserType_A}";
+_cout "Set New password succeed!";
+_cout "{NATVC_DISK}/{NATVC_USERPROFILE}/userconfig ";
+_return "true";
+
+:FAIL_DISALLOW;
+_cout "Admin Required!";
+_return "false";
+
+:USERFAIL_NOUSER;
+_cout "Cannot Found this user. ";
+_return "false";
+
+:USERFAIL_ACCESSDENIND;
+_cout "This users cannot managed. Because System Security has not allowed! ";
+_return "false";
+
+:BadUserStatus;
+_cout "This users cannot managed. Because Admin Disabled this user!. Enable this user first!";
+_return "false";
+
+:VerifyFailed;
+_cout "Credential verification failed! Password wrong";
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/User-Reset-Password.ca);
+[16:41:43][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
+[16:41:44][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
+[16:41:44][User Explorer] Shell Execute code :  ok
+$CSTP_FILE_RECORD_MARK_ID_END(/shell_modules.cstp);
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/CoralModern.NativeShell.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/CoralModern.OOBE.Client.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/coral.oobeservices.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/coral.oobeservices.ca);
+//OOBE SERVICES
+_$directmode;
+
+_var {ToolsName} = "NATVC_OOBE_Service (Modern)";
+
+//Only Run on oobe user
+
+_file_write "[%time%][OOBE] Loading";
+
+//MAIN UI EXP
+_if(!_cp("{NATVC_isAdmin}","1"))|_return "failuserauth";
+_if(!_cp("{NATVC_WHOIS}","oobe"))|_return "failuserauth";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_var {OOBEQUICK} = _sipcfg oobequick;
+
+//MAIN Header
+:SkipSecureDetect;
+:ReloadExplorer;
+_if(_cp("{OOBEQUICK}","1")) | _goto :Server Page;
+
+_clear;
+_sleep 2;
+
+//Open Load Screen..
+_typefile "{SYS_NROOT}/res/natvc-oobe-start.txt";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_BASE_VID}";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+_script <"{SYS_ROOT}/ntvani.ca"> "1";
+
+:BACKMAINCONSOLE;
+_file_write "[%time%][OOBE] Load Main";
+_clear;
+_typefile "{SYS_NROOT}/res/natvc-oobe-welcome.txt";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_BASE_VID}";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+_pause;
+_clear;
+
+//Open EULA.
+_typefile "{SYS_NROOT}/res/natvc-eula.txt";
+_pause;
+
+_var {OOBE_PAGE_STATUS} = "oobe_unknown";
+
+//Require Activate
+_script <"{SYS_ROOT}/slui.ca">;
+
+//Create New User
+:CreateUserPage;
+_clear;
+//Open NEW USER.
+_typefile "{SYS_NROOT}/res/natvc-oobe-user.txt";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_BASE_VID}";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+
+//WRITE MAIN NAME
+:RESET_FULLNAMETYPE;
+_prt "Write your full name >";
+_var _ARGS_NU_FULLNAME = _getline;
+_if(_cp("_ARGS_NU_FULLNAME","{varspace.null}"))|_goto :RESET_FULLNAMETYPE;
+_if(_cp("_ARGS_NU_FULLNAME","@oobereload"))|_goto :ReloadExplorer;
+_if(_cp("_ARGS_NU_FULLNAME","@loaddebug"))|_return "oobeexit";
+_if(_cp("_ARGS_NU_FULLNAME","@recovery"))|_goto :ConfigRecovery;
+_if(_cp("_ARGS_NU_FULLNAME","@restart"))|_return "restart";
+_if(_cp("_ARGS_NU_FULLNAME","@shutdown"))|_return "shutdown";
+_if(_cp("_ARGS_NU_FULLNAME","@skipoobe"))|_goto :EndPageOOBE;
+
+
+//WRITE ID
+:FORBIDDEN;
+_prt "Write your user id (no space bar) >";
+_var _ARGS_NU_ID = _getline;
+
+_if(_cp("_ARGS_NU_ID","@oobereload"))|_goto :ReloadExplorer;
+
+_if(_cp("_ARGS_NU_ID",'SYSTEM'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'public'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'admin'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'oobe'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID","Local_Driver_Security_User"))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID","Local_Low"))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID","TrustedServices"))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'default'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'{varspace.null}'))|_goto :FORBIDDEN;
+_if(_cp("_ARGS_NU_ID",'@'))|_goto :FORBIDDEN;
+
+//GET PASSWORD
+:invalidPasswordType;
+_prt "Write your user password (If you do not want set password. press enter) >";
+_var _ARGS_NU_PSWD = _getline;
+_if(_cp("_ARGS_NU_PSWD",'{varspace.null}'))|_var _ARGS_NU_PSWD = "@nopswd";
+_if(_cp("_ARGS_NU_PSWD",'@servicemode'))|_goto :invalidPasswordType;
+
+_var _ARGS_NU_ADMIN = "1";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "newuser";
+_if(!_dir_exist "{SYS_USERPATH}/_ARGS_NU_ID")|_goto :UserCreateFailed_RETRY;
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg default = "_ARGS_NU_ID";
+
+
+:EndPageOOBE;
+_sipcfg.open "{SYS_NROOT}/config/DeploySettings";
+_var {DepResult_A} = _sipcfg ModifySetupOOBEtoZero;
+_var {DepResult_B} = _sipcfg EnableFastBoot;
+
+//Write Register
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if(_cp("{DepResult_A}","true"))|_sipcfg oobe = "0";
+_if(_cp("{DepResult_B}","true"))|_sipcfg FastBoot = "1";
+
+_var {OOBE_PAGE_STATUS} = "oobe_done";
+_var {IsOOBEComplete} = "1";
+_clear;
+//Open Endpage..
+_typefile "{SYS_NROOT}/res/natvc-oobe-end.txt";
+_pause;
+//Delete OOBE
+_var _ARGS_NU_FULLNAME = "NATVC User Out of box Experience";
+_var _ARGS_NU_ID = "oobe";
+_var _ARGS_NU_PSWD = "@rtoobe";
+_var _ARGS_NU_ADMIN = "1";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+
+_clear;
+
+_return "logoff";
+
+
+:Open_Shell;
+_script <"{SYS_ROOT}/rootshell.ca">;
+_goto :ReloadExplorer;
+
+
+//ERRPAGE
+:FAIL_CRASH;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "APPCRASH. Last Command :  {NATVC_USEREXP_GET}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to logoff";
+_pause;
+_return "user_logoff";
+
+
+:FAIL_DISALLOW;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "For system security reasons, current users cannot run Explorer";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to logoff";
+_pause;
+_return "user_logoff";
+
+:FAIL_NOSCRIPTAUTH;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "This User Authority is not allowed run any script";
+_cout "Please use administrator try again";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to Back";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+:NoRightCMD;
+_var {NATVC_USEREXP_GET} = "NOTSET";
+_goto :BACKMAINCONSOLE;
+
+
+:FAIL_USERERR;
+_clear;
+_cout "NATVC USER OOBE";
+_cout "This User not allowed Run OOBE";
+_cout "You can run sysreset.ca first and restart your device";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to Back";
+_pause;
+_return "fail";
+
+
+:UserCreateFailed_RETRY;
+_clear;
+_cout "   Something went wrong";
+_cout "Your user is create failed";
+_cout "maybe your type is invalid";
+_cout "or type has Illegal Path";
+_pause:
+_goto :CreateUserPage;
+
+//Hidden
+:LoadDebugUser;
+
+_var _ARGS_NU_FULLNAME = "Debug User";
+_var _ARGS_NU_ID = "debugmode";
+_var _ARGS_NU_PSWD = "@rtoobe";
+_var _ARGS_NU_ADMIN = "1";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "newuser";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "login";
+
+_script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+
+_goto :ReloadExplorer;
+
+
+:ConfigRecovery;
+_var {OOBE_PAGE_STATUS} = "oobe_recovery";
+_return "restart";
+
+
+:Server Page;
+_clear;
+_cout "Let`s Config your device";
+_cout "";
+_cout "Set your server password";
+_prts "Administrator Password > ";
+_var {ServerPSWD} = _getline;
+_if(_cp("{ServerPSWD}",'@restart'))|_return "restart";
+_if(_cp("{ServerPSWD}",'@shutdown'))|_return "shutdown";
+_if(_cp("{ServerPSWD}",'{varspace.null}'))|_goto :MustPassword;
+
+_sipcfg.open "{SYS_USERPATH}/admin/userconfig";
+
+_sipcfg UserPassword = "{ServerPSWD}";
+_sipcfg DisableUser = "0";
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg default = "admin";
+
+_clear;
+_cout "Please wait ...";
+_cout "Apply your settings ...";
+_cout "";
+_script <"{SYS_ROOT}/ntvani.ca"> "1";
+
+_clear;
+_goto :EndPageOOBE;
+
+
+:MustPassword;
+_clear;
+_cout "For Security reason, you must set password";
+_cout "This user is system manager";
+_pause;
+_goto :Server Page;
+$CSTP_FILE_RECORD_MARK_ID_END(/coral.oobeservices.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Modern Out of Box Experience;
+$Setup=CoralModern.OOBE.Client.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=10131;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/CoralModern.OOBE.Client.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/CoralModern.UserInterface.Core.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_sipcfg.open "{AppData}/AppEnvReport.txt";
+_sipcfg AppName = "System User Explorer & Shell";
+_sipcfg Reload = "logoff";
+
+_script <"{AppDir}/ProductNotifications.ca">;
+_cover <"{AppDir}/Coral.Explorer.Interface.ca">;
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Coral.Explorer.Interface.ca);
+//Coral Explorer
+_$directmode;
+_$no_err_report;
+
+_sipcfg.open "{NATVC_USERPROFILE}/userconfig";
+_if(_cp(_sipcfg nouserexplorer,"true"))|_goto :FailStartupUserExplorer_ConfigBlocked;
+
+_var {bool_isAutoRunExec} = "0";
+
+_file_write "[%time%][User Explorer] Load Explorer";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+
+_var {Explorer_Title} = _sipcfg explorer_title;
+
+_var {NeedPlayUpdateCong} = _sipcfg PlayNewUpdatefromNatvc;
+_sipcfg.remove PlayNewUpdatefromNatvc;
+
+_if(_cp("{NeedPlayUpdateCong}","true"))|_script <"{AppDir}/UpdateNewSettingsWizard.ca">;
+_free {NeedPlayUpdateCong};
+
+_if(_cp("{NATVC_EXPLORER}","{NATVC_ROOTSHELL}"))|_goto :SAFEMODE_Notifications;
+:SafeMode_Apply;
+
+_var {NATVC_USER_MENU_CONFIG} = "{NATVC_USERPROFILE}/usermenu";
+_var {NATVC_USER_INDEX} = "{NATVC_USERPROFILE}/userindex";
+_if(!_file_exist "{NATVC_USER_INDEX}") | _file_copy ("{SYS_USERPATH}/default/userindex","{NATVC_USER_INDEX}");
+
+//MAIN UI EXP
+
+_if(_cp("{bool_isAutoRunExec}","1"))|_goto :SkipDetectAutoRun;
+_if(_file_exist "{NATVC_USERPROFILE}/autorun")|_goto :PROCE_AutoRun;
+
+:SkipDetectAutoRun;
+_if(!_file_exist "{NATVC_USERPROFILE}/startcomplete")|_goto :LOAD_STARTREADER;
+
+
+//Detect Start Reader
+
+:ReloadExplorer;
+_var {ToolsName} = "User Explorer Interface (Modern)";
+_free {varspace.null};
+
+
+_sipcfg.open "{SYS_NROOT}/Themes/NtvexpThemes.txt";
+
+_var {NTVEXP_AD_1} = _sipcfg TitleA;
+_var {NTVEXP_AD_2} = _sipcfg TitleB;
+_var {NTVEXP_AD_3} = _sipcfg TitleC;
+_var {NTVEXP_AD_4} = _sipcfg TitleD;
+_var {NTVEXP_AD_5} = _sipcfg TitleE;
+
+
+_file_write "[%time%][User Explorer] Explorer is working on user input mode";
+
+_clear;
+_if(_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_typefile "{SYS_NROOT}/res/natvc-explorer.txt";
+
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Explorer Resources load fail";
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "Fail load user interface {SYS_NROOT}/res/natvc-explorer.txt";
+_if(!_file_exist "{SYS_NROOT}/res/natvc-explorer.txt")|_cout "";
+
+_if(_cp("{SYS_ACT_STATUS}","false"))|_cout "Activate Coral";
+_if(_cp("{SYS_ACT_STATUS}","false"))|_cout "Open 'slui' to get more info";
+
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout "This system is running on debugmode";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_BASE_VID}";
+_if(_cp("{EnableNatvcDebugReport}","true"))|_cout " {SYS_NAME} {SYSNAME} [Version: {SYSNAME}.{SYS_KERNEL_VID}]";
+
+:BACKMAINCONSOLE;
+_var {ntvue.logontime} = _getclock;
+_var {ntvue.logondate} = _getdate;
+_var {rs_pathexec} = "{SYS_ROOT}";
+_file_open "{SYS_LOG}";
+_cout "";
+_prt "{Explorer_Title}";
+_var {NATVC_USEREXP_GET} = _getline;
+
+_file_write "[%time%][User Explorer] User Execute Command -->  {NATVC_USEREXP_GET}";
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_var {NATVC_USERPROFILE} = _sipcfg {NATVC_WHOIS};
+_var {NATVC_USERPROFILE} = "{NATVC_DISK}/{NATVC_USERPROFILE}";
+_var {temp} = "{NATVC_USERPROFILE}/Temp";
+_var {Temp} = "{NATVC_USERPROFILE}/Temp";
+
+//Check EXP is allow?
+_if(!_file_exist "{NATVC_USERPROFILE}/useroptban")|_file_copy("{SYS_USERPATH}/default/useroptban","{NATVC_USERPROFILE}/useroptban")
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{NATVC_USEREXP_GET}";
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :bancmd;
+
+//Other
+_if(_cp("{NATVC_USEREXP_GET}",'{varspace.null}'))|_goto :ReloadExplorer;
+
+_if(_cp("{NATVC_USEREXP_GET}","logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_GET}","shutdown"))|_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_GET}","restart"))|_return "user_restart";
+_if(_cp("{NATVC_USEREXP_GET}","lock"))|_return "user_lock";
+
+_if(_cp("{NATVC_USEREXP_GET}","@shutdown"))|_var {Next_startup_fast_boot} = "-1";
+_if(_cp("{NATVC_USEREXP_GET}","@shutdown"))|_return "user_shutdown";
+
+_if(_cp("{NATVC_USEREXP_GET}","menu")) | _goto :Open_Menu;
+_if(_cp("{NATVC_USEREXP_GET}","software")) | _goto :Open_Software;
+_if(_cp("{NATVC_USEREXP_GET}","linkmgr"))|_goto :LinkManager;
+_if(_cp("{NATVC_USEREXP_GET}","about"))|_goto :About;
+_if(_cp("{NATVC_USEREXP_GET}","help")) | _goto :ListHelper;
+_if(_cp("{NATVC_USEREXP_GET}","fdl_debug.crashtest")) | _goto :CrashTest;
+
+//Detect Direct Run MNA
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_USEREXP_GET}";
+_if(_cp("{mna_Result}","noapp"))|_goto :CheckIndexMode;
+_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
+_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
+_goto :Run Command;
+
+
+:CheckIndexMode;
+_sipcfg.open "{NATVC_USER_INDEX}";
+_var {NATVC_Execute_Program} = _sipcfg {NATVC_USEREXP_GET};
+_if(_cp("{NATVC_Execute_Program}",'{varspace.null}')) | _goto :SkipTestSOFTWARE;
+_if(_file_exist "{NATVC_Execute_Program}") | _goto :Exec_Script;
+_if(!_file_exist "{NATVC_Execute_Program}") | _goto :TestMNAWork;
+
+
+:TestMNAWork;
+_var {mna_Result} = _script<"{SYS_NROOT}/mnacore/quickload.ca"> "{NATVC_Execute_Program}";
+_file_write "[System Explorer] QL Exit Result :  {mna_Result}";
+_if(_cp("{mna_Result}","noapp"))|_goto :SkipTestSOFTWARE;
+//RunOKStatus
+_var {NATVC_USEREXP_RUN_CALLBACK} = "{mna_Result}";
+_goto :Run Command;
+
+
+:SkipTestSOFTWARE;
+_file_write "[%time%][User Explorer] User Type a unknown command or software";
+_cout "{NATVC_USEREXP_GET} :  Not Command or execute tool.";
+_goto :BACKMAINCONSOLE;
+
+:ListHelper;
+_clear
+_cout "";
+_typefile "{SYS_NROOT}/res/natvc-explorer-help.txt";
+_goto :BACKMAINCONSOLE;
+
+
+
+//Function
+:About;
+_clear;
+_typefile "{NATVC_ABOUTS_TEXT}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+:LinkManager;
+_file_write "[%time%][User Explorer] Open Link Manager";
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{SYS_ROOT}/linkmgr.ca">;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Open_Software;
+_prt "Open Software Link > ";
+_var {NATVC_USEREXP_GET} = _getline;
+_sipcfg.open "{NATVC_CONFIG_SOFTWARE}";
+_var {NATVC_Execute_Program} = _sipcfg {NATVC_USEREXP_GET};
+_if(_cp("{NATVC_Execute_Program}",'{varspace.null}')) | _goto :SkipTestSOFTWARE;
+
+_if(_file_exist "{NATVC_Execute_Program}") | _goto :Exec_Script;
+_if(!_file_exist "{NATVC_Execute_Program}") | _goto :SoftwareErrorNotFound;
+
+_goto :BACKMAINCONSOLE;
+
+
+
+:IndexNotWork;
+_cout "This Index :  {NATVC_USEREXP_GET} seems not work";
+_cout "Execute File Not Found";
+_cout "Index Link :  "{NATVC_USEREXP_GET}" .";
+_cout "File Address  :  "{NATVC_Execute_Program}" .";
+_goto :BACKMAINCONSOLE;
+
+
+
+:SoftwareErrorNotFound;
+_cout "Software Error";
+_cout "Execute File Not Found";
+_cout "on config/SOFTWARE ... ";
+_cout "Software Link :  {NATVC_USEREXP_GET} .";
+_cout "File Address  :  {NATVC_Execute_Program} .";
+_goto :BACKMAINCONSOLE;
+
+
+
+:Exec_Script;
+//AutoConfig Load;
+_var {ShellExecuteOpen} = "{NATVC_Execute_Program}";
+_var {ShellExecuteOpen_Args} = "explorer_opened";
+
+_var {NATVC_USEREXP_RUN_CALLBACK} = _loadlib <"{SYS_ROOT}/KernelAPI/CO_ShellExecute.clib"> "::ShellExecuteFiles";
+_file_write "[%time%][User Explorer] Shell Execute code :  {NATVC_USEREXP_RUN_CALLBACK}";
+:Run Command;
+
+//Check EXP is allow?
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{NATVC_USEREXP_RUN_CALLBACK}";
+
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :bancmd;
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown"))|_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))|_return "user_restart";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","lock"))|_return "user_lock";
+
+_goto :BACKMAINCONSOLE;
+
+
+
+:Open_Menu;
+//Exec Open Menu
+_if(_cp("{NATVC_USERMENU}","0"))|_goto :FAIL_MENULOST;
+
+_var {NATVC_USEREXP_RUN_CALLBACK} = _script<"{NATVC_USERMENU}">;
+
+//Check EXP is allow?
+_var {CONFGET_FILE} = "{NATVC_USERPROFILE}/useroptban";
+_var {CONFGET_WORD} = "{NATVC_USEREXP_RUN_CALLBACK}";
+_var {callback_temp} = _script <"{SYS_ROOT}/confget.ca">;
+
+_if(_cp("{callback_temp}","false")) | _goto :bancmd;
+
+//_cout "{NATVC_USEREXP_RUN_CALLBACK}";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","reload"))|_goto :ReloadExplorer;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","logoff"))|_return "user_logoff";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","shutdown"))|_return "user_shutdown";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","restart"))|_return "user_restart";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","hiber"))|_return "user_hiber";
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","sysfix"))|_goto :RunSysFixMode;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","bootopt"))|_goto :RunBootOPT;
+
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","cmenu"))|_goto :BACKMAINCONSOLE;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".rs"))|_goto :rs_restart;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".bm"))|_goto :bm_restart;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".re"))|_goto :GORECOVERY;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}",".shell")) | _goto :Open_RootShellCon;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","software"))| _goto :Open_Software;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","about"))| _goto :About;
+_if(_cp("{NATVC_USEREXP_RUN_CALLBACK}","linkmgr"))|_goto :LinkManager;
+_goto :CheckIndexMode;
+
+
+
+
+//Restart Device
+:rs_restart;
+//Restart and Open Root Shell
+_var {boot_rsmode} = "true";
+_return "user_restart";
+
+
+
+:bm_restart;
+//Restart and Open Root Shell
+_var bvm_bm = "true";
+_return "user_restart";
+
+
+:RunBootOPT;
+//Restart and Open Root Shell
+_var {NBFMenu} = "true";
+_return "user_restart";
+
+
+:RunSysFixMode;
+//Restart and Check system 
+_var {checksysfix} = "true";
+_return "user_restart";
+
+
+//ERRPAGE
+:FAIL_CRASH;
+_clear;
+_file_write "[%time%][User Explorer][Error] AppCrash on {NATVC_USEREXP_GET}";
+_cout "NATVC Explorer Console";
+_cout "APPCRASH. Last Command :  {NATVC_USEREXP_GET}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to logoff";
+_pause;
+_return "user_logoff";
+
+
+
+:NoRightCMD;
+_var {NATVC_USEREXP_GET} = "NOTSET";
+_goto :BACKMAINCONSOLE;
+
+
+
+:FAIL_MENULOST;
+_clear;
+_cout "NATVC Explorer Console";
+_cout "User Menu Error";
+_cout "File Missing : {NATVC_USERMENU}";
+_cout "User :  {NATVC_USERNAME} ({NATVC_WHOIS})  IA :  {NATVC_isAdmin}";
+_cout "Press Enter to Back";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:ERRARFileMis;
+_clear;
+_cout "Cannot Load Explorer auto run";
+_cout "file missing :   {Explorer_AutoRun}";
+_cout "press enter to back CLI";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+:bancmd;
+_cout "This command is disabled by administrator";
+_cout "";
+_goto :BACKMAINCONSOLE;
+
+:GORECOVERY;
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_if (_cp(_sipcfg SystemRE_Status,"false"))|_goto :NORENOTICE;
+
+_script <"{NATVC_DISK}/{Boot_OSPATH}/System/ntvrebl.ca">;
+
+_return "user_restart";
+
+
+:LoadAdvancedBootOpt;
+_var {NATVC_A_RE} = "true";
+_return "user_restart";
+
+
+:NORENOTICE;
+_cout "System no recovery environment";
+_cout "Please try to use "refix" to repair";
+_goto :BACKMAINCONSOLE;
+
+:PROCE_AutoRun;
+//Process Task
+_var {bool_isAutoRunExec} = "1";
+_sipcfg.open "{NATVC_USERPROFILE}/autorun";
+_var {Explorer_AutoRun} = _sipcfg task;
+_clear;
+_if(!_file_exist "{Explorer_AutoRun}")|_goto :ERRARFileMis;
+_var {NATVC_Execute_Program} = "{Explorer_AutoRun}";
+_goto :Exec_Script;
+
+:CrashTest;
+_if(!_cp("{EnableNatvcDebugReport}","true"))|_goto :BACKMAINCONSOLE;
+_var {FAILSYS_MBU} = "true";
+_return "failsys";
+
+
+:SAFEMODE_Notifications;
+_clear;
+_cout "----------------------------------------------------";
+_cout "  Natvc is running on safe mode.";
+_cout "  By default, the explorer will not run automatically.";
+_cout "  The explorer allows the configuration of programs that start automatically.";
+_cout "  We do not recommend running Explorer in safe mode.";
+_cout "";
+_cout "  If you want to continue running in safe mode, please enter:  runassafemode";
+_cout "----------------------------------------------------";
+_prts "Explorer Notification >";
+_var {APPLY_SAFE} = _getline;
+
+_if(!_cp("{APPLY_SAFE}","runassafemode"))|_return "cancel";
+
+_goto :SafeMode_Apply;
+
+
+:LOAD_STARTREADER;
+_if(_file_exist "{NATVC_USERPROFILE}/autorun")|_goto :SkipDisplayStartRead;
+
+_clear;
+_typefile "{SYS_NROOT}/res/start-read.txt";
+_cout "";
+_pause;
+:SkipDisplayStartRead;
+
+_sipcfg.open "{NATVC_USERPROFILE}/startcomplete"
+_sipcfg SNA = "true";
+_goto :ReloadExplorer;
+
+
+:FailStartupUserExplorer_ConfigBlocked;
+_clear;
+_cout "Natvc User Explorer.  Error";
+_cout "Security Reason.";
+_cout "The Local Security had Blocked User Explorer";
+_cout "Explorer Cannot startup";
+_pause;
+_return "false";
+
+$CSTP_FILE_RECORD_MARK_ID_END(/Coral.Explorer.Interface.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Coral Explorer. System User Explorer & Shell;
+$Setup=CoralModern.UserInterface.Core.mna;
+$AppProperties=systemapps; // systemapps or userapps
+
+$AppVersion=10102;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ProductNotifications.ca);
+_$directmode;
+_cout "";
+
+//{ProductExpiredNotification} Product License Expired. for insider version expired notification update!
+//{LicenseExpiredNotification} License Expired for Activate expired!
+
+_if (_cp ("{ProductExpiredNotification}","true"))|_cout "Current System is expired!";
+_if (_cp ("{ProductExpiredNotification}","true"))|_cout "It`s time to update!. ";
+_if (_cp ("{ProductExpiredNotification}","true"))|_cout "To install latest Function and bug fixed!";
+_if (_cp ("{ProductExpiredNotification}","true"))|_pause;
+
+_if (_cp ("{LicenseExpiredNotification}","true"))|_cout "WARNING. License Expired!";
+_if (_cp ("{LicenseExpiredNotification}","true"))|_cout "Your Activation License is expired!";
+_if (_cp ("{LicenseExpiredNotification}","true"))|_cout "Go slui to reactivate your product";
+_if (_cp ("{LicenseExpiredNotification}","true"))|_pause;
+
+_return "true";
+$CSTP_FILE_RECORD_MARK_ID_END(/ProductNotifications.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/UpdateNewSettingsWizard.ca);
+_$directmode;
+_clear;
+_cout "Welcome To Coral!";
+_cout "Welcome to upgrade to Coral";
+_cout "We’ll help you understand Coral’s changes";
+_pause;
+
+_clear;
+_file_copy ("{NATVC_USERPROFILE}/userindex","{NATVC_USERPROFILE}/userindex.old");
+_file_del "{NATVC_USERPROFILE}/userindex";
+_file_copy ("{SYS_USERPATH}/default/userindex","{NATVC_USERPROFILE}/userindex");
+
+_cout "Coral brought a lot of groundbreaking updates compared to Natvc";
+_cout "Coral is better than Natvc in both speed and security.";
+_cout "Since you upgraded from Natvc, we reset your 'userindex' for you.";
+_cout "If you still need the old userindex, please rename it to 'userindex.old'. ";
+_cout "If you insist on using the old version of 'userindex', you might need to tweak some links to make sure it works properly.";
+_pause;
+
+_clear;
+_cout "We helped you migrate the old Natvc apps except for the system apps, but we can't guarantee their compatibility with Coral.";
+_cout "If any incompatibility occurs, please report it to the software provider.";
+_cout "Thanks for your understanding and support";
+_pause;
+
+_clear;
+_cout "Also, we're really sorry if you’re unhappy with Coral.";
+_cout "If you don't want to use Coral anymore, you can type 'sysrollback' in the Shell to open the system rollback program.";
+_cout "Be careful, don't run the diskclean program before this, or you won't be able to go back to the old version.";
+_cout "Thank you!";
+_pause;
+
+_clear;
+_cout "Thanks for choosing Coral";
+_cout "We will keep improving and fixing this.";
+_cout "I hope our journey together can be exciting and wonderful.";
+_cout "Press Enter to go to a new desktop";
+_cout "The new system guidance program has completed all its work";
+_pause;
+
+_clear;
+
+_cout "Thank you! {NATVC_WHOIS}";
+_ms_sleep "1400";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/UpdateNewSettingsWizard.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/CoralModern.UserInterface.Core.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/fileD.downloader.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/fdl.downcore.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/fdl.downcore.ca);
+_$directmode;
+_clear;
+
+//Init CoSxS
+_if(!_dir_exist "{SYS_NROOT}/CoSxS")|_dir_make "{SYS_NROOT}/CoSxS";
+_if(!_file_exist "{SYS_NROOT}/CoSxS/filed.ca")|_file_copy ("{AppDir}/filed.ca","{SYS_NROOT}/CoSxS/filed.ca")
+
+_clear;
+
+_cout "File Downloader Tools";
+_cout "Type URL Now";
+_prt ">";
+_var {URLTyped} = _getline;
+_if(_cp("{URLTyped}","exit"))|_return "exit";
+
+_cout "";
+_cout "Please choose path to save file";
+_pause;
+
+_var {ShellExecuteOpen} = "explorer";
+_var {ShellExecuteOpen_Args} = "$choosefolder";
+
+_var {NRS_CALLBACK} = _loadlib <"{SYS_ROOT}/KernelAPI/CO_ShellExecute.clib"> "::ShellExecuteFiles";
+
+_clear;
+_cout "";
+_cout "please type file name to save";
+_prt "{NRS_CALLBACK}/>";
+_var {NRS_CALLBACK_1} = _getline;
+
+_var {NRS_CALLBACK} = "{NRS_CALLBACK}/{NRS_CALLBACK_1}";
+_free {NRS_CALLBACK_1};
+
+_clear;
+_url_set_timeout 10000;
+_cout "downloading files...";
+_url_get ("{URLTyped}","{NRS_CALLBACK}");
+_free {URLTyped};
+_if(!_file_exist "{NRS_CALLBACK}")|_goto :FailedDownload;
+_cout "Done. file saved on {NRS_CALLBACK}";
+_pause;
+_return "true";
+
+:FailedDownload;
+_cout "Download failed!";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/fdl.downcore.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/filed.ca);
+_$directmode;
+_var {AppName_OnTitle} = "Coral File Downloader Tools";
+_var {AppLauncherName} = "fileD.downloader.mna";
+_var {Unexpected_error_feedback} = "false";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+_clear;
+_cout "Application :  {AppName_OnTitle} ";
+_cout "Reason :  Failed to load or install [{AppLauncherName}] package";
+_cout "Please repair this application. or check system settings";
+_pause;
+_return "error";
+$CSTP_FILE_RECORD_MARK_ID_END(/filed.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Coral File Downloader Tools;
+$Setup=fileD.downloader.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/fileD.downloader.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/fxtools.expandtools.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/file.expand.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/file.expand.ca);
+//NATVC File Cstp Tools
+//Use _file_pack /  _file_unpack / _file_exist / _file_del  Exist API 
+//Extract or PackFile
+//Use NEW FORMAT
+
+_$directmode;
+_$nolog;
+
+_var {ToolsName} = "File Expand Tookit";
+
+:MainFileExplorer;
+_clear;
+_cout "Coral File Cstp Tools ";
+_cout "----File Cstp and Extract tools--------------";
+_cout "";
+_cout "    1. Extract Mode";
+_cout "    2. Pack Files";
+_cout "";
+_cout " File pack/unpack tools";
+_cout " Copyright FDL 2026";
+_cout "---------------------------------------------";
+_cout "select mode . (use .exit cancel)" 
+_prts "$FileCstp >";
+_var {UserExplorerConsole} = _getline;
+
+_if(_cp("{UserExplorerConsole}","1"))|_goto :ExtractMode;
+_if(_cp("{UserExplorerConsole}","2"))|_goto :PackFileMode;
+_if(_cp("{UserExplorerConsole}",".exit"))|_return "ok";
+_if(_cp("{UserExplorerConsole}","exit"))|_return "ok";
+_goto :MainFileExplorer;
+
+
+
+:ExtractMode;
+_var {packfile} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefile";
+_if(_cp("{packfile}","ok")) |_goto :MainFileExplorer;
+_if(!_file_exist "{packfile}")  |_goto :ExtractMode;
+
+_var {extractdir} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefolder";
+_if(_cp("{extractdir}","ok")) |_goto :MainFileExplorer;
+
+_file_uncstp ("{packfile}","{extractdir}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+
+
+:PackFileMode;
+_var {extractdir} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefolder";
+_if(_cp("{extractdir}","ok")) |_goto :MainFileExplorer;
+
+_if(!_dir_exist "{extractdir}")   |_goto :PackFileMode;
+
+_var {packfile} = _script <"{SYS_ROOT}/explorer.ca"> "$choosefolder";
+_if(_cp("{packfile}","ok")) |_goto :MainFileExplorer;
+
+_prt "Type package name>";
+_var {packfileAdd} = _getline;
+
+_var {packfile} = "{packfile}/{packfileAdd}";
+_free {packfileAdd};
+
+_file_cstp ("{extractdir}","{packfile}");
+
+_cout "Complete";
+_pause;
+_goto :MainFileExplorer;
+
+
+$CSTP_FILE_RECORD_MARK_ID_END(/file.expand.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=File Expand Manager;
+$Setup=fxtools.expandtools.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=10132;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/fxtools.expandtools.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/ModernAppsPreinstall/ModernApp.Manager.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+_cover <"{AppDir}/pkm.ca">;
+_return "FailLoadUserInterface";
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=Coral Modern AppPackage Manager;
+$Setup=ModernApp.Manager.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=12003;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkm.ca);
+_$directmode;
+_$nolog;
+
+//Modern Natvc application   -Package manager
+//mna manager
+
+_clear;
+:BACKMAINCONSOLE;
+_clear;
+_cout "-----------------------------------------------";
+_cout " Modern Natvc Application";
+_cout " Package Manager";
+_cout " ";
+_cout "       1. Install App";
+_cout "       2. Uninstall App";
+_cout "       3. Save Package";
+_cout "       4. Get Package Version";
+_cout "       5. List All installed apps";
+_cout "       e. Exit";
+_cout " ";
+_cout " PKM Version";
+_cout "-----------------------------------------------";
+_prt "Type number: >";
+_var {UserReq} = _getline;
+_if(_cp("{UserReq}","1"))|_goto :Pkm_InstallApp;
+_if(_cp("{UserReq}","2"))|_goto :Pkm_UninstallApp;
+_if(_cp("{UserReq}","3"))|_goto :Pkm_SavePkgApp;
+_if(_cp("{UserReq}","4"))|_goto :Pkm_GetPkmData;
+_if(_cp("{UserReq}","5"))|_goto :Pkm_GetAllApps;
+_if(_cp("{UserReq}","e"))|_return "ok";
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_InstallApp;
+//Install Apps
+_clear;
+_cout "Type software package file";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_if(_cp("{UserTypeSetup}","setupdebug"))|_var {UserTypeSetup} = "{NATVC_DISK}/$InstallSource/SDK/ModernApp-TemplePackage/mna.apptemple.mna";
+_script<"{SYS_NROOT}/mnacore/install.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_UninstallApp;
+//Uninstall Apps
+//Install Apps
+_clear;
+_cout "Type software package uninstall";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/uninstall.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_SavePkgApp;
+//Save Packages File
+//Install Apps
+_clear;
+_cout "Type software package to save";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+_script<"{SYS_NROOT}/mnacore/pkgSaved.ca"> "{UserTypeSetup}";
+_pause;
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_GetPkmData;
+//Get Package Info Data
+//Install Apps
+_clear;
+_cout "Type software package file";
+_prt "Type Package>";
+_var {UserTypeSetup} = _getline;
+//Open Package Data
+_free {pkginfof};
+_if(_file_exist "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna")           |_var {pkginfof} = "{PROG_PATH}/{UserTypeSetup}/pkgdata.mna";
+_if(_file_exist "{SYS_NROOT}/CoralApps/{UserTypeSetup}/pkgdata.mna") |_var {pkginfof} = "{SYS_NROOT}/CoralApps/{UserTypeSetup}/pkgdata.mna";
+_if(_cp("{pkginfof}",'{pkginfof}'))|_goto :BACKMAINCONSOLE;
+_sipcfg.open "{pkginfof}";
+_var {AppName_PKMF} = _sipcfg AppName;
+_var {Setup_PKMF} = _sipcfg Setup;
+_var {AppProperties_PKMF} = _sipcfg AppProperties;
+
+_var {AppVersion_PKMF} = _sipcfg AppVersion;
+
+_clear;
+
+_cout "---------------------------------------------";
+_cout " App Name :  {AppName_PKMF}";
+_cout " Setup Name :  {Setup_PKMF}";
+_cout " App Properties :  {AppProperties_PKMF}";
+_cout " App Version :   {AppVersion_PKMF}";
+_cout "";
+_cout " Install Directory :   {pkginfof}";
+_cout "---------------------------------------------";
+_cout " Modern Natvc Application    Pack info";
+_cout "---------------------------------------------";
+_cout "Press Enter to back";
+_pause;
+
+_goto :BACKMAINCONSOLE;
+
+
+
+
+:Pkm_GetAllApps;
+
+_dir_list ("{temp}/mnalist","{SYS_NROOT}/SystemAppPackages");
+_dir_list ("{temp}/mnalist","{PROG_PATH}/AppPackages");
+
+//List All Apps
+_clear;
+_cout "---------------------------------------------";
+_cout "All installed mna apps";
+_cout "---------------------------------------------";
+_textprint "{temp}/mnalist";
+_file_del "{temp}/mnalist";
+_cout "---------------------------------------------";
+
+_pause;
+
+
+_goto :BACKMAINCONSOLE;
+$CSTP_FILE_RECORD_MARK_ID_END(/pkm.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/ModernAppsPreinstall/ModernApp.Manager.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/SDK/dmcanalysis/dmcay.ca);
+_$directmode;
+_cout "Dynamic Memory Control Analysis";
+_envsave "memorydump.txt";
+_cout "Memory is Dump to memorydump.txt";
+_pause;
+_envload "memorydump.txt";
+_cout "Memory Reloaded":
+_file_del "memorydump.txt";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SDK/dmcanalysis/dmcay.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/SDK/ModernApp-LauncherTookit/example.mapp);
+_$directmode;
+_var {AppName_OnTitle} = "";
+_var {AppLauncherName} = "";
+_var {Unexpected_error_feedback} = "";
+_var {MNAPI_Argument} = _getargs;
+_if(_cp("load_old","{MNAPI_Argument}"))|_goto :FailStartupProgram_PKGFALSE;
+
+_if(!_file_exist "{SYS_NROOT}/mnacore/pkgexist.ca")|_goto :FailStartupProgram_PKGFALSE;
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_script <"{SYS_NROOT}/mnacore/install.ca"> "{AppLauncherName}";
+_var {Result} = _script <"{SYS_NROOT}/mnacore/pkgexist.ca"> "{AppLauncherName}";
+_if(!_cp("{Result}","true"))|_goto :FailStartupProgram_PKGFALSE;
+
+_var {appfeedback} = _script <"{SYS_NROOT}/mnacore/mnaload.ca"> "{AppLauncherName}";
+_return "{appfeedback}";
+
+:FailStartupProgram_PKGFALSE;
+_clear;
+_cout "Application :  {AppName_OnTitle} ";
+_cout "Reason :  Failed to load or install [{AppLauncherName}] package";
+_cout "Please repair this application. or check system settings";
+_pause;
+_return "error";
+$CSTP_FILE_RECORD_MARK_ID_END(/SDK/ModernApp-LauncherTookit/example.mapp);
+$CSTP_FILE_RECORD_MARK_ID_START(/SDK/ModernApp-TemplePackage/mna.apptemple.mna);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/apploader.ca);
+_$directmode;
+_$nolog;
+
+//ok
+//_cover <"{AppDir}/YourOwnApps.ca"> "{MNAPI_Argument}";
+_cout "Example App";
+_return "FailLoadUserInterface";
+
+
+//ExpamleApps
+$CSTP_FILE_RECORD_MARK_ID_END(/apploader.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/pkgdata.mna);
+//SIPCFG Package Data
+$AppName=ModernApp temple;
+$Setup=mna.apptemple.mna;
+$AppProperties=userapps; // systemapps or userapps
+
+$AppVersion=1001;
+
+//Copyright FoxaXu 2025
+//Default Package
+$CSTP_FILE_RECORD_MARK_ID_END(/pkgdata.mna);
+
+//FOR SYSTEM DEMO
+$CSTP_FILE_RECORD_MARK_ID_END(/SDK/ModernApp-TemplePackage/mna.apptemple.mna);
+$CSTP_FILE_RECORD_MARK_ID_START(/SDK/NatvcPreinstallEnvironment-StartupTask/startupTask.ca);
+_$directmode;
+_var {TaskStartupMemClear} = "true";
+_if(!_file_exist "{OriginDisk}/{REAutoExec}")|_goto :FailLoadREProg;
+_var {TaskAutoConfigNtvRe} = _script <"{OriginDisk}/{REAutoExec}">;
+_return "{TaskAutoConfigNtvRe}";
+
+
+:FailLoadREProg;
+_clear;
+_cout "Natvc Recovery Enviroment. Error";
+_cout "Failed load {OriginDisk}/{REAutoExec}";
+_cout "This Enviroment Config has error";
+_pause;
+_return "user_restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/SDK/NatvcPreinstallEnvironment-StartupTask/startupTask.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/Settings/DEFAULT);
+//DEFAULT SETTINGS
+//FORCE
+$APPLY=TRUE;
+$CSTP_FILE_RECORD_MARK_ID_END(/Settings/DEFAULT);
+$CSTP_FILE_RECORD_MARK_ID_START(/Source/CSU_SERVICE.CSTP);
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/CodeIndex.txt);
+Developer helps
+
+csucore.ca 
+    Argument
+        cleanup   -return ok
+        checkupdate  -return  Latest / NeedUpdate / false
+        installupdate  -return  NotNeedUpdate / ExistingUpdateNeedInstall / NeedRestart /false
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/CodeIndex.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/cousowork.ca);
+_$directmode;
+
+//Coral Update Service Orchestrator
+//System Update Workers
+
+//Deployment and setup
+
+
+//Check File
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp")|_goto :BadFileInfo;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/default.cstp")|_goto :BadFileInfo;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/install.cstp")|_goto :BadFileInfo;
+
+
+//Checking Recovery Status
+_sipcfg.open "{NATVC_CONFIG_SETUP}"
+_if(!_cp(_sipcfg SystemRE_Status,"true"))|_goto :SkipUpdateRE;
+_file_del "{SystemRE_Dir}/Recovery/colre.cstp";
+_file_copy ("{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp","{SystemRE_Dir}/Recovery/colre.cstp");
+
+//Succeed
+
+:SkipUpdateRE;
+//Expand default installer
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/Downloading/default.cstp","{SYS_NROOT}/SystemUpdate/DeployStore");
+
+//Expand Origin OS
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/Downloading/install.cstp","{SYS_NROOT}/SystemUpdate/NewOS");
+
+//DELETE SOURCE FILES
+_dir_remove "{SYS_NROOT}/SystemUpdate/NewOS/Users/admin";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/SETUP";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/USERS";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/SOFTWARE";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/PRODUCT";
+//DEPLOYMENT COMPLETE
+
+
+//Deploy Delay Update Service
+_file_open "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca";
+_file_write ' _clear; ';
+_file_write ' _typefile "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt"; ';
+_file_write ' _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/filecomponent.ca">';
+_file_open "{SYS_LOG}";
+
+
+//EndTask
+_file_open "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca";
+_file_write ' _clear; ';
+_file_write ' _typefile "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/text/coral-modeploy.txt"; ';
+_file_write ' _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/modeploy.ca">';
+_file_open "{SYS_LOG}";
+
+_return "NeedRestart";
+
+:BadFileInfo;
+_cout "Update Service Orchestrator Error!";
+_cout "File missing. run diskclean to clean all caches";
+_cout "or contact foxaxu dev lab to resolve this problem";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/cousowork.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csucore.ca);
+_$directmode;
+
+//Coral System Update Services :   CSU
+//CSU Core
+
+//System Update Works
+
+_file_write "[%time%][CSU] Coral System Update Service is starting";
+
+//Check Is System Supported CSU?
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_if(!_cp(_sipcfg CSU_Core_Status,"true"))|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_ERR_NOTSUPPORTED";
+
+_file_write "[%time%][CSU] CSU is supported";
+
+
+
+
+//Get Agent
+_var {tempargs} = _getargs;
+_file_write "[%time%][CSU] Argument with code :  {tempargs}";
+
+_dir_make "{SYS_NROOT}/SystemUpdate";
+_dir_make "{SYS_NROOT}/SystemUpdate/Downloading";
+_dir_make "{SYS_NROOT}/SystemUpdate/DeployStore";
+
+_if(_cp("{tempargs}","cleanup"))|_goto :CleanUpdateCache;
+_if(_cp("{tempargs}","checkupdate"))|_goto :CheckUpdate;
+_if(_cp("{tempargs}","installupdate"))|_goto :installupdate;
+_if(_cp("{tempargs}","cancelupdate"))|_goto :CancelUpdate;
+
+_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_ERR_INVAILD_ARGUMENT::{tempargs}";
+_return "nullcover";
+
+
+:CleanUpdateCache;
+_dir_remove "{SYS_NROOT}/SystemUpdate";
+_dir_make "{SYS_NROOT}/SystemUpdate";
+_dir_make "{SYS_NROOT}/SystemUpdate/Downloading";
+_dir_make "{SYS_NROOT}/SystemUpdate/DeployStore";
+_return "ok";
+
+
+:CheckUpdate;
+//Check Update is Latest?
+
+//Get Build Edition
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_var {CSU_Update_Edition} = _sipcfg Edition;
+_var {CSU_Connection_URL} = _sipcfg CSU_Service_Connection_URL;
+_var {CSU_System_version} = _sipcfg SYS_KERNEL_VID;
+
+_file_write "[%time%][CSU] CSU Report System Edition :  {CSU_Update_Edition}   Connection URL :   {CSU_Connection_URL}   System Version :  {CSU_System_version}";
+_file_write "[%time%][CSU] Connection Server to getting latest version";
+
+_file_del "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg";
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/catalog.cfg","{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg"
+
+_var {LatestVersion} = _sipcfg LatestVersion;
+
+_file_write "[%time%][CSU] Reported Kernel:  {CSU_Update_Edition} Latest version :  {LatestVersion}";
+
+_if(_<("{CSU_System_version}","{LatestVersion}"))|_return "NeedUpdate";
+_if(!_<("{CSU_System_version}","{LatestVersion}"))|_return "Latest";
+_return "MissingMatchIF";
+
+
+:installupdate;
+
+_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca")|_return "ExistingUpdateNeedInstall"; 
+_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca")|_return "ExistingUpdateNeedInstall"; 
+
+//Downloading Update files...
+
+//Get Build Edition
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_var {CSU_Update_Edition} = _sipcfg Edition;
+_var {CSU_Connection_URL} = _sipcfg CSU_Service_Connection_URL;
+_var {CSU_System_version} = _sipcfg SYS_KERNEL_VID;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/catalog.cfg","{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg"
+
+_var {LatestVersion} = _sipcfg LatestVersion;
+
+_if(!_<("{CSU_System_version}","{LatestVersion}"))|_return "NotNeedUpdate";
+
+_var {tempargs} = _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csufiled.ca">;
+_if(!_cp("{tempargs}","true"))|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_FILEDOWNLOAD_FAILED";
+
+_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/cousowork.ca">;
+
+_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "COUSOWORK_ERROR_START";
+_return "false";
+
+
+:CancelUpdate;
+_file_del "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca";
+_file_del "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca";
+//complete
+
+//Restore
+_goto :CleanUpdateCache;
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csucore.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csuerror.ca);
+_$directmode;
+_var {tempargs} = _getargs;
+_if(_cp("{tempargs}","CSU_ERR_NOTSUPPORTED"))|_goto :ERROR_PAGE_NOTSUPPORTED;
+_if(_cp("{tempargs}","CSU_ERR_INVAILD_ARGUMENT"))|_goto :CSU_ERR_INVAILD_ARGUMENT;
+_if(_cp("{tempargs}","CSU_INTERNET_ERROR"))|_goto :CSU_INTERNET_ERROR;
+_if(_cp("{tempargs}","CSU_FILEDOWNLOAD_FAILED"))|_goto :CSU_FILEDOWNLOAD_FAILED;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "Unknown Code Status. View this Error code on support pages";
+_pause;
+_return "false";
+
+
+
+:ERROR_PAGE_NOTSUPPORTED;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "This system is not supported CSU Modules";
+_pause;
+_return "false";
+
+:CSU_ERR_INVAILD_ARGUMENT;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "Services start with a unknown argument";
+_pause;
+_return "false";
+
+:CSU_INTERNET_ERROR;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "Services is connecting with server. but server return empty!";
+_pause;
+_return "false";
+
+:CSU_FILEDOWNLOAD_FAILED;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "New File donwload failed!";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csuerror.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csufiled.ca);
+_$directmode;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/{LatestVersion}/boot.cstp","{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp")|_goto :NetworkError;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/{LatestVersion}/default.cstp","{SYS_NROOT}/SystemUpdate/Downloading/default.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/default.cstp")|_goto :NetworkError;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/{LatestVersion}/install.cstp","{SYS_NROOT}/SystemUpdate/Downloading/install.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/install.cstp")|_goto :NetworkError;
+
+_return "true";
+
+:NetworkError;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csufiled.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/filecomponent.ca);
+_$directmode;
+_clear;
+_typefile "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt";
+
+_cout "Copying new os";
+
+_var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/NewOS";
+_var {XCOPY_B} = "{NATVC_DISK}";
+_script <"{SYS_ROOT}/xcopy.ca">;
+
+_cout "Removing System Old RepiarData";
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+
+_dir_remove {SYS_NROOT}/SystemUpdate/NewOS";
+
+_return "true";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/filecomponent.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/FileTypes.txt);
+Coral System Update Orchestrator
+
+CSUCORE   CSU Core Services
+COUSOWORK   Coral Update Service Orchestrator
+CSUERROR   Coral System Update Error Page Files
+FILECOMPONENT  Coral System File Update Copy and Apply
+MODEPLOY   Coral Deployment Service Mini
+CSUFILED  Coral Update File Download Services
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/FileTypes.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/make.ca);
+_$directmode;
+_file_cstp ("{SYS_NROOT}/CoSxS","CSU_SERVICE.CSTP");
+_sipcfg.open "CSU_SERVICE.CSTP";
+_sipcfg ID = "Coral_System_Update_Package";
+
+_sipcfg.open "nul";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/make.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/modeploy.ca);
+_$directmode;
+_$nolog;
+
+
+_var {IntLoad_ForMNA_R} = "1";
+
+//Add New Package list files
+_file_del "{NATVC_CONFIG}/mnalist";
+
+_dir_list ("{NATVC_CONFIG}/mnalist","{SYS_NROOT}/SystemUpdate/DeployStore/ModernAppsPreinstall");
+
+
+:MNARESETRESCAN;
+_var {ReadCache} = _file_read ("{NATVC_CONFIG}/mnalist","{IntLoad_ForMNA_R}");
+
+_if(_cp("{ReadCache}","FileNotExist"))|_goto :FailAddsPkgList;
+
+_if(_cp("{ReadCache}","overline")) | _goto :MNARESETRESCAN_OK;
+
+//Verify
+_file_write "[MoAppUSO] Update Package :  {ReadCache}";
+
+_if(!_file_exist "{ReadCache}")|_goto :MNA_NullPackRestore;
+
+_script <"{SYS_NROOT}/mnacore/install.ca"> "{ReadCache}";
+
+
+:BACKCTRESTORE;
+
+_var {IntLoad_ForMNA_R} = _+("{IntLoad_ForMNA_R}","1");
+_goto :MNARESETRESCAN;
+
+:MNARESETRESCAN_OK;
+_file_del "{NATVC_CONFIG}/mnalist";
+
+//Copy Drivers
+_dir_make "{SYS_NROOT}/drivers";
+_var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/DeployStore/SystemAddedDrivers";
+_var {XCOPY_B} = "{SYS_NROOT}/drivers";
+_script <"{SYS_ROOT}/xcopy.ca">;
+
+//CleanUp
+_dir_remove {SYS_NROOT}/SystemUpdate/DeployStore";
+
+_dir_remove "{SYS_NROOT}/SystemUpdate/Downloading";
+_dir_make "{SYS_NROOT}/SystemUpdate/Downloading";
+
+_return "ok";
+
+
+:FailAddsPkgList;
+_cout "";
+_cout "App cannot installed because package list is missing";
+_cout "";
+_return "ok";
+
+:MNA_NullPackRestore;
+_cout "";
+_cout "App cannot be installed because package {ReadCache} not found";
+_goto :BACKCTRESTORE;
+
+//LL
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/modeploy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt);
+────────────────────────────────────────────
+ 
+    Install Update ....
+
+────────────────────────────────────────────
+
+  Do not turn off your device
+  We will automatic install these update and restarted
+  
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-modeploy.txt);
+────────────────────────────────────────────
+ 
+    Install Update ....
+
+────────────────────────────────────────────
+
+  Installing Update
+  Some update need install now!
+  
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-modeploy.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
+────────────────────────────────────────────
+ 
+    Preparing Update ....
+
+────────────────────────────────────────────
+
+   
+
+
+  Please wait
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
+//CSU EDITION
+$COMPONETVERSION=132;
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
+$ID=Coral_System_Update_Package;
+[19:33:56][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
+[19:34:04][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
+[19:34:04][User Explorer] Shell Execute code :  ok
+$CSTP_FILE_RECORD_MARK_ID_END(/Source/CSU_SERVICE.CSTP);
+$CSTP_FILE_RECORD_MARK_ID_START(/Source/devtools.cstp);
+Calcium_Text_Pack_File  New Format
+$ID=coralmodern_devcore_devtools;
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/envtype.ca);
+_$directmode;
+_$nolog;
+
+//Type Env
+:BackMainET;
+_clear;
+_file_open "{SYS_LOG}";
+_cout "Environment Type Tool":
+_cout "Type you want check System Environment";
+_prt "Type Env>";
+_var {GetEnvTyper} = _getline;
+
+_if(_cp("{GetEnvTyper}","exit"))|_return "ok";
+
+_var {Filiter_Env} = "{GetEnvTyper}";
+
+_file_del "{temp}/envtypeTemp.ca";
+_file_open "{temp}/envtypeTemp.ca";
+_file_write "_return "{GetEnvTyper}";";
+
+_var {GetEnvTyper} = _script <"{temp}/envtypeTemp.ca">;
+_file_del "{temp}/envtypeTemp.ca";
+
+_cout "Env:   {Filiter_Env} = {GetEnvTyper}";
+_pause;
+_goto :BackMainET;
+$CSTP_FILE_RECORD_MARK_ID_END(/envtype.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/get-devtools.ca);
+_$directmode;
+_cout "Dev Tools is installed !";
+_cout "Now System is Ready to Debug";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/get-devtools.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/reset-drivers.ca);
+_$directmode;
+
+_cover <"{NATVC_DISK}/$InstallSource/Deployment/drivers.ca">;
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/reset-drivers.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/reset-moapps.ca);
+_$directmode;
+
+_cover <"{NATVC_DISK}/$InstallSource/modernappreset.ca">;
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/reset-moapps.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/reset-oobe.ca);
+//Reset System
+
+_$directmode;
+_$nolog;
+
+_if(!_cp("{EnableNatvcDebugReport}","true"))|_return "false";
+_if(!_cp("{NATVC_isAdmin}","1"))|_goto :FAIL_DISALLOW;
+
+_var {esr} = _getargs;
+_if(_cp("{esr}","auto"))|_goto :StartExecSysReset;
+
+
+_cout "System Reset OOBE";
+
+_prts "Execute Now ? (y/n) >"
+_var {makeusersure} = _getline;
+_if(!_cp("{makeusersure}","y"))| _return "cancel";
+
+:StartExecSysReset;
+
+_script <"{SYS_ROOT}/diskclean.ca"> "auto";
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_script <"{SYS_ROOT}/slmgr.ca"> "remove-license";
+_script <"{SYS_ROOT}/mnareset.ca"> "uninstallforce";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg oobe = "1";
+_sipcfg oobe_pending_restart = "1";
+_sipcfg ModernAppReady = "0";
+_sipcfg FastBoot = "0";
+_sipcfg shutdown = "0";
+_sipcfg last_startup = "0";
+_sipcfg last_shutdown = "0";
+_sipcfg SystemRE_Dir = "{NoReEnv}";
+_sipcfg SystemRE_Status = "false";
+_sipcfg EnableNatvcDebugReport = "false";
+_sipcfg DisableSysRepiar = "true";
+
+//Recovery Admin 
+_sipcfg.open "{SYS_USERPATH}/admin/userconfig";
+_sipcfg UserPassword = "@nopswd";
+_sipcfg DisableUser = "1";
+
+
+_file_del "script/vdisk/Recovery/Recovery/bindos";
+
+_file_del "{SYS_NROOT}/SysRepairLogfile.log";
+_file_del "{SYS_NROOT}/SystemLogFile.log";
+_file_del "{SYS_NROOT}/SystemLogFile.log.old";
+
+_file_write "This is New System Mark Record";
+
+_dir_remove "{SYS_NROOT}/SystemManager/Local_Driver_Security_User/Temp";
+_dir_remove "{SYS_NROOT}/SystemManager/Local_Low/Temp";
+_dir_remove "{SYS_NROOT}/SystemManager/TrustedServices/Temp";
+_dir_remove "{SYS_NROOT}/SystemUser/Temp";
+_dir_remove "{SYS_NROOT}/SystemUser/AppData";
+_dir_remove "{SYS_NROOT}/SystemAppPackages";
+_dir_remove "{SYS_NROOT}/drivers";
+_dir_remove "{SYS_NROOT}/CoSxS";
+_dir_remove "{PROG_PATH}/AppPackages";
+_file_del "{SYS_NROOT}/SystemUser/userindex";
+
+_dir_remove "{SYS_NROOT}/Temp";
+_dir_remove "{SYS_NROOT}/SECURITY";
+
+_dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
+_file_del "{SYS_NROOT}/LOCAL_SERVICE/userindex";
+
+_dir_remove "{NATVC_DISK}/Users/admin/Temp";
+_dir_remove "{NATVC_DISK}/Users/admin/AppData";
+_file_del "{NATVC_DISK}/Users/admin/userindex";
+_file_del "{NATVC_DISK}/Users/admin/startcomplete";
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg default = '@';
+_sipcfg defaultPassword = '@';
+
+_cout "OOBE = "1"";
+_cout "Restart Your Device.";
+
+_sleep 2;
+
+_return "1";
+
+:FAIL_DISALLOW;
+_cout "Only Admin can run this tool";
+_return "fail";
+$CSTP_FILE_RECORD_MARK_ID_END(/reset-oobe.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/reset-systembase.ca);
+//Reset System
+
+_$directmode;
+_$nolog;
+
+_if(!_cp("{EnableNatvcDebugReport}","true"))|_return "false";
+_if(!_cp("{NATVC_isAdmin}","1"))|_goto :FAIL_DISALLOW;
+
+_var {esr} = _getargs;
+_if(_cp("{esr}","auto"))|_goto :StartExecSysReset;
+_if(_cp("{esr}","loadmenu"))|_goto :BasicPage;
+
+
+:BasicPage;
+_cout "This tool is pack system tools";
+_cout "All Program and Users will remove";
+_cout "Pack system to release";
+
+_prts "Execute Now ? (y/n) >"
+_var {makeusersure} = _getline;
+_if(!_cp("{makeusersure}","y"))| _return "cancel";
+
+
+:StartExecSysReset;
+
+_script <"{SYS_ROOT}/diskclean.ca"> "auto";
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+_script <"{SYS_ROOT}/slmgr.ca"> "remove-license";
+_script <"{SYS_ROOT}/mnareset.ca"> "uninstallforce";
+
+_sipcfg.open "{NATVC_CONFIG_SETUP}";
+_sipcfg oobe = "1";
+_sipcfg oobe_pending_restart = "1";
+_sipcfg ModernAppReady = "0";
+_sipcfg FastBoot = "0";
+_sipcfg shutdown = "0";
+_sipcfg last_startup = "0";
+_sipcfg last_shutdown = "0";
+_sipcfg SystemRE_Dir = "{NoReEnv}";
+_sipcfg SystemRE_Status = "false";
+_sipcfg EnableNatvcDebugReport = "false";
+_sipcfg DisableSysRepiar = "true";
+
+//Recovery Admin 
+_sipcfg.open "{SYS_USERPATH}/admin/userconfig";
+_sipcfg UserPassword = "@nopswd";
+_sipcfg DisableUser = "1";
+
+
+_file_del "script/vdisk/Recovery/Recovery/bindos";
+
+_file_del "{SYS_NROOT}/SysRepairLogfile.log";
+_file_del "{SYS_NROOT}/SystemLogFile.log";
+_file_del "{SYS_NROOT}/SystemLogFile.log.old";
+
+_file_write "This is New System Mark Record";
+
+_dir_remove "{SYS_NROOT}/SystemManager/Local_Driver_Security_User/Temp";
+_dir_remove "{SYS_NROOT}/SystemManager/Local_Low/Temp";
+_dir_remove "{SYS_NROOT}/SystemManager/TrustedServices/Temp";
+_dir_remove "{SYS_NROOT}/SystemUser/Temp";
+_dir_remove "{SYS_NROOT}/SystemUser/AppData";
+_dir_remove "{SYS_NROOT}/SystemAppPackages";
+_dir_remove "{SYS_NROOT}/drivers";
+_dir_remove "{PROG_PATH}/AppPackages";
+_file_del "{SYS_NROOT}/SystemUser/userindex";
+
+_dir_remove "{SYS_NROOT}/Temp";
+_dir_remove "{SYS_NROOT}/SECURITY";
+
+_dir_remove "{SYS_NROOT}/LOCAL_SERVICE/Temp";
+_file_del "{SYS_NROOT}/LOCAL_SERVICE/userindex";
+
+_dir_remove "{NATVC_DISK}/Users/admin/Temp";
+_dir_remove "{NATVC_DISK}/Users/admin/AppData";
+_file_del "{NATVC_DISK}/Users/admin/userindex";
+_file_del "{NATVC_DISK}/Users/admin/startcomplete";
+
+
+_sipcfg.open "{NATVC_CONFIG_USERS}";
+_sipcfg default = '@';
+_sipcfg defaultPassword = '@';
+
+_cout "OOBE = "1"";
+_cout "Restart Your Device.";
+_cout "to OOBE on User Create name. Type "@oobecancel" to Complete Pack";
+
+_free _ARGS_NU_ID;
+_var _ARGS_NU_ID = "{NATVC_WHOIS}";
+
+_free {umback};
+_var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+
+_free _ARGS_NU_ID;
+_var _ARGS_NU_ID = "oobe";
+
+_free {umback};
+_var {umback} = _script<"{SYS_ROOT}/usermgr.ca"> "deluser";
+
+_cout "{umback}";
+
+_sleep 2;
+
+_file_open "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_file_write "_dir_remove "{SYS_NROOT}/CoSxS";";
+_file_write "_dir_remove "{SYS_NROOT}/SystemResources/SxS_Store";";
+
+_file_open "{SYS_LOG}";
+
+_return "shutdown";
+
+:FAIL_DISALLOW;
+_cout "Only Admin can run this tool";
+_return "fail";
+$CSTP_FILE_RECORD_MARK_ID_END(/reset-systembase.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/std.ca);
+_$directmode;
+_var {Next_startup_fast_boot} = "-1";
+_return "shutdown";
+$CSTP_FILE_RECORD_MARK_ID_END(/std.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/testnew-anima.ca);
+_$directmode;
+_loadlib <"{SYS_ROOT}/KernelAPI/CO_ANIMA_LIB.clib"> "::ANIMA_LFU_SHOWUSE";
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/testnew-anima.ca);
+$CSTP_FILE_RECORD_MARK_ID_END(/Source/devtools.cstp);
+$CSTP_FILE_RECORD_MARK_ID_START(/SystemAddedDrivers/netvdisk.codrv);
+_$directmode;
+
+//Load Net Vdisk 
+_if(!_file_exist "script/bvm/DefaultDisk")|_file_write "[netvdisk] Error. Critical Error Detected :  INACCESSABLE_BVM_DATA";
+_if(!_file_exist "script/bvm/DefaultDisk")|_file_write "[netvdisk] Driver unloaded. Netvdisk is Running on safemode";
+_if(!_file_exist "script/bvm/DefaultDisk")|_return "drv_load_ok";
+_sipcfg.open "script/bvm/DefaultDisk";
+_var {netvdisk.api_disk_address} = _sipcfg defaultdisk;
+_var {netvdisk.api_disk_address} = _str_replace "{netvdisk.api_disk_address}" ('{path}/',"");
+_file_write "[netvdisk] config address value :  {netvdisk.api_disk_address}";
+//_if(!_dir_exist "{netvdisk.api_disk_address}")|_return "NetVDiskError::DRV_SET_ADDRESS_FAILED";
+
+_return "drv_load_ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/SystemAddedDrivers/netvdisk.codrv);
+$CSTP_FILE_RECORD_MARK_ID_START(/SystemAddedDrivers/tbsforce.codrv);
+_$directmode;
+//Tablet Settings Force Update!
+//Feteh Settings Data
+
+_if(!_file_exist "calcium_settings.cfg")|_return "BAD_TABLET_CONFIG";
+
+_var {PendingReboot} = "false";
+
+_sipcfg.open "calcium_settings.cfg";
+_if(!_sipcfg AllowScriptEdit)|_var {PendingReboot} = "true";
+_if(!_sipcfg AllowScriptEdit)|_sipcfg AllowScriptEdit = "true";
+_if(!_sipcfg AllowScriptEdit)|_return "INACCESSABLE_TABLET_CONFIG";
+
+_if(!_sipcfg EnforceUTF-8)|_var {PendingReboot} = "true";
+_if(!_sipcfg EnforceUTF-8)|_sipcfg EnforceUTF-8 = "true";
+_if(!_sipcfg EnforceUTF-8)|_return "INACCESSABLE_TABLET_CONFIG";
+
+_if(_<(_sipcfg MaxScriptExecuteLine,"30000"))|_var {PendingReboot} = "true";
+_if(_<(_sipcfg MaxScriptExecuteLine,"30000"))|_sipcfg MaxScriptExecuteLine = "30000";
+_if(_<(_sipcfg MaxScriptExecuteLine,"30000"))|_return "INACCESSABLE_TABLET_CONFIG";
+
+_if(_cp("{PendingReboot}","false"))|_return "drv_load_ok";
+_clear;
+_cout "Tablet Settings Update";
+_cout "Your Device Settings is changed. Restart your device to Continue";
+_cout "This Update require these settings apply now";
+_pause;
+_return "shutdown";
+$CSTP_FILE_RECORD_MARK_ID_END(/SystemAddedDrivers/tbsforce.codrv);
