@@ -102,7 +102,8 @@ _dir_make "{SYS_NROOT}/SystemUpdate/DeployStore";
 
 _if(_cp("{tempargs}","cleanup"))|_goto :CleanUpdateCache;
 _if(_cp("{tempargs}","checkupdate"))|_goto :CheckUpdate;
-_if(_cp("{tempargs}","csu-update"))|_goto :CheckCSU-Update;
+_if(_cp("{tempargs}","csu-checkupdate"))|_goto :CheckCSU-Update;
+_if(_cp("{tempargs}","csu-installupdate"))|_goto :CSU-Update;
 _if(_cp("{tempargs}","installupdate"))|_goto :installupdate;
 _if(_cp("{tempargs}","cancelupdate"))|_goto :CancelUpdate;
 
@@ -435,7 +436,9 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-u
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 //CSU EDITION
-$COMPONETVERSION=132;
+$COMPONETVERSION=151;
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 $ID=Coral_System_Update_Package;
-[12:48:43][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
+[12:52:36][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
+[12:52:37][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
+[12:52:37][User Explorer] Shell Execute code :  ok
