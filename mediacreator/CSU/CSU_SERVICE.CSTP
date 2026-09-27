@@ -19,6 +19,9 @@ csucore.ca
         cleanup   -return ok
         checkupdate  -return  Latest / NeedUpdate / false
         installupdate  -return  NotNeedUpdate / ExistingUpdateNeedInstall / NeedRestart /false
+    Self argument
+        csu-checkupdate   -return CSUNeedUpdate / CSULatest
+        csu-getnew        -return false / UpdateSucceed
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/CodeIndex.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/cousowork.ca);
 _$directmode;
@@ -103,7 +106,7 @@ _dir_make "{SYS_NROOT}/SystemUpdate/DeployStore";
 _if(_cp("{tempargs}","cleanup"))|_goto :CleanUpdateCache;
 _if(_cp("{tempargs}","checkupdate"))|_goto :CheckUpdate;
 _if(_cp("{tempargs}","csu-checkupdate"))|_goto :CheckCSU-Update;
-_if(_cp("{tempargs}","csu-installupdate"))|_goto :CSU-Update;
+_if(_cp("{tempargs}","csu-getnew"))|_goto :CSU-GetNew;
 _if(_cp("{tempargs}","installupdate"))|_goto :installupdate;
 _if(_cp("{tempargs}","cancelupdate"))|_goto :CancelUpdate;
 
@@ -150,8 +153,8 @@ _return "MissingMatchIF";
 
 :installupdate;
 
-_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca")|_return "ExistingUpdateNeedInstall"; 
-_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca")|_return "ExistingUpdateNeedInstall"; 
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca")|_return "ExistingUpdateNeedInstall"; 
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_return "ExistingUpdateNeedInstall"; 
 
 //Downloading Update files...
 
@@ -181,8 +184,8 @@ _return "false";
 
 
 :CancelUpdate;
-_file_del "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca";
-_file_del "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca";
+_file_del "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_file_del "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca";
 //complete
 
 //Restore
@@ -216,9 +219,9 @@ _if(!_<("{COMPONETVERSION}","{LatestVersion}"))|_return "CSULatest";
 _return "MissingMatchIF";
 
 
-:CSU-Update;
-_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca")|_return "ExistingUpdateUsingCurrentCSU-Use-CancelUpdate-To-Remove"; 
-_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca")|_return "ExistingUpdateUsingCurrentCSU-Use-CancelUpdate-To-Remove"; 
+:CSU-GetNew;
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca")|_return "ExistingUpdateUsingCurrentCSU-Use-CancelUpdate-To-Remove"; 
+_if(_file_exist "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca")|_return "ExistingUpdateUsingCurrentCSU-Use-CancelUpdate-To-Remove"; 
 _url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/CSU/CSU_SERVICE.CSTP","{SYS_NROOT}/SystemUpdate/Downloading/CSU_SERVICE.CSTP");
 _if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/CSU_SERVICE.CSTP")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
 _file_copy ("{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/autoupdate.ca","{temp}/autoupdate.ca");
@@ -304,7 +307,7 @@ _script <"{SYS_ROOT}/sysfix.ca"> "remove";
 _sipcfg.open "{NATVC_CONFIG_SETUP}"
 _if(!_cp(_sipcfg SystemRE_Status,"true"))|_goto :SkipUpdateRE;
 _cout "Update recovery enviroment";
-_var {SystemRE_Dir} = _sipcfg SystemRE_Status;
+_var {SystemRE_Dir} = _sipcfg SystemRE_Dir;
 
 _file_del "{SystemRE_Dir}/Recovery/colre.cstp";
 _file_copy ("{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp","{SystemRE_Dir}/Recovery/colre.cstp");
@@ -436,9 +439,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-u
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 //CSU EDITION
-$COMPONETVERSION=151;
+$COMPONETVERSION=154;
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 $ID=Coral_System_Update_Package;
-[12:52:36][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
-[12:52:37][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
-[12:52:37][User Explorer] Shell Execute code :  ok
+[21:13:23][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
