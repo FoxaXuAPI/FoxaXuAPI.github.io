@@ -298,7 +298,7 @@ _cout "Copying new os";
 _var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/NewOS";
 _var {XCOPY_B} = "{NATVC_DISK}";
 _script <"{SYS_ROOT}/xcopy.ca">;
-_dir_remove {SYS_NROOT}/SystemUpdate/NewOS";
+_dir_remove "{SYS_NROOT}/SystemUpdate/NewOS";
 
 _cout "Removing System Old RepiarData";
 _script <"{SYS_ROOT}/sysfix.ca"> "remove";
@@ -382,7 +382,7 @@ _var {XCOPY_B} = "{SYS_NROOT}/drivers";
 _script <"{SYS_ROOT}/xcopy.ca">;
 
 //CleanUp
-_dir_remove {SYS_NROOT}/SystemUpdate/DeployStore";
+_dir_remove "{SYS_NROOT}/SystemUpdate/DeployStore";
 
 _dir_remove "{SYS_NROOT}/SystemUpdate/Downloading";
 _dir_make "{SYS_NROOT}/SystemUpdate/Downloading";
@@ -439,7 +439,6 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-u
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 //CSU EDITION
-$COMPONETVERSION=154;
+$COMPONETVERSION=156;
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 $ID=Coral_System_Update_Package;
-[21:13:23][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
