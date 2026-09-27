@@ -1,0 +1,441 @@
+Calcium_Text_Pack_File  New Format
+//START EXTRACT
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/autoupdate.ca);
+_$directmode;
+//CSU Module Remover
+_dir_remove "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core";
+_file_del "{SYS_NROOT}/SystemResources/SxS_Store/Coral_System_Update_Package.cstp";
+//Done
+//Install New
+_script <"{SYS_NROOT}/UMM/add-package.ca"> "{SYS_NROOT}/SystemUpdate/Downloading/CSU_SERVICE.CSTP";
+
+_return "UpdateSucceed";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/autoupdate.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/CodeIndex.txt);
+Developer helps
+
+csucore.ca 
+    Argument
+        cleanup   -return ok
+        checkupdate  -return  Latest / NeedUpdate / false
+        installupdate  -return  NotNeedUpdate / ExistingUpdateNeedInstall / NeedRestart /false
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/CodeIndex.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/cousowork.ca);
+_$directmode;
+
+//Coral Update Service Orchestrator
+//System Update Workers
+
+//Deployment and setup
+
+
+//Check File
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp")|_goto :BadFileInfo;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/default.cstp")|_goto :BadFileInfo;
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/install.cstp")|_goto :BadFileInfo;
+
+//Expand default installer
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/Downloading/default.cstp","{SYS_NROOT}/SystemUpdate/DeployStore");
+
+//Expand Origin OS
+_file_uncstp ("{SYS_NROOT}/SystemUpdate/Downloading/install.cstp","{SYS_NROOT}/SystemUpdate/NewOS");
+
+//DELETE SOURCE FILES
+_dir_remove "{SYS_NROOT}/SystemUpdate/NewOS/Users/admin";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/SETUP";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/USERS";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/SOFTWARE";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/PRODUCT";
+//DEPLOYMENT COMPLETE
+
+
+//Deploy Delay Update Service
+_file_open "{SYS_NROOT}/SystemUser/TaskUserExecute/task.ca";
+_file_write ' _clear; ';
+_file_write ' _typefile "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt"; ';
+_file_write ' _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/filecomponent.ca">; ';
+_file_open "{SYS_LOG}";
+
+
+//EndTask
+_file_open "{SYS_NROOT}/SystemUser/TaskUserExecute/startupTask.ca";
+_file_write ' _clear; ';
+_file_write ' _typefile "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/text/coral-modeploy.txt"; ';
+_file_write ' _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/modeploy.ca">; ';
+_file_open "{SYS_LOG}";
+
+_return "NeedRestart";
+
+:BadFileInfo;
+_cout "Update Service Orchestrator Error!";
+_cout "File missing. run diskclean to clean all caches";
+_cout "or contact foxaxu dev lab to resolve this problem";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/cousowork.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csucore.ca);
+_$directmode;
+
+//Coral System Update Services :   CSU
+//CSU Core
+
+//System Update Works
+
+_file_write "[%time%][CSU] Coral System Update Service is starting";
+
+//Check Is System Supported CSU?
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_if(!_cp(_sipcfg CSU_Core_Status,"true"))|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_ERR_NOTSUPPORTED";
+
+_file_write "[%time%][CSU] CSU is supported";
+
+
+
+
+//Get Agent
+_var {tempargs} = _getargs;
+_file_write "[%time%][CSU] Argument with code :  {tempargs}";
+
+_dir_make "{SYS_NROOT}/SystemUpdate";
+_dir_make "{SYS_NROOT}/SystemUpdate/Downloading";
+_dir_make "{SYS_NROOT}/SystemUpdate/DeployStore";
+
+_if(_cp("{tempargs}","cleanup"))|_goto :CleanUpdateCache;
+_if(_cp("{tempargs}","checkupdate"))|_goto :CheckUpdate;
+_if(_cp("{tempargs}","csu-update"))|_goto :CheckCSU-Update;
+_if(_cp("{tempargs}","installupdate"))|_goto :installupdate;
+_if(_cp("{tempargs}","cancelupdate"))|_goto :CancelUpdate;
+
+_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_ERR_INVAILD_ARGUMENT::{tempargs}";
+_return "nullcover";
+
+
+:CleanUpdateCache;
+_dir_remove "{SYS_NROOT}/SystemUpdate";
+_dir_make "{SYS_NROOT}/SystemUpdate";
+_dir_make "{SYS_NROOT}/SystemUpdate/Downloading";
+_dir_make "{SYS_NROOT}/SystemUpdate/DeployStore";
+_return "ok";
+
+
+:CheckUpdate;
+//Check Update is Latest?
+
+//Get Build Edition
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_var {CSU_Update_Edition} = _sipcfg Edition;
+_var {CSU_Connection_URL} = _sipcfg CSU_Service_Connection_URL;
+_var {CSU_System_version} = _sipcfg SYS_KERNEL_VID;
+
+_file_write "[%time%][CSU] CSU Report System Edition :  {CSU_Update_Edition}   Connection URL :   {CSU_Connection_URL}   System Version :  {CSU_System_version}";
+_file_write "[%time%][CSU] Connection Server to getting latest version";
+
+_file_del "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg";
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/catalog.cfg","{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg"
+
+_var {LatestVersion} = _sipcfg LatestVersion;
+
+_file_write "[%time%][CSU] Reported Kernel:  {CSU_Update_Edition} Latest version :  {LatestVersion}";
+
+_if(_<("{CSU_System_version}","{LatestVersion}"))|_return "NeedUpdate";
+_if(!_<("{CSU_System_version}","{LatestVersion}"))|_return "Latest";
+_return "MissingMatchIF";
+
+
+:installupdate;
+
+_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca")|_return "ExistingUpdateNeedInstall"; 
+_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca")|_return "ExistingUpdateNeedInstall"; 
+
+//Downloading Update files...
+
+//Get Build Edition
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_var {CSU_Update_Edition} = _sipcfg Edition;
+_var {CSU_Connection_URL} = _sipcfg CSU_Service_Connection_URL;
+_var {CSU_System_version} = _sipcfg SYS_KERNEL_VID;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/catalog.cfg","{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg"
+
+_var {LatestVersion} = _sipcfg LatestVersion;
+
+_if(!_<("{CSU_System_version}","{LatestVersion}"))|_return "NotNeedUpdate";
+
+_var {tempargs} = _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csufiled.ca">;
+_if(!_cp("{tempargs}","true"))|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_FILEDOWNLOAD_FAILED";
+
+_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/cousowork.ca">;
+
+_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "COUSOWORK_ERROR_START";
+_return "false";
+
+
+:CancelUpdate;
+_file_del "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca";
+_file_del "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca";
+//complete
+
+//Restore
+_goto :CleanUpdateCache;
+
+
+:CheckCSU-Update;
+//Check Update is Latest?
+
+//Get Build Edition
+_sipcfg.open "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/version.cfg";
+_var {COMPONETVERSION} = _sipcfg COMPONETVERSION;
+
+_file_write "[%time%][CSU] CSU Version :  {COMPONETVERSION}  ";
+_file_write "[%time%][CSU] Connection Server to getting latest version";
+
+_file_del "{SYS_NROOT}/SystemUpdate/Downloading/csu_version.cfg";
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/CSU/catalog.cfg","{SYS_NROOT}/SystemUpdate/Downloading/csu_version.cfg");
+
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/csu_version.cfg")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/Downloading/csu_version.cfg"
+
+_var {LatestVersion} = _sipcfg LatestVersion;
+
+_file_write "[%time%][CSU] Current CSU Version:  {COMPONETVERSION} Latest version :  {LatestVersion}";
+
+_if(_<("{COMPONETVERSION}","{LatestVersion}"))|_return "CSUNeedUpdate";
+_if(!_<("{COMPONETVERSION}","{LatestVersion}"))|_return "CSULatest";
+_return "MissingMatchIF";
+
+
+:CSU-Update;
+_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/task.ca")|_return "ExistingUpdateUsingCurrentCSU-Use-CancelUpdate-To-Remove"; 
+_if(_file_exist "{SetupVolume}/Coral/SystemUser/TaskUserExecute/startupTask.ca")|_return "ExistingUpdateUsingCurrentCSU-Use-CancelUpdate-To-Remove"; 
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/CSU/CSU_SERVICE.CSTP","{SYS_NROOT}/SystemUpdate/Downloading/CSU_SERVICE.CSTP");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/CSU_SERVICE.CSTP")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
+_file_copy ("{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/autoupdate.ca","{temp}/autoupdate.ca");
+_cover <"{temp}/autoupdate.ca">;
+_return "COVERFAILED";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csucore.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csuerror.ca);
+_$directmode;
+_var {tempargs} = _getargs;
+_if(_cp("{tempargs}","CSU_ERR_NOTSUPPORTED"))|_goto :ERROR_PAGE_NOTSUPPORTED;
+_if(_cp("{tempargs}","CSU_ERR_INVAILD_ARGUMENT"))|_goto :CSU_ERR_INVAILD_ARGUMENT;
+_if(_cp("{tempargs}","CSU_INTERNET_ERROR"))|_goto :CSU_INTERNET_ERROR;
+_if(_cp("{tempargs}","CSU_FILEDOWNLOAD_FAILED"))|_goto :CSU_FILEDOWNLOAD_FAILED;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "Unknown Code Status. View this Error code on support pages";
+_pause;
+_return "false";
+
+
+
+:ERROR_PAGE_NOTSUPPORTED;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "This system is not supported CSU Modules";
+_pause;
+_return "false";
+
+:CSU_ERR_INVAILD_ARGUMENT;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "Services start with a unknown argument";
+_pause;
+_return "false";
+
+:CSU_INTERNET_ERROR;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "Services is connecting with server. but server return empty!";
+_pause;
+_return "false";
+
+:CSU_FILEDOWNLOAD_FAILED;
+_cout "CSU Module cannot started";
+_cout "Error Code :  {tempargs}";
+_cout "New File donwload failed!";
+_pause;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csuerror.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csufiled.ca);
+_$directmode;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/{LatestVersion}/boot.cstp","{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp")|_goto :NetworkError;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/{LatestVersion}/default.cstp","{SYS_NROOT}/SystemUpdate/Downloading/default.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/default.cstp")|_goto :NetworkError;
+
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/{LatestVersion}/install.cstp","{SYS_NROOT}/SystemUpdate/Downloading/install.cstp");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/install.cstp")|_goto :NetworkError;
+
+_return "true";
+
+:NetworkError;
+_return "false";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csufiled.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/filecomponent.ca);
+_$directmode;
+_clear;
+_typefile "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt";
+
+_cout "Copying new os";
+
+_var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/NewOS";
+_var {XCOPY_B} = "{NATVC_DISK}";
+_script <"{SYS_ROOT}/xcopy.ca">;
+_dir_remove {SYS_NROOT}/SystemUpdate/NewOS";
+
+_cout "Removing System Old RepiarData";
+_script <"{SYS_ROOT}/sysfix.ca"> "remove";
+
+//Checking Recovery Status
+_sipcfg.open "{NATVC_CONFIG_SETUP}"
+_if(!_cp(_sipcfg SystemRE_Status,"true"))|_goto :SkipUpdateRE;
+_cout "Update recovery enviroment";
+_var {SystemRE_Dir} = _sipcfg SystemRE_Status;
+
+_file_del "{SystemRE_Dir}/Recovery/colre.cstp";
+_file_copy ("{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp","{SystemRE_Dir}/Recovery/colre.cstp");
+
+//Succeed
+
+:SkipUpdateRE;
+
+
+_return "true";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/filecomponent.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/FileTypes.txt);
+Coral System Update Orchestrator
+
+CSUCORE   CSU Core Services
+COUSOWORK   Coral Update Service Orchestrator
+CSUERROR   Coral System Update Error Page Files
+FILECOMPONENT  Coral System File Update Copy and Apply
+MODEPLOY   Coral Deployment Service Mini
+CSUFILED  Coral Update File Download Services
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/FileTypes.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/make.ca);
+_$directmode;
+_file_cstp ("{SYS_NROOT}/CoSxS","CSU_SERVICE.CSTP");
+_sipcfg.open "CSU_SERVICE.CSTP";
+_sipcfg ID = "Coral_System_Update_Package";
+
+_sipcfg.open "nul";
+
+_return "ok";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/make.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/modeploy.ca);
+_$directmode;
+_$nolog;
+
+
+_var {IntLoad_ForMNA_R} = "1";
+
+//Add New Package list files
+_file_del "{NATVC_CONFIG}/mnalist";
+
+_dir_list ("{NATVC_CONFIG}/mnalist","{SYS_NROOT}/SystemUpdate/DeployStore/ModernAppsPreinstall");
+
+
+:MNARESETRESCAN;
+_var {ReadCache} = _file_read ("{NATVC_CONFIG}/mnalist","{IntLoad_ForMNA_R}");
+
+_if(_cp("{ReadCache}","FileNotExist"))|_goto :FailAddsPkgList;
+
+_if(_cp("{ReadCache}","overline")) | _goto :MNARESETRESCAN_OK;
+
+//Verify
+_file_write "[MoAppUSO] Update Package :  {ReadCache}";
+
+_if(!_file_exist "{ReadCache}")|_goto :MNA_NullPackRestore;
+
+_script <"{SYS_NROOT}/mnacore/install.ca"> "{ReadCache}";
+
+
+:BACKCTRESTORE;
+
+_var {IntLoad_ForMNA_R} = _+("{IntLoad_ForMNA_R}","1");
+_goto :MNARESETRESCAN;
+
+:MNARESETRESCAN_OK;
+_file_del "{NATVC_CONFIG}/mnalist";
+
+//Copy Drivers
+_dir_make "{SYS_NROOT}/drivers";
+_var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/DeployStore/SystemAddedDrivers";
+_var {XCOPY_B} = "{SYS_NROOT}/drivers";
+_script <"{SYS_ROOT}/xcopy.ca">;
+
+//CleanUp
+_dir_remove {SYS_NROOT}/SystemUpdate/DeployStore";
+
+_dir_remove "{SYS_NROOT}/SystemUpdate/Downloading";
+_dir_make "{SYS_NROOT}/SystemUpdate/Downloading";
+
+_return "ok";
+
+
+:FailAddsPkgList;
+_cout "";
+_cout "App cannot installed because package list is missing";
+_cout "";
+_return "ok";
+
+:MNA_NullPackRestore;
+_cout "";
+_cout "App cannot be installed because package {ReadCache} not found";
+_goto :BACKCTRESTORE;
+
+//LL
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/modeploy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt);
+────────────────────────────────────────────
+ 
+    Install Update ....
+
+────────────────────────────────────────────
+
+  Do not turn off your device
+  We will automatic install these update and restarted
+  
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-modeploy.txt);
+────────────────────────────────────────────
+ 
+    Install Update ....
+
+────────────────────────────────────────────
+
+  Installing Update
+  Some update need install now!
+  
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-modeploy.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
+────────────────────────────────────────────
+ 
+    Preparing Update ....
+
+────────────────────────────────────────────
+
+   
+
+
+  Please wait
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
+//CSU EDITION
+$COMPONETVERSION=132;
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
+$ID=Coral_System_Update_Package;
+[12:48:43][KernelAPI][CO_ShellExecute] Execute exit. code :  ok
