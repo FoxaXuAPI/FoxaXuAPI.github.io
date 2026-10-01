@@ -49,6 +49,7 @@ _file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/SETUP";
 _file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/USERS";
 _file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/SOFTWARE";
 _file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/PRODUCT";
+_file_del "{SYS_NROOT}/SystemUpdate/NewOS/Coral/config/GLOBAL_SETTINGS";
 //DEPLOYMENT COMPLETE
 
 
@@ -93,7 +94,11 @@ _if(!_cp(_sipcfg CSU_Core_Status,"true"))|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.Sy
 _file_write "[%time%][CSU] CSU is supported";
 
 
+_var {CGS_GET_OPTION} = "DisableCSU";
+_var {CGS_Result} = _loadlib <"{SYS_ROOT}/KernelAPI/CO_GET_SETTINGS.clib"> "::GetGlobalSettings";
 
+_if(_cp("{CGS_Result}","true"))|_file_write "[%time%][CSU] System Disabled CSU Service!";
+_if(_cp("{CGS_Result}","true"))|_return "CSU_DISABLED";
 
 //Get Agent
 _var {tempargs} = _getargs;
@@ -439,6 +444,6 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-u
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 //CSU EDITION
-$COMPONETVERSION=156;
+$COMPONETVERSION=161;
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 $ID=Coral_System_Update_Package;
