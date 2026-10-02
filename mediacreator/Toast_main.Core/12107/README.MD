@@ -1,0 +1,4 @@
+UBR7 12107
+修复了12106后面报告的几个问题，GLOBALSETTINGS配置的FILECHECK项缺失，以及当文件不存在时会创建空文件的问题
+新增一个还在规划的内核API CO_KERNEL_REPORT
+NativeShell命令包扩加
