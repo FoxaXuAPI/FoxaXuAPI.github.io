@@ -242,7 +242,7 @@ _if(_cp("{tempargs}","CSU_FILEDOWNLOAD_FAILED"))|_goto :CSU_FILEDOWNLOAD_FAILED;
 _cout "CSU Module cannot started";
 _cout "Error Code :  {tempargs}";
 _cout "Unknown Code Status. View this Error code on support pages";
-_pause;
+_ms_sleep "3000";
 _return "false";
 
 
@@ -251,28 +251,28 @@ _return "false";
 _cout "CSU Module cannot started";
 _cout "Error Code :  {tempargs}";
 _cout "This system is not supported CSU Modules";
-_pause;
+_ms_sleep "3000";
 _return "false";
 
 :CSU_ERR_INVAILD_ARGUMENT;
 _cout "CSU Module cannot started";
 _cout "Error Code :  {tempargs}";
 _cout "Services start with a unknown argument";
-_pause;
+_ms_sleep "3000";
 _return "false";
 
 :CSU_INTERNET_ERROR;
 _cout "CSU Module cannot started";
 _cout "Error Code :  {tempargs}";
 _cout "Services is connecting with server. but server return empty!";
-_pause;
+_ms_sleep "3000";
 _return "false";
 
 :CSU_FILEDOWNLOAD_FAILED;
 _cout "CSU Module cannot started";
 _cout "Error Code :  {tempargs}";
 _cout "New File donwload failed!";
-_pause;
+_ms_sleep "3000";
 _return "false";
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csuerror.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csufiled.ca);
@@ -450,7 +450,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-u
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 //CSU EDITION
-$COMPONETVERSION=170;
+$COMPONETVERSION=172;
 
 //REFORMATED
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
