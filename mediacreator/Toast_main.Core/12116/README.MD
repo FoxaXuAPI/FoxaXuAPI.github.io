@@ -1,0 +1,2 @@
+修复了新usersvc中错误的赋值问题，修复kernel模块中systemtitle模块擅自加载bootui的问题，更新了自带的CSU模块，现在会把更新安装的模块全部记录下来，但因实现原因，目前最后一个UpdateComplete不会在安装完成后设置为true。
+此版本较为稳定可以用作长期服役版
