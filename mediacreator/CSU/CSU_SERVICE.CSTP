@@ -67,7 +67,17 @@ _file_write ' _typefile "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/te
 _file_write ' _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/modeploy.ca">; ';
 _file_open "{SYS_LOG}";
 
+//Create Task Schedule
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/InstallStatus.cfg";
+_sipcfg SystemCoreUpdate = "false";
+_sipcfg SystemRepairImageDelete= "false";
+_sipcfg SystemRecoveryUpdate = "false";
+_sipcfg SystemModernAppDeploy = "false";
+_sipcfg SystemDriverUpdate = "false";
+_sipcfg UpdateComplete = "false";
+
 _return "NeedRestart";
+
 
 :BadFileInfo;
 _cout "Update Service Orchestrator Error!";
@@ -304,10 +314,23 @@ _var {XCOPY_B} = "{NATVC_DISK}";
 _script <"{SYS_ROOT}/xcopy.ca">;
 _dir_remove "{SYS_NROOT}/SystemUpdate/NewOS";
 
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/InstallStatus.cfg";
+_sipcfg SystemCoreUpdate = "true";
+
+//Part RepairData Remover
+
 _cout "Removing System Old RepiarData";
 _script <"{SYS_ROOT}/sysfix.ca"> "remove";
 
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/InstallStatus.cfg";
+_sipcfg SystemRepairImageDelete = "true";
+
+//Part Recovery Update
 //Checking Recovery Status
+_var {CGS_GET_OPTION} = "UpdateWithNoRecoveryUpdate";
+_var {CGS_Result} = _loadlib <"{SYS_ROOT}/KernelAPI/CO_GET_SETTINGS.clib"> "::GetGlobalSettings";
+_if(_cp("{CGS_Result}","true"))|_goto :SkipUpdateRE;
+
 _sipcfg.open "{NATVC_CONFIG_SETUP}"
 _if(!_cp(_sipcfg SystemRE_Status,"true"))|_goto :SkipUpdateRE;
 _cout "Update recovery enviroment";
@@ -315,6 +338,9 @@ _var {SystemRE_Dir} = _sipcfg SystemRE_Dir;
 
 _file_del "{SystemRE_Dir}/Recovery/colre.cstp";
 _file_copy ("{SYS_NROOT}/SystemUpdate/Downloading/boot.cstp","{SystemRE_Dir}/Recovery/colre.cstp");
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/InstallStatus.cfg";
+_sipcfg SystemRecoveryUpdate = "true";
 
 //Succeed
 
@@ -347,11 +373,13 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/modeploy.ca)
 _$directmode;
 _$nolog;
 
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/InstallStatus.cfg";
+_if(_cp(_sipcfg SystemCoreUpdate,"false"))|_goto :CancelUpdateNow;
+
 _var {CGS_GET_OPTION} = "UpdateWithNoModernUpdate";
 _var {CGS_Result} = _loadlib <"{SYS_ROOT}/KernelAPI/CO_GET_SETTINGS.clib"> "::GetGlobalSettings";
 
 _if(_cp("{CGS_Result}","true"))|_goto :SkipMoAppUpdate;
-
 
 _var {IntLoad_ForMNA_R} = "1";
 
@@ -384,14 +412,25 @@ _goto :MNARESETRESCAN;
 :MNARESETRESCAN_OK;
 _file_del "{NATVC_CONFIG}/mnalist";
 
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/InstallStatus.cfg";
+_sipcfg SystemModernAppDeploy = "true";
 
 :SkipMoAppUpdate;
+
+_var {CGS_GET_OPTION} = "UpdateWithNoDriverUpdate";
+_var {CGS_Result} = _loadlib <"{SYS_ROOT}/KernelAPI/CO_GET_SETTINGS.clib"> "::GetGlobalSettings";
+_if(_cp("{CGS_Result}","true"))|_goto :SkipUpdateDriver;
+
 //Copy Drivers
 _dir_make "{SYS_NROOT}/drivers";
 _var {XCOPY_A} = "{SYS_NROOT}/SystemUpdate/DeployStore/SystemAddedDrivers";
 _var {XCOPY_B} = "{SYS_NROOT}/drivers";
 _script <"{SYS_ROOT}/xcopy.ca">;
 
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/InstallStatus.cfg";
+_sipcfg SystemDriverUpdate = "true";
+
+:SkipUpdateDriver;
 //CleanUp
 _dir_remove "{SYS_NROOT}/SystemUpdate/DeployStore";
 
@@ -405,7 +444,7 @@ _return "ok";
 _cout "";
 _cout "App cannot installed because package list is missing";
 _cout "";
-_return "ok";
+_goto :SkipMoAppUpdate;
 
 :MNA_NullPackRestore;
 _cout "";
@@ -413,6 +452,14 @@ _cout "App cannot be installed because package {ReadCache} not found";
 _goto :BACKCTRESTORE;
 
 //LL
+
+
+:CancelUpdateNow;
+_clear;
+_cout "Update Cancel! System Core Update failed!";
+_ms_sleep "3000";
+_script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csucore.ca"> "cancelupdate";
+_return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/modeploy.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt);
 ────────────────────────────────────────────
@@ -450,7 +497,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-u
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 //CSU EDITION
-$COMPONETVERSION=172;
+$COMPONETVERSION=176;
 
 //REFORMATED
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
