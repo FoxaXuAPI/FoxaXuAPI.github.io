@@ -1,0 +1,9 @@
+//Coral SetupMedia
+$InstallerPackageName=Coral 1.0 SE (26H2) Stable Version;
+$DetailVersion=12500;
+$RequireClfmvMin=4023;
+
+//Deployment
+$DeployPackage=default.cstp;
+$InstallWithDebugMode=false;
+$RequireKeyPage=true;
