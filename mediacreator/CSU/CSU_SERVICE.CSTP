@@ -22,6 +22,7 @@ csucore.ca
     Self argument
         csu-checkupdate   -return CSUNeedUpdate / CSULatest
         csu-getnew        -return false / UpdateSucceed
+        csu-policyupdate  -need do some operations
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/CodeIndex.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/cousowork.ca);
 _$directmode;
@@ -120,6 +121,7 @@ _dir_make "{SYS_NROOT}/SystemUpdate/DeployStore";
 _if(_cp("{tempargs}","cleanup"))|_goto :CleanUpdateCache;
 _if(_cp("{tempargs}","checkupdate"))|_goto :CheckUpdate;
 _if(_cp("{tempargs}","csu-checkupdate"))|_goto :CheckCSU-Update;
+_if(_cp("{tempargs}","csu-policyupdate"))|_goto :PolicyUpdate;
 _if(_cp("{tempargs}","csu-getnew"))|_goto :CSU-GetNew;
 _if(_cp("{tempargs}","installupdate"))|_goto :installupdate;
 _if(_cp("{tempargs}","cancelupdate"))|_goto :CancelUpdate;
@@ -241,6 +243,11 @@ _if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/CSU_SERVICE.CSTP")|_cover
 _file_copy ("{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/autoupdate.ca","{temp}/autoupdate.ca");
 _cover <"{temp}/autoupdate.ca">;
 _return "COVERFAILED";
+
+:PolicyUpdate;
+_if(!_file_exist "{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/policyupdate.ca")|_return "ERR_FILE:policyupdate.ca";
+_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/policyupdate.ca">;
+_return "COVER_MISSING";
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/csucore.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/csuerror.ca);
 _$directmode;
@@ -461,6 +468,44 @@ _ms_sleep "3000";
 _script <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csucore.ca"> "cancelupdate";
 _return "ok";
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/modeploy.ca);
+$CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/policyupdate.ca);
+_$directmode;
+
+//Get Build Edition
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_var {CSU_Update_Edition} = _sipcfg Edition;
+
+_cout "Coral System Policy Update";
+_cout "You are using :  {CSU_Update_Edition}";
+_cout "Type Policy ID to switch Update Channel";
+_cout "Example :  release-channel, stable-channel, preview-newos";
+_cout "                                                    ";
+_cout " WARNING. DO NOT use preview-newos option for your work pc.";
+_cout "          This options is Only for users who just want to ";
+_cout "          try out the new test system features";
+_cout "                                                   ";
+_cout "  CSU Update is not support ROLLBACK!. ";
+_cout "  Make sure all options you wanted and no regret";
+_prt "(type exit to cancel) channel>";
+_var {tempargs} = _getline;
+_if(_cp("{tempargs}","exit"))|_return "Cancelled";
+_if(_cp("{tempargs}","LatestVersion"))|_return "Invaild_Parameter";
+
+_cout "";
+_cout "Waitting Server return result..";
+_cout "";
+_url_get ("http://fdl-cds.dev.foxaxu.top/mediacreator/{CSU_Update_Edition}/catalog.cfg","{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg");
+_if(!_file_exist "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg")|_cover <"{SYS_NROOT}/CoSxS/CoralFDL.SystemUpdateServices.Core/csuerror.ca"> "CSU_INTERNET_ERROR";
+
+_sipcfg.open "{SYS_NROOT}/SystemUpdate/Downloading/catalog.cfg";
+_var {tempargs} = _sipcfg {tempargs};
+_if(_cp("{tempargs}",'{varspace.null}'))|_return "Invaild_Channel_ID";
+_sipcfg.open "{NATVC_CONFIG_SYSTEM}";
+_sipcfg Edition = "{tempargs}";
+_cout "System Channel is switch to {tempargs}.";
+_cout "Your Device need restart to continue..";
+_return "user_restart";
+$CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/policyupdate.ca);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-installer.txt);
 ────────────────────────────────────────────
  
@@ -497,7 +542,7 @@ $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/text/coral-u
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/text/coral-updater.txt);
 $CSTP_FILE_RECORD_MARK_ID_START(/CoralFDL.SystemUpdateServices.Core/version.cfg);
 //CSU EDITION
-$COMPONETVERSION=176;
+$COMPONETVERSION=201;
 
 //REFORMATED
 $CSTP_FILE_RECORD_MARK_ID_END(/CoralFDL.SystemUpdateServices.Core/version.cfg);
