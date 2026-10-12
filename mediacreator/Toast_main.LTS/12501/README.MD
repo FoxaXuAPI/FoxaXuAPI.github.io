@@ -1,0 +1,4 @@
+此版本修复了UserExplorerCore在从Natvc升级上来时不会响应Update Wizard的问题，该问题由前几个版本在Explorer Title移植到AppData时引起，此版本修复了这个问题
+附加LogonUI和安全组件的更新，修复了rootshell表述问题，以及稳定性问题。
+无新增功能，仅安全漏洞修复以及本地安全策略更新
+此版本为LTS的第一个修正版本
