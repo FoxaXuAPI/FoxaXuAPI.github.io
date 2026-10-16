@@ -1,0 +1,3 @@
+Geranium已经和Toast主线合并， Coral 1.0 将继承部分Geranium的特性
+因为部分模块实现难度跨度太大，故Geranium的开发计划部分取消，已有的模块并入Toast，但保留Geranium的代号，
+现所有版本的Toast都将更新到Geranium来
