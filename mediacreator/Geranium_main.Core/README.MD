@@ -1,3 +1,9 @@
 Geranium已经和Toast主线合并， Coral 1.0 将继承部分Geranium的特性
 因为部分模块实现难度跨度太大，故Geranium的开发计划部分取消，已有的模块并入Toast，但保留Geranium的代号，
 现所有版本的Toast都将更新到Geranium来
+Geranium的LTS线不再继承于Core，将成为一条独立的版本线
+已有的Coral Toast Core 不会升级至Geranium，需手动运行policyupdate切换到newos-geranium。
+已有的Coral Toast LTS 暂时不会自自动升级至Geranium，Toast LTS将在必要支持结束后会接收到 Geranium LTS线的更新，也可以同样切到 newos-geranium 提前享受Geranium（非LTS）的新的安全功能
+对于Toast的全部支持将在Geranium LTS线正式启用后结束。
+
+对于Coral的版本线，发布Core线即可视为正式版发布。
