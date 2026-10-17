@@ -1,0 +1,1 @@
+更新此版本后Coral将会从Toast线更新到Geranium线，旧的Toast维护已经终止，更多信息请前往Geranium线浏览
