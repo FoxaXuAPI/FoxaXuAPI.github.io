@@ -1,0 +1,5 @@
+新建测试分支 Geranium_main.Test
+此分支作为新的Geranium功能发布渠道，虽然 版本渠道为 Geranium_main.Test 实则发布的版本仍为 Geranium_main.Core
+如果你想体验最新的功能，可以使用 preview-newupdate 切换到这个渠道以安装预览版本更新，切换的渠道只会保留一次，渠道在更新后仍然会被重置成 Geranium_main.Core
+此版本属于正式版本，不会进行大的改动，属于Geranium_main.Core的预览线，同时LTS线将被同时推到 Geranium_main.Core
+此后版本不再使用LTS标识符号，与Core同核心
