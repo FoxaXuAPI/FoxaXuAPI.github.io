@@ -3,3 +3,6 @@
 如果你想体验最新的功能，可以使用 preview-newupdate 切换到这个渠道以安装预览版本更新，切换的渠道只会保留一次，渠道在更新后仍然会被重置成 Geranium_main.Core
 此版本属于正式版本，不会进行大的改动，属于Geranium_main.Core的预览线，同时LTS线将被同时推到 Geranium_main.Core
 此后版本不再使用LTS标识符号，与Core同核心
+
+可使用restore-release 取消安装预览更新
+此版本不提供镜像创建工具
