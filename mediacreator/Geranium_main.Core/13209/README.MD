@@ -1,0 +1,4 @@
+此更新缓解了部分UNIX系统上启动Coral时drivers文件夹缺失时偶发DRIVER_LOAD_ERROR的问题
+refix现在会使用_$sys_def_disk 来确定磁盘位置而不是绝对路径
+
+此更新验证了NativeShell的User管理组件暂时没有内存破坏的问题了
